@@ -1,0 +1,6 @@
+#!/bin/sh
+# Release-grade privacy gate before every push (everything pushed to the repository is public at once): the files git
+# would publish, every blob and commit of the history, and the commit identities, with the private denylist required
+# (.publish-denylist, never committed) and no worklist waiver (--strict). A push therefore stays impossible until the
+# scrub steps have emptied privacy-worklist.json and the history holds no pre-scrub blob.
+exec node scripts/privacy-scan.mjs --tracked --history --require-denylist --strict

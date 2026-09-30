@@ -1,0 +1,342 @@
+{
+ "suite": "models",
+ "meta": {
+  "structures": 7,
+  "factions": 3,
+  "threeDraws": 12408,
+  "gameDraws": 0
+ },
+ "models": {
+  "own": {
+   "digest": "395cc1bfeb8a0a00080c8356d1907c7b",
+   "counts": {
+    "objects": 28,
+    "meshes": 22,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 17,
+    "materials": 15,
+    "textures": 1,
+    "vertices": 26986
+   },
+   "canvases": 1,
+   "text": "15174d986fedb23f"
+  },
+  "air-target": {
+   "digest": "32bafcc54f2ae989b131ec0d265fd691",
+   "counts": {
+    "objects": 25,
+    "meshes": 19,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 14,
+    "materials": 12,
+    "textures": 1,
+    "vertices": 24430
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "bot-0-miniguns": {
+   "digest": "2c77b961fe06d1ab197a75c8f10aa073",
+   "counts": {
+    "objects": 28,
+    "meshes": 22,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 17,
+    "materials": 15,
+    "textures": 1,
+    "vertices": 26986
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "bot-1-miniguns": {
+   "digest": "b67a40c700436dcb03a001e5eb7a6a7d",
+   "counts": {
+    "objects": 28,
+    "meshes": 22,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 17,
+    "materials": 15,
+    "textures": 1,
+    "vertices": 26986
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "bot-2-miniguns": {
+   "digest": "c4b8cfb8ddc3bbf0e219937ee37db0a6",
+   "counts": {
+    "objects": 28,
+    "meshes": 22,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 17,
+    "materials": 15,
+    "textures": 1,
+    "vertices": 26986
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "bot-rockets": {
+   "digest": "63a40c0b9416217ab47341e34517453f",
+   "counts": {
+    "objects": 29,
+    "meshes": 23,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 18,
+    "materials": 16,
+    "textures": 1,
+    "vertices": 25282
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "vehicle-truck": {
+   "digest": "5daa11ae3e0c5cd30ed5824f499ef791",
+   "counts": {
+    "objects": 8,
+    "meshes": 7,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 7,
+    "materials": 4,
+    "textures": 0,
+    "vertices": 376
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "vehicle-humvee": {
+   "digest": "ce056027aa60377d935f793ec065b4e5",
+   "counts": {
+    "objects": 25,
+    "meshes": 23,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 23,
+    "materials": 5,
+    "textures": 0,
+    "vertices": 975
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "vehicle-pickup": {
+   "digest": "1cecfe4259661af8b460918df2c5fca9",
+   "counts": {
+    "objects": 10,
+    "meshes": 9,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 9,
+    "materials": 3,
+    "textures": 0,
+    "vertices": 464
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "infantry-0": {
+   "digest": "ba5bce8f23cc03a4990390f52ac43941",
+   "counts": {
+    "objects": 13,
+    "meshes": 12,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 12,
+    "materials": 12,
+    "textures": 0,
+    "vertices": 416
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "infantry-1": {
+   "digest": "94c3307f24ec14887c43b2c328e31856",
+   "counts": {
+    "objects": 13,
+    "meshes": 12,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 12,
+    "materials": 12,
+    "textures": 0,
+    "vertices": 416
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "infantry-2": {
+   "digest": "d2c4d4ab003e7a67dfe9cf651f247acd",
+   "counts": {
+    "objects": 13,
+    "meshes": 12,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 12,
+    "materials": 12,
+    "textures": 0,
+    "vertices": 416
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "sam-site": {
+   "digest": "35e74cdedbf69d418922f04254f5fc48",
+   "counts": {
+    "objects": 15,
+    "meshes": 12,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 12,
+    "materials": 8,
+    "textures": 0,
+    "vertices": 3055
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "ciws": {
+   "digest": "dcf3f72ab84ed568a1afbc85b27d24f4",
+   "counts": {
+    "objects": 14,
+    "meshes": 10,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 10,
+    "materials": 6,
+    "textures": 0,
+    "vertices": 5570
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "cockpit": {
+   "digest": "a643328a34e107f043a35ed281423e95",
+   "counts": {
+    "objects": 52,
+    "meshes": 51,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 51,
+    "materials": 22,
+    "textures": 3,
+    "vertices": 6106
+   },
+   "canvases": 3,
+   "text": "ff13002521df8b3b"
+  },
+  "structure-0": {
+   "digest": "e1ffb8ba1aada9eb1ed1c6ef46ecb6cc",
+   "counts": {
+    "objects": 6,
+    "meshes": 4,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 4,
+    "materials": 3,
+    "textures": 0,
+    "vertices": 2124
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "structure-1": {
+   "digest": "316ad3be20bf7fa3a1de778b51a14155",
+   "counts": {
+    "objects": 6,
+    "meshes": 4,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 4,
+    "materials": 4,
+    "textures": 0,
+    "vertices": 144
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "structure-2": {
+   "digest": "ec2790de7fcc6b98281d81231f6345fb",
+   "counts": {
+    "objects": 6,
+    "meshes": 4,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 4,
+    "materials": 4,
+    "textures": 0,
+    "vertices": 792
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "structure-3": {
+   "digest": "6836194467460cacd2b3238e54b68529",
+   "counts": {
+    "objects": 3,
+    "meshes": 1,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 1,
+    "materials": 1,
+    "textures": 0,
+    "vertices": 28
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "structure-4": {
+   "digest": "8f42be63acc02f441cc92f02cffc16b3",
+   "counts": {
+    "objects": 9,
+    "meshes": 7,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 7,
+    "materials": 7,
+    "textures": 0,
+    "vertices": 768
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "structure-5": {
+   "digest": "a5d601452556428a336a46cafecdfe15",
+   "counts": {
+    "objects": 4,
+    "meshes": 2,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 2,
+    "materials": 2,
+    "textures": 0,
+    "vertices": 312
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  },
+  "structure-6": {
+   "digest": "78dfb6a076b6a3458ea7f7f166e49689",
+   "counts": {
+    "objects": 4,
+    "meshes": 2,
+    "instanced": 0,
+    "instances": 0,
+    "geometries": 2,
+    "materials": 2,
+    "textures": 0,
+    "vertices": 1260
+   },
+   "canvases": 0,
+   "text": "e3b0c44298fc1c14"
+  }
+ },
+ "tables": "509f572c7a91c50e30d22bff990ba2e297e2eba0a00c783d4aaaad1fc333e005"
+}

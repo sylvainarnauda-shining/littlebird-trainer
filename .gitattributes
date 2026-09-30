@@ -1,0 +1,8 @@
+# Same bytes on every checkout (Windows core.autocrlf=true included): the build inlines and hashes the sources and the
+# goldens pin their sha256, so line endings must never change on the way in or out.
+* text=auto eol=lf
+# Vendored third-party code is checked byte for byte (sha256 in publish-policy.json).
+src/vendor/** -text -diff linguist-vendored
+# Recorded fixtures (goldens and recording-derived numbers): stored as is, not diffed as text.
+tests/fixtures/** -diff linguist-generated
+*.gz binary

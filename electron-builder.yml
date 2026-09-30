@@ -1,0 +1,84 @@
+# electron-builder 26 configuration: Windows x64 only, a per-user one-click installer (no administrator rights) and a
+# portable zip. electron-builder publishes nothing (publish: null, and every command passes --publish never): the
+# release workflow uploads the files to a draft GitHub release that the maintainer publishes by hand.
+# Frozen after the first release: appId, productName and executableName (Windows shortcuts, the uninstall entry, the
+# taskbar grouping and the player's profile folder %APPDATA%\LittleBird Trainer depend on them). appId equals
+# desktop/policy.cjs APP_ID (tests/desktop/config.test.js).
+appId: io.github.sylvainarnauda-shining.littlebird-trainer
+productName: LittleBird Trainer
+executableName: LittleBirdTrainer
+copyright: Copyright (c) 2026 sylvainarnauda-shining and contributors
+
+directories:
+  output: release
+  buildResources: build
+
+# app.asar holds exactly these files (the app has no runtime npm dependency); scripts/check-asar.mjs checks the list.
+files:
+  - package.json
+  - desktop/main.cjs
+  - desktop/policy.cjs
+  - desktop/self-test.cjs
+  - desktop/parity.cjs
+  - dist/web/index.html
+asar: true
+extraResources:
+  - from: LICENSE
+    to: LICENSE.txt
+  - from: THIRD_PARTY_NOTICES.md
+    to: THIRD_PARTY_NOTICES.txt
+
+# Only the French and English Chromium locale files.
+electronLanguages:
+  - fr
+  - en-US
+
+# Fuses: flipped by the afterPack hook from build/fuses.cjs (all of them, strictly), not by an electronFuses block.
+afterPack: build/after-pack.cjs
+
+npmRebuild: false
+nodeGypRebuild: false
+buildDependenciesFromSource: false
+includePdb: false
+compression: maximum
+
+win:
+  icon: dist/icon/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: zip
+      arch: [x64]
+  artifactName: LittleBird-Trainer-${version}-win-${arch}.${ext}
+  requestedExecutionLevel: asInvoker
+  # Unsigned (docs/INSTALLATION.md explains the SmartScreen dialog). Signing, if it comes, is its own release step.
+  forceCodeSigning: false
+
+nsis:
+  # Like a game launcher: one click, installed for the current user in %LOCALAPPDATA%\Programs, no UAC prompt, Start
+  # menu and desktop shortcuts, started at the end, removable from Settings > Apps.
+  oneClick: true
+  perMachine: false
+  allowElevation: false
+  packElevateHelper: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: LittleBird Trainer
+  runAfterFinish: true
+  # The profile (keys, sensitivities, settings) survives an uninstall, like a game's saves.
+  deleteAppDataOnUninstall: false
+  installerIcon: dist/icon/icon.ico
+  uninstallerIcon: dist/icon/icon.ico
+  installerLanguages:
+    - fr_FR
+    - en_US
+  language: '1036'
+  unicode: true
+  warningsAsErrors: true
+  # No updater: no differential package, no blockmap.
+  differentialPackage: false
+  artifactName: LittleBird-Trainer-Setup-${version}.${ext}
+
+# The single-exe "portable" target re-extracts the whole runtime to %TEMP% at every start (slow); the zip target above
+# is the portable download: unzip anywhere, run LittleBirdTrainer.exe.
+publish: null

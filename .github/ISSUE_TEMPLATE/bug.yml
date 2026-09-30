@@ -1,0 +1,43 @@
+name: Signaler un problème
+description: Un défaut de l'entraîneur (vol, modes, menus, application Windows, version navigateur).
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci ! Avant d'envoyer : **ne joignez jamais** de capture ou de vidéo du jeu d'origine, ni votre fichier de
+        réglages du jeu, ni un chemin qui contient votre nom d'utilisateur. Une capture de l'entraîneur lui-même est
+        bienvenue. Une faille de sécurité se signale en privé (onglet Security, « Report a vulnerability »), jamais ici.
+  - type: dropdown
+    id: version
+    attributes:
+      label: Version utilisée
+      options:
+        - Application Windows (installateur)
+        - Application Windows (zip portable)
+        - Version navigateur (index.html)
+        - Construite depuis les sources
+    validations:
+      required: true
+  - type: input
+    id: number
+    attributes:
+      label: Numéro de version
+      placeholder: 0.9.0
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Ce qui se passe, et ce que vous attendiez
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pour reproduire
+      description: Mode, carte (par exemple le lien #carte=gen-123), réglages modifiés, étapes.
+  - type: textarea
+    id: system
+    attributes:
+      label: Système
+      description: Version de Windows ou du navigateur. Pas de nom d'ordinateur ni de nom d'utilisateur.

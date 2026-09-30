@@ -1,0 +1,3 @@
+{
+ "$comment": "Check mode only (never read when recording): {probe type: {field name in the runtime: field name in the goldens}}, for fields renamed by a behaviour-neutral refactor. Types are the probe's (probe.cjs) and the module goldens' ('missiles.launcher', 'ground.soldier', ...). A change of this file is a recorder change: prove it with prove-recorder.cjs."
+}

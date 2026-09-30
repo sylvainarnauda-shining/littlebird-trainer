@@ -1,0 +1,158 @@
+{
+ "note": "Numeric series measured on gameplay recordings (HUD readings, key overlay). No image, no video, no settings file. Re-extracted on 29/09/2026, after the mouse-gain change.",
+ "files": [
+  {
+   "file": "recordings/bench_v1.csv.gz",
+   "bytes": 356266,
+   "sha256": "ea114148c041dd1df9f64d126c4cde91dd752552e3bc71c4549e2dc9e8b52246",
+   "rows": 23623,
+   "columns": [
+    "t",
+    "view",
+    "Maj",
+    "S",
+    "D",
+    "ClicG",
+    "ClicD",
+    "Z_inf",
+    "Q_inf",
+    "spd_kmh",
+    "vs",
+    "lever_f",
+    "bank",
+    "heading",
+    "bank_f",
+    "pitch_f",
+    "heading_f"
+   ],
+   "rate_hz": 60,
+   "provenance": "recording 1, bench of the analysis harness (columns read by the fidelity engines)"
+  },
+  {
+   "file": "recordings/bench_v2.csv.gz",
+   "bytes": 126025,
+   "sha256": "e2bc0005b8b8aa11fde81d747a706add01b3d21228c8062fb5f86ea21e87cfb4",
+   "rows": 9540,
+   "columns": [
+    "t",
+    "view",
+    "Maj",
+    "S",
+    "D",
+    "ClicG",
+    "ClicD",
+    "Z_inf",
+    "Q_inf",
+    "spd_kmh",
+    "vs",
+    "lever_f",
+    "bank",
+    "heading",
+    "bank_f",
+    "pitch_f",
+    "heading_f"
+   ],
+   "rate_hz": 60,
+   "provenance": "recording 2, bench of the analysis harness (columns read by the fidelity engines)"
+  },
+  {
+   "file": "recordings/replay_v1.json",
+   "bytes": 694800,
+   "sha256": "36d67c5276482115be26008e9c048a1bd1eebdb691087b9f81ffee3318a569be",
+   "rows": 11811,
+   "columns": [
+    "t",
+    "bank",
+    "pitch",
+    "heading",
+    "arc",
+    "spd",
+    "vs",
+    "asl",
+    "agl",
+    "maj",
+    "S",
+    "D",
+    "z"
+   ],
+   "rate_hz": 30,
+   "provenance": "recording 1, legacy 30 Hz replay series"
+  },
+  {
+   "file": "recordings/replay_v2.json",
+   "bytes": 265919,
+   "sha256": "1cc939f1b35613b4e326d74607f047e0d82b126475fc36c9a054a5b610f3492f",
+   "rows": 4770,
+   "columns": [
+    "t",
+    "bank",
+    "pitch",
+    "heading",
+    "arc",
+    "spd",
+    "vs",
+    "asl",
+    "agl",
+    "maj",
+    "S",
+    "D",
+    "z"
+   ],
+   "rate_hz": 30,
+   "provenance": "recording 2, legacy 30 Hz replay series"
+  },
+  {
+   "file": "recordings/cross-curve.json",
+   "bytes": 36774,
+   "sha256": "a8dde10bbb659ab2901e5700a29527210d5d8c2246322a12eb1a985e65c9b2fb",
+   "events": 43,
+   "samples": 120,
+   "provenance": "mean mouse-crossing response of the game (local source path removed)"
+  },
+  {
+   "file": "expected/harness-metrics.json",
+   "bytes": 5342,
+   "sha256": "387ec4c20288d392e8f1dc10b66a5737dcfd6ca2570b302d0f46ebfc1d4060b0",
+   "provenance": "reference figures of the analysis harness (to reproduce)"
+  },
+  {
+   "file": "expected/adopted-switches.json",
+   "bytes": 167,
+   "sha256": "94e5f845d71800cfe7e6400e15735550a7037d168ae615e6f893e5093f9001df",
+   "provenance": "adopted switch set of the analysis harness (29/09, mouse gain 0.339)"
+  }
+ ],
+ "privacyScan": {
+  "scanner": "private denylist",
+  "hits": 0
+ },
+ "totalBytes": 1485306,
+ "benchColumnsDropped": [
+  "dup",
+  "Espace",
+  "E",
+  "Z_legacy",
+  "lever_pinned",
+  "vsdot",
+  "vh",
+  "asl",
+  "agl",
+  "lever",
+  "lever_rate",
+  "pitch",
+  "pitch_clip",
+  "att_filled",
+  "hseg",
+  "tape_n",
+  "hdg_sigma",
+  "p",
+  "q",
+  "r",
+  "fx",
+  "fy",
+  "dot_moving",
+  "mouse_cross",
+  "glitch",
+  "replayable"
+ ]
+}

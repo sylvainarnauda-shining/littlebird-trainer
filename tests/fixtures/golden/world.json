@@ -1,0 +1,4293 @@
+{
+ "suite": "world",
+ "meta": {
+  "maps": [
+   "vallee",
+   "gen-1",
+   "gen-2",
+   "gen-7",
+   "gen-42",
+   "gen-77",
+   "gen-1234",
+   "gen-4242",
+   "gen-65536",
+   "gen-424242",
+   "gen-999998"
+  ],
+  "boots": [
+   {
+    "key": "vallee@medium",
+    "id": "vallee",
+    "graphics": "medium"
+   },
+   {
+    "key": "vallee@low",
+    "id": "vallee",
+    "graphics": "low"
+   },
+   {
+    "key": "random-each",
+    "id": null,
+    "graphics": "high",
+    "seedG": 5,
+    "hash": "#carte=vallee",
+    "map": {
+     "id": "vallee",
+     "random": true
+    },
+    "mapRandomEach": true
+   }
+  ],
+  "grid": {
+   "height": "25 m, x -2200..2200, z -3400..800",
+   "density": "50 m"
+  },
+  "losQueries": 400,
+  "bootProfile": {
+   "graphics": "high",
+   "lighting": "random"
+  }
+ },
+ "maps": {
+  "vallee": {
+   "id": "vallee",
+   "name": "2401c9e419648d0b",
+   "generated": false,
+   "seed": 0,
+   "tables": "ff0503ee3b1d24b7475d532497d3c3da14692db537080a7f52c72f97953254d7",
+   "grids": {
+    "height": "0969b3a55eb8c582ca2037368066a201d7f3982033368569c4807da5d7641456",
+    "forest": "695cc744228dec975a1722796a76dd5614acac418d7d5a6de44cdadf02bb1688",
+    "reserved": "7d3db41d23d19e72ef2e129edea780ecfebb60846583f19b73bbc3ea609d7cef"
+   },
+   "forest": "d78e05f362761e4a07e0340cda905fe27ca5b8fa53995137ee660ad7242c2dc5",
+   "obstacles": "f934fe817f5ed7e5463f7817a81c33202804d633baf57263fc6926f2afbada12",
+   "towersWires": "e2885228f4f2c9dcbdbb2be915966c57463c9d8de0dfce785fa785c553c43134",
+   "los": "604a73319ccb8df303c6da60b5f6850e2beaf76101d246e20bb937990425d89b",
+   "counts": {
+    "trees": 289846,
+    "obstacles": 331,
+    "towers": 3,
+    "wires": 528,
+    "houses": 39,
+    "fields": 5,
+    "aaSites": 11
+   },
+   "scene": "d43c8e44e18aba0f383920b8d25aa7c8983e128d39f3baf3578d46809c8067f0",
+   "sceneCounts": {
+    "objects": 464,
+    "meshes": 410,
+    "instanced": 33,
+    "instances": 329578,
+    "geometries": 381,
+    "materials": 142,
+    "textures": 20,
+    "vertices": 419555
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "79ead079fc99c3b3",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 128102,
+     "log": "659c4a604446a7f5",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "fbaa06881cfd53fc",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "1bccae1bcfaeb2ad",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "ae58ac5bae68ed1b",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "b4c5ffea7eda6627",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "6889df8ec501d789",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 83,
+     "log": "b23f7bfb0047546c",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 30120
+   }
+  },
+  "gen-1": {
+   "id": "gen-1",
+   "name": "b2803fbe5c74c3e9",
+   "generated": true,
+   "seed": 1,
+   "tables": "a45aa2bc207435f39895a398ee0fc1f03b68714c56137759e78b1bf8c9a17142",
+   "grids": {
+    "height": "9043f6ef8655d5015fdb55537a27e37ee666a567c345102c3d96964faa6e01e2",
+    "forest": "184c32c1df8ad33eebfeeca3325da6fbcee9d1e135eea7ea27abecd1f864f21b",
+    "reserved": "4bd887d2288e22b9a3253be4d3c949ff8acc570c6f17273c0452bf59a11ceb1d"
+   },
+   "forest": "c65d6ff35905a65e8666f0adaf743a8eb1909b90cb8ad987e4d6983432b441b5",
+   "obstacles": "5b21c3db9bc108ffbc9f5edd19a314a426c0ce53a5de3b0e921e1137f9ee1483",
+   "towersWires": "d873c6bc99e7a430f17e3c6bf7e8bf80b6020444404a703045deb425c1eea043",
+   "los": "6158804b2b16bfc1dd6acef8830f5e177650502801c79f8f98ed6bd491b6defb",
+   "counts": {
+    "trees": 248208,
+    "obstacles": 357,
+    "towers": 3,
+    "wires": 528,
+    "houses": 44,
+    "fields": 6,
+    "aaSites": 11
+   },
+   "scene": "2d1a0586fa13324ac2aa2aab753e996bf0de058a0fc86b70a517ccb3bd8c1d98",
+   "sceneCounts": {
+    "objects": 470,
+    "meshes": 416,
+    "instanced": 33,
+    "instances": 286045,
+    "geometries": 387,
+    "materials": 142,
+    "textures": 20,
+    "vertices": 422789
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "38f5ef5726042a1b",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 131599,
+     "log": "60e0a74f09a0d486",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "96a24a835761cf32",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "2f0897a4f69c697e",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "c3bcbd3cc9cd20d1",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "1897e4e39f4935b1",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "bf35ef32a2021646",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 99,
+     "log": "0b4ed78a019faecc",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 30800
+   }
+  },
+  "gen-2": {
+   "id": "gen-2",
+   "name": "1075e81eae680d9d",
+   "generated": true,
+   "seed": 2,
+   "tables": "d9580da31bb188b18a813f6df325cda65247627b85f59bada48ad875b0f6f91b",
+   "grids": {
+    "height": "924b36a1257edf6fd430712f9b7f51d5e952867fac92b66945a0a965b1912234",
+    "forest": "acf9b47a2da1b0e8d084552defd58b40a94a76667e455a06f76216b30aca804f",
+    "reserved": "1fe0a2dd022958d40a92a4508ceff1562ae76717aff22b5e0ef9f1c289494e21"
+   },
+   "forest": "f4e5af948c909a38297d771900c30a296fc253ee0d4f9a42a4c69f3b4acbd167",
+   "obstacles": "c1ed176408045158ee4d1b13a0d3ab7318a5cfacebedaa48b6e58db0953cffea",
+   "towersWires": "e28129fe7dd36f95b81dc68ffe6587847bdaddbf2c6f8963f75ce44e4b397570",
+   "los": "ee286992113a4963dbacd7fc1e8d26d23a696ddd8fbb4d068e16ca463fc2ad0e",
+   "counts": {
+    "trees": 196591,
+    "obstacles": 353,
+    "towers": 3,
+    "wires": 528,
+    "houses": 18,
+    "fields": 6,
+    "aaSites": 10
+   },
+   "scene": "00465ce1e3e1db80c6a0f68708c276a8e8a41d45cb8ac381194426d3b3f68b6e",
+   "sceneCounts": {
+    "objects": 513,
+    "meshes": 459,
+    "instanced": 33,
+    "instances": 233887,
+    "geometries": 430,
+    "materials": 144,
+    "textures": 22,
+    "vertices": 426836
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "224e8ce999bf2f50",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 130647,
+     "log": "1bc59367d4f729c7",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "0006b1d47be5b029",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "32795c651a8a09f4",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "b949e0bbbc607cd5",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "6977bade3cd5c0cb",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "f3e5a61223c08cce",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 75,
+     "log": "f081fb909d9ea963",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 30724
+   }
+  },
+  "gen-7": {
+   "id": "gen-7",
+   "name": "c7a90800dee7aa60",
+   "generated": true,
+   "seed": 7,
+   "tables": "db132e7658d1f38f0b8aaa5f667299d4dc4c092860138ef229af75940f4ed175",
+   "grids": {
+    "height": "8c82696a35d5e12bb81ac325cdf2bbf62ab85e8c6b07a47664b7027e32488d29",
+    "forest": "9d4d2633c99f940cec4f7b8af0c57b97a8b5176454012f4b5e715541e8497882",
+    "reserved": "56b51f33eb54268c3cd01204a73db5aa12dbcba11a0ffadc0e66ea95dc14dd92"
+   },
+   "forest": "a4aec8aa1e01a184bdc5def76e0eebc6435aee404a863f30a51d564ed5adfb0a",
+   "obstacles": "ac63864f6e6bc1621f7aebb116b17243998e163ed6e495fac2b1f2c09f8417ff",
+   "towersWires": "6d1e569a317f867c9b2f4b98dc4f3ac40762c2a64eb57bb1d563f2cdd4c66cf0",
+   "los": "f5bf4256742af58e77fa1853f2770d64a056263fe1df7019f15e36c48a8f5332",
+   "counts": {
+    "trees": 245085,
+    "obstacles": 335,
+    "towers": 3,
+    "wires": 528,
+    "houses": 47,
+    "fields": 8,
+    "aaSites": 11
+   },
+   "scene": "69d687441665e92693165523117cd539a18637f1dce6a4fa1ee60a98c69d8926",
+   "sceneCounts": {
+    "objects": 412,
+    "meshes": 358,
+    "instanced": 33,
+    "instances": 284428,
+    "geometries": 329,
+    "materials": 141,
+    "textures": 20,
+    "vertices": 416333
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "03ed91d8b6a15917",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 136527,
+     "log": "a2f48d62953bf6d7",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "d1f11d5019b1baae",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "67c4e2ad6479e89f",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "cc757f88f142046c",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "d1725f7d2d080a81",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "7c2f12ec7f8774bd",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 108,
+     "log": "bfa411135d418323",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 29476
+   }
+  },
+  "gen-42": {
+   "id": "gen-42",
+   "name": "b034d2f669db4b31",
+   "generated": true,
+   "seed": 42,
+   "tables": "ff2ecdb3dada9af9d87a891660cfa0ddca6518d7993ee5371f43bda1684bafa0",
+   "grids": {
+    "height": "a5d15f830918f80985292a8b0108a2b35bda21bc3db04a721b45a9c30bdfba86",
+    "forest": "34b62856e09b2507b37ac4ef497555e1fa800fba94ec3233875a54db19642589",
+    "reserved": "69162b79b0b86db9a65209fc8298a8a02aaeac729bdf7ce6c4e18ea0293575e6"
+   },
+   "forest": "299547b5d83c735b8fa38d18cf8b3854f114a111ba7093f762a22d6c36141c04",
+   "obstacles": "844eb434860fad3eb44940f03457ff0065a7f2fc06c92ff37b505964552b9823",
+   "towersWires": "9ef3446e1fa8ee7aa45e7545b0d95016ada5383f4f048e5a1ba1520eff64940d",
+   "los": "b5b59d882d1ca35837699b136e0d248b6893c589f44279ca23fdcfb15812e3c2",
+   "counts": {
+    "trees": 229602,
+    "obstacles": 273,
+    "towers": 3,
+    "wires": 528,
+    "houses": 13,
+    "fields": 6,
+    "aaSites": 11
+   },
+   "scene": "b2e3503395794fd9d7da8c7dc34e8352ed504aa3316021f25ce246f5c68b11d1",
+   "sceneCounts": {
+    "objects": 457,
+    "meshes": 404,
+    "instanced": 33,
+    "instances": 269731,
+    "geometries": 375,
+    "materials": 140,
+    "textures": 20,
+    "vertices": 417293
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "6eef2ae95c2001a9",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 129955,
+     "log": "e7c226560c6b5ba9",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "6d83a26018ce0765",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "ba7f6cf7d145a816",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "2a51f82187f38ccd",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "991c2ff848190680",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "0fe2fa26ae088200",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 64,
+     "log": "c784b62134905775",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 29356
+   }
+  },
+  "gen-77": {
+   "id": "gen-77",
+   "name": "d31f2124cdc8a657",
+   "generated": true,
+   "seed": 77,
+   "tables": "8293ffbe712b391d422b865a3cc6672d63f3b2c75bbf93adc6289be212377c86",
+   "grids": {
+    "height": "0f957303c410edd1c78028bb9cb6f264ceb6b0852a136e3c86bf0ddf00f85cfc",
+    "forest": "f83530f91cf611d13b1efc6f9c0d93d9d2dab9325b7bfc0d73c6d96a212c7c0a",
+    "reserved": "4bf7a705a016ad2621173c40f33db8b0eb21c0e13a262f015fb521c363500c37"
+   },
+   "forest": "2e22bb0e0a6131d8a82af67133b695a0645559f47efd5043914eb723ee5a4f26",
+   "obstacles": "ee9704395825c24fd4a9ecaa4e4ab8dd8cbe3fa5bd18d6b99b6d668606b286a3",
+   "towersWires": "cd31af7229e6375dc73523459e297ac31b6eb10c174ca0a59832ff90118eebe9",
+   "los": "e8f7d540984f9c7c431fb13dc6480653648982fb7ec53b60bacf969d2776867d",
+   "counts": {
+    "trees": 232013,
+    "obstacles": 443,
+    "towers": 3,
+    "wires": 528,
+    "houses": 60,
+    "fields": 4,
+    "aaSites": 9
+   },
+   "scene": "ebcbfd24a243d6cc63147288f27408fa6fd83159b8efa0b632c8880e778048ba",
+   "sceneCounts": {
+    "objects": 497,
+    "meshes": 443,
+    "instanced": 33,
+    "instances": 267628,
+    "geometries": 414,
+    "materials": 144,
+    "textures": 22,
+    "vertices": 431342
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "f76e6279b0fdb11e",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 128455,
+     "log": "f0e40e68684fc31c",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "feef5892544b3ea6",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "a79926cc5d0c4929",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "bbf75fd6d0dd4bd7",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "995f4e3e05af65e1",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "4b04f7a465cbee96",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 107,
+     "log": "6692d88eb11eae44",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 32236
+   }
+  },
+  "gen-1234": {
+   "id": "gen-1234",
+   "name": "1def39904e12acc6",
+   "generated": true,
+   "seed": 1234,
+   "tables": "edc378568e4aa4c3e002ea8e13bec18ec9ba76313109724a075604ef453ed725",
+   "grids": {
+    "height": "9f2f7eacf034629dd30e14d4b05094710b8b32746831bb1a43f22740fa646513",
+    "forest": "52c4f86fb76a290bc5b30d961fd1ef1a274309f224ff440640b7d6aec145ee4a",
+    "reserved": "1401770c76048786d597b951965f6434848d50be474284488ecbbeffd15eb68d"
+   },
+   "forest": "3e855ecfd2b1311b9bd62472e1885a3bfd395a47629f0cd8640a07260f5cd8a0",
+   "obstacles": "d2c4c905b23d05f728a5be80d286885f637f5cf198d23ce428815256975ec06e",
+   "towersWires": "078b2b941d05b15c21c69af1dbd787685875285e751c51e2d8a1a4bc699e85d6",
+   "los": "8c126cff79f72e209c39cecd217fe17813d548ba01695d6798c9d486cad44436",
+   "counts": {
+    "trees": 205991,
+    "obstacles": 419,
+    "towers": 3,
+    "wires": 528,
+    "houses": 50,
+    "fields": 5,
+    "aaSites": 10
+   },
+   "scene": "a97625485206b16f5aff911e2dc085c558eac75aa50b5c019b44b2f24f001a70",
+   "sceneCounts": {
+    "objects": 509,
+    "meshes": 455,
+    "instanced": 33,
+    "instances": 241797,
+    "geometries": 426,
+    "materials": 144,
+    "textures": 22,
+    "vertices": 429860
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "ddd2326ffde6a795",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 131082,
+     "log": "2e7990b372b78698",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "cc267806dc7c7823",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "39f3a242608c05cd",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "cd11d624e1c29328",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "98062b601c5a8a91",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "8f28ecdf78bd1e29",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 100,
+     "log": "0d08c49b173ca628",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 31684
+   }
+  },
+  "gen-4242": {
+   "id": "gen-4242",
+   "name": "3baaaeacef846301",
+   "generated": true,
+   "seed": 4242,
+   "tables": "6a6d7f949efd4b8a71b4d70491afb9c0fa1a5c701440b20eced54b3c10742225",
+   "grids": {
+    "height": "b5e96a1a09f29f0c82d0867fd0234d7f329722144418a3a4475a57a2c989ade6",
+    "forest": "6866528482f3443a08e74e132d34d8e32beb10615929687ff5456714893dbef9",
+    "reserved": "37fff49dea35fd316edd728726f14a51776fb07418c561a88097fd8c7eef8d5f"
+   },
+   "forest": "63caa2486bc2663e980ac79cd867ce7e22e6cadf08ff64633696e37ec9594234",
+   "obstacles": "d0e03e2195a3272c6bd7d54095db550d44e1be756da7320db71d4d8906239677",
+   "towersWires": "a948461a85ab0af72c34073271e282a105ab0739748230397881dde9ec0c7545",
+   "los": "e81e19b028296bfbd7d710c38a9fdd16d5b2c75bf6beaf26c4fe67cc58856875",
+   "counts": {
+    "trees": 185184,
+    "obstacles": 325,
+    "towers": 3,
+    "wires": 528,
+    "houses": 12,
+    "fields": 5,
+    "aaSites": 11
+   },
+   "scene": "cebf674b83b2a3eeb272c4f2cddd561d298215df1084b54b958728774f98248c",
+   "sceneCounts": {
+    "objects": 405,
+    "meshes": 352,
+    "instanced": 33,
+    "instances": 221566,
+    "geometries": 323,
+    "materials": 140,
+    "textures": 21,
+    "vertices": 421916
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "fe8f8113078384d8",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 129172,
+     "log": "cba6e8185f33ade8",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "9e3cf0f060aa8a74",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "169cd11c353d94f8",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "e3e19010bb3d0e4d",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "3ff6d1b3c9cf0d1d",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "ee67b7544e25bb53",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 58,
+     "log": "a6e38e36f8fe64a1",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 29276
+   }
+  },
+  "gen-65536": {
+   "id": "gen-65536",
+   "name": "f20b1c4fab205ba7",
+   "generated": true,
+   "seed": 65536,
+   "tables": "8abcb8654a301cd4c179cbb3053ef8abb8c4ce66b900bf856375cb061fb2d2eb",
+   "grids": {
+    "height": "ac6e8776633f30ef823f18abadbff16a73616369c29b3b5b3ed19c594e3cb64f",
+    "forest": "40a2b6b4b3b06d6ae9a9c6fcfe6f6238269700f7d0db9db4b2ec3c2e0b39e3cb",
+    "reserved": "2c2ab568e57488a2336a424c380fc40d65237fee62b67726ef0ebe4389a208e5"
+   },
+   "forest": "a1cdb977ceeabbce7104bd5f8a0650f09846f4e0a982d14448a5d60b49bc381b",
+   "obstacles": "fd2cf398b68b8699e4fabd9d69377a6c5de168180413b95e19e5467deb31ff9e",
+   "towersWires": "1c53917d94054fdf4da9f3c624b0a79a2dcffe2b7e6d0585788e45555eb8201b",
+   "los": "72bbdebeb48c88cb324b1e4c1ffec122ac026b779a88fbed915a0f744136fa9e",
+   "counts": {
+    "trees": 235927,
+    "obstacles": 349,
+    "towers": 3,
+    "wires": 528,
+    "houses": 39,
+    "fields": 9,
+    "aaSites": 10
+   },
+   "scene": "73df415779b2e9f2b04e4d5002351f455fbc670e5029a3d69dd6f5680888e8f5",
+   "sceneCounts": {
+    "objects": 495,
+    "meshes": 442,
+    "instanced": 33,
+    "instances": 274456,
+    "geometries": 413,
+    "materials": 141,
+    "textures": 21,
+    "vertices": 425771
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "2669df4fe75aaf89",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 134432,
+     "log": "634388f7ecd1ba5a",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "9f017eb642cbf691",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "9315ebd9d93be60c",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "9367453a87dab0b3",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "6662dcfb20660010",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "e51ef2a9c5f78e0e",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 119,
+     "log": "92e2249156bacd09",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 31380
+   }
+  },
+  "gen-424242": {
+   "id": "gen-424242",
+   "name": "ea5a51580415a623",
+   "generated": true,
+   "seed": 424242,
+   "tables": "874220a238c8669c5073c28759baec94a7af61737b408f678885a0658e196a2b",
+   "grids": {
+    "height": "e84a0758cd221501b40a794803e806163fe195d85e3c43508b3f763584725c17",
+    "forest": "3f5f667e01e2eafc7c92e89b1c55ec4fedeb3496d14a088f3d2bcde6a464387f",
+    "reserved": "aa614b727723643c8a331c435ff39564b93c5b4135047e3de78512306865b2c0"
+   },
+   "forest": "19d06b467276daeaefb6723e42d5235c7e072da5beaedb631c677b109798d282",
+   "obstacles": "92e944e4d4f54c033afefafbcded94b5b402e1c2787a60867b3ed5824e1f347c",
+   "towersWires": "04c58a66e61a9cbbd01056516f91130dc6a50e05bb0744dbc97eb5424518f18e",
+   "los": "17b080ac9310e24affd662a518ca44a12fc17d99a05efd79ac96467453973f45",
+   "counts": {
+    "trees": 277106,
+    "obstacles": 358,
+    "towers": 3,
+    "wires": 528,
+    "houses": 32,
+    "fields": 9,
+    "aaSites": 10
+   },
+   "scene": "28874b87085e59d9813356d993ad376f13dfdf5144449f9ab476c28ad8463fb0",
+   "sceneCounts": {
+    "objects": 403,
+    "meshes": 350,
+    "instanced": 33,
+    "instances": 316241,
+    "geometries": 321,
+    "materials": 142,
+    "textures": 22,
+    "vertices": 424496
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "a55e3036abc5cef1",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 128920,
+     "log": "9f5fc0e75e6a2539",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "3043a075a09ee82c",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "1d2e3ab74bf5a176",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "7ff738597742d80f",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "33371e81c9a1d27b",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "0038efb3d3b1fd35",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 110,
+     "log": "a9393acab1b19d7b",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 30184
+   }
+  },
+  "gen-999998": {
+   "id": "gen-999998",
+   "name": "160e9092860aa27b",
+   "generated": true,
+   "seed": 999998,
+   "tables": "7a63f3a9d1ac3e2e79314a72e8d3831d9224541db706240bda2b051de7e9cba2",
+   "grids": {
+    "height": "063338ccd45227e29cbe1d9a95549ea4a31cd666cb01b4a9e6eeee2345c9bf96",
+    "forest": "ff765210472d6fbba8713ed10af4ce09fb4cf3d8150da030e41ca3990b0588d4",
+    "reserved": "0c83cf4c78bf3c841d1fc9438122fb4c328dd892404219acb6a8dd4b8e234e7b"
+   },
+   "forest": "cc2f0a2b766f91b02fc21b08d626b78607b76044460385205a799af51a42b023",
+   "obstacles": "98b618a687151d930c3f6f7299e6021cb46ac3c3a0919088037fa256f7a9ebd0",
+   "towersWires": "5cb785bdad9609f2b357cd8c9d2cf8552c5d2b6fb24cb51cc350ca38b80612af",
+   "los": "c9e0fcd2a2764745ec8fd355f3d0bd92668f1bedc3935235302497ea1ddf0bdc",
+   "counts": {
+    "trees": 236780,
+    "obstacles": 334,
+    "towers": 3,
+    "wires": 528,
+    "houses": 43,
+    "fields": 6,
+    "aaSites": 10
+   },
+   "scene": "d3f459a40b7e4bf30850252ca070fee9cf9db260cd59a345b557d0cfcef36535",
+   "sceneCounts": {
+    "objects": 502,
+    "meshes": 448,
+    "instanced": 33,
+    "instances": 274260,
+    "geometries": 419,
+    "materials": 141,
+    "textures": 20,
+    "vertices": 418964
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "5df2bac4681f3d0c",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 133831,
+     "log": "da5fe35a0391af45",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "b903dd05fd5c3dca",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "77083b8d0a83a42c",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "f63d852160bf1a5a",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "02f7b326458949cf",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "536ea0e4f2b32640",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 90,
+     "log": "b5de83377b5055b1",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 30100
+   }
+  }
+ },
+ "boots": {
+  "vallee@medium": {
+   "id": "vallee",
+   "name": "2401c9e419648d0b",
+   "generated": false,
+   "seed": 0,
+   "tables": "ff0503ee3b1d24b7475d532497d3c3da14692db537080a7f52c72f97953254d7",
+   "grids": {
+    "height": "0969b3a55eb8c582ca2037368066a201d7f3982033368569c4807da5d7641456",
+    "forest": "695cc744228dec975a1722796a76dd5614acac418d7d5a6de44cdadf02bb1688",
+    "reserved": "7d3db41d23d19e72ef2e129edea780ecfebb60846583f19b73bbc3ea609d7cef"
+   },
+   "forest": "3ce7e76afb8f614d8267ce1ca5a5b43af3dd1525fb8181fdad6e8ae9efc0e84b",
+   "obstacles": "f934fe817f5ed7e5463f7817a81c33202804d633baf57263fc6926f2afbada12",
+   "towersWires": "e2885228f4f2c9dcbdbb2be915966c57463c9d8de0dfce785fa785c553c43134",
+   "los": "48952d30170784802b97dcf5ee82758b81a248f6278f720811c01b6939e1086f",
+   "counts": {
+    "trees": 169617,
+    "obstacles": 331,
+    "towers": 3,
+    "wires": 528,
+    "houses": 39,
+    "fields": 5,
+    "aaSites": 11
+   },
+   "scene": "78877ae2f1e2fe678e309cfc96a7859d13f0ebef5c9ca94a36ea3f5e4620863b",
+   "sceneCounts": {
+    "objects": 464,
+    "meshes": 410,
+    "instanced": 33,
+    "instances": 209657,
+    "geometries": 381,
+    "materials": 142,
+    "textures": 20,
+    "vertices": 361795
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "79ead079fc99c3b3",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 128102,
+     "log": "659c4a604446a7f5",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "fbaa06881cfd53fc",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "1bccae1bcfaeb2ad",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "ae58ac5bae68ed1b",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "b4c5ffea7eda6627",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "6889df8ec501d789",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 83,
+     "log": "b23f7bfb0047546c",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 30120
+   }
+  },
+  "vallee@low": {
+   "id": "vallee",
+   "name": "2401c9e419648d0b",
+   "generated": false,
+   "seed": 0,
+   "tables": "ff0503ee3b1d24b7475d532497d3c3da14692db537080a7f52c72f97953254d7",
+   "grids": {
+    "height": "0969b3a55eb8c582ca2037368066a201d7f3982033368569c4807da5d7641456",
+    "forest": "695cc744228dec975a1722796a76dd5614acac418d7d5a6de44cdadf02bb1688",
+    "reserved": "7d3db41d23d19e72ef2e129edea780ecfebb60846583f19b73bbc3ea609d7cef"
+   },
+   "forest": "14ffc5e5846ec8b42423512341042099eb722cb74e3787a4e75832e5997dd5ea",
+   "obstacles": "b951f728e627db78565808a817632c5a39dc24ef6c4fc3267eba56b877587648",
+   "towersWires": "e2885228f4f2c9dcbdbb2be915966c57463c9d8de0dfce785fa785c553c43134",
+   "los": "8848e8c8368b58e59401ea14fa5dd8593185f1e8bb67c4a09e7c7d055d855f82",
+   "counts": {
+    "trees": 85012,
+    "obstacles": 330,
+    "towers": 3,
+    "wires": 528,
+    "houses": 39,
+    "fields": 5,
+    "aaSites": 11
+   },
+   "scene": "010ea0e1feb0dd5009c8c46d93c64b5c4d3c0854d657a2b7ac921ceed834441d",
+   "sceneCounts": {
+    "objects": 463,
+    "meshes": 409,
+    "instanced": 32,
+    "instances": 125081,
+    "geometries": 380,
+    "materials": 141,
+    "textures": 19,
+    "vertices": 313997
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "3e3dc65b354d8a0b",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "254aa3eb1134e8d4",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "9e065827eb278c3a",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "ac88298c8f6d328c",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "53de9a5822252733",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "ec66be3a209f69ed",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 83,
+     "log": "b23f7bfb0047546c",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 5,
+    "three": 30132
+   }
+  },
+  "random-each": {
+   "id": "gen-238006",
+   "name": "8133482b906333c3",
+   "generated": true,
+   "seed": 238006,
+   "tables": "8589a90679113c29e1007043b203f9d2713fa6c1dc34345d8cbbb90c8f07c48e",
+   "grids": {
+    "height": "f641ade78b338193a7efe12179a731e5b33570e1a3ccd5aa5ba5f023b5f08e91",
+    "forest": "6b83f0564cd355bad9a1d20bde649ee8c6c0756b0b700ce0b03676f7e2550862",
+    "reserved": "36f688027fb5b2dd61f40830739791390570e54adfa00c653b3dc0c2ff1e7042"
+   },
+   "forest": "b4cccb3a761ca0f185ca733a6b7c721a8e6d252b0f3a73123cbd711b7507304d",
+   "obstacles": "c994a0e57b722100bb221cfdf0db428b36ea6fa5ef96e4d5df1bee45c2799fd9",
+   "towersWires": "255e141967bffeaa9789ef7d1f1d04b1605ec1033be06a3499179acd3346b801",
+   "los": "33a78a73d013ba0b8d45e8b6af884952010fff9282c96514a6c2047682117c60",
+   "counts": {
+    "trees": 249399,
+    "obstacles": 464,
+    "towers": 3,
+    "wires": 528,
+    "houses": 64,
+    "fields": 9,
+    "aaSites": 11
+   },
+   "scene": "7c3cc504ef9aafadad29cce1ebaa6c55f1afc68b4070775b43f5ced185434def",
+   "sceneCounts": {
+    "objects": 467,
+    "meshes": 413,
+    "instanced": 33,
+    "instances": 286120,
+    "geometries": 384,
+    "materials": 143,
+    "textures": 21,
+    "vertices": 431999
+   },
+   "cockpit": "c46fb2b6493046dfc0912606b429a6b3b7811ca63e8a291d266cebfacd472103",
+   "canvases": [
+    {
+     "canvas": 0,
+     "id": "world",
+     "w": 300,
+     "h": 150,
+     "ops": 0,
+     "log": "-",
+     "text": "-"
+    },
+    {
+     "canvas": 2,
+     "id": "mapPreview",
+     "w": 132,
+     "h": 132,
+     "ops": 15,
+     "log": "9efda8f7e4cb85fb",
+     "text": "a0b963c1ce06f791"
+    },
+    {
+     "canvas": 3,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 91974,
+     "log": "9d0d6c408721aaeb",
+     "text": "-"
+    },
+    {
+     "canvas": 4,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 2471,
+     "log": "e9ee685555526b7c",
+     "text": "-"
+    },
+    {
+     "canvas": 5,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 8069,
+     "log": "f7341ae8b879ed85",
+     "text": "-"
+    },
+    {
+     "canvas": 6,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 12036,
+     "log": "496fee7b857f4a7f",
+     "text": "-"
+    },
+    {
+     "canvas": 7,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10005,
+     "log": "17c0d6bd373f6561",
+     "text": "-"
+    },
+    {
+     "canvas": 8,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 1562,
+     "log": "8b2b085d3cd7698e",
+     "text": "-"
+    },
+    {
+     "canvas": 9,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 631,
+     "log": "1e2c31e8b62eecda",
+     "text": "-"
+    },
+    {
+     "canvas": 10,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 10074,
+     "log": "b859cc677b3aef85",
+     "text": "-"
+    },
+    {
+     "canvas": 11,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 126,
+     "log": "2650bda2c521bd8b",
+     "text": "-"
+    },
+    {
+     "canvas": 12,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 97,
+     "log": "c3baec4b32fa4117",
+     "text": "-"
+    },
+    {
+     "canvas": 13,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 5060,
+     "log": "159aed34b9fa23bf",
+     "text": "-"
+    },
+    {
+     "canvas": 14,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6118,
+     "log": "8ead011690a4038c",
+     "text": "-"
+    },
+    {
+     "canvas": 15,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 182,
+     "log": "52036b74cd9ef67d",
+     "text": "-"
+    },
+    {
+     "canvas": 16,
+     "id": null,
+     "w": 128,
+     "h": 128,
+     "ops": 1002,
+     "log": "6c4356f6b8b7c679",
+     "text": "-"
+    },
+    {
+     "canvas": 17,
+     "id": null,
+     "w": 2048,
+     "h": 2048,
+     "ops": 134196,
+     "log": "95bdd0522167e615",
+     "text": "-"
+    },
+    {
+     "canvas": 18,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 2,
+     "log": "86adac5315301c36",
+     "text": "-"
+    },
+    {
+     "canvas": 19,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 6115,
+     "log": "6836b18fbc535afe",
+     "text": "-"
+    },
+    {
+     "canvas": 20,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "551bb70dec7a30d5",
+     "text": "994c5463d2e91254"
+    },
+    {
+     "canvas": 21,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "655210e77381ba37",
+     "text": "4637b2564374f456"
+    },
+    {
+     "canvas": 22,
+     "id": null,
+     "w": 128,
+     "h": 160,
+     "ops": 367,
+     "log": "8d80f1a4d1618c59",
+     "text": "93dec18ff2a6cbe1"
+    },
+    {
+     "canvas": 23,
+     "id": null,
+     "w": 1024,
+     "h": 1024,
+     "ops": 35681,
+     "log": "2ea5f07c4de66446",
+     "text": "-"
+    },
+    {
+     "canvas": 24,
+     "id": null,
+     "w": 256,
+     "h": 256,
+     "ops": 661,
+     "log": "c5469aadda38ec6b",
+     "text": "-"
+    },
+    {
+     "canvas": 25,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 19618,
+     "log": "d163e2a0f23bbf90",
+     "text": "-"
+    },
+    {
+     "canvas": 26,
+     "id": null,
+     "w": 512,
+     "h": 512,
+     "ops": 11852,
+     "log": "4ca174d4433b761c",
+     "text": "-"
+    },
+    {
+     "canvas": 27,
+     "id": null,
+     "w": 1024,
+     "h": 512,
+     "ops": 101,
+     "log": "27ca255c168546ed",
+     "text": "-"
+    },
+    {
+     "canvas": 28,
+     "id": null,
+     "w": 512,
+     "h": 280,
+     "ops": 151,
+     "log": "5569f3e22650aa7c",
+     "text": "a84fd2f68c6d1b4f"
+    },
+    {
+     "canvas": 29,
+     "id": null,
+     "w": 384,
+     "h": 384,
+     "ops": 142,
+     "log": "26498ba5698f6cfe",
+     "text": "-"
+    }
+   ],
+   "bootDraws": {
+    "game": 6,
+    "three": 31924
+   }
+  }
+ }
+}

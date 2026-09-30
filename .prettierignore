@@ -1,0 +1,10 @@
+# The imported runtime keeps its bytes until its formatting step; the golden recorder and the fixtures keep
+# theirs (their sha256 are pinned by the goldens' meta.json and the fixture manifests).
+src/
+tools/golden/
+tests/fixtures/
+dist/
+test-results/
+playwright-report/
+package-lock.json
+privacy-worklist.json

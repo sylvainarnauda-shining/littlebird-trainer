@@ -1,0 +1,200 @@
+{
+ "recorder": 2,
+ "recorderManifest": {
+  "canon.cjs": {
+   "sha256": "a7aa416291e881d5938379e1dc134fb03769ceed1734a25c5d18220c903e4632",
+   "sha256_lf": "a7aa416291e881d5938379e1dc134fb03769ceed1734a25c5d18220c903e4632"
+  },
+  "compare.cjs": {
+   "sha256": "ad7d6c5e05f88f56b06b59c994da06a09c9fa5033af9f094bf905930cf387ed2",
+   "sha256_lf": "ad7d6c5e05f88f56b06b59c994da06a09c9fa5033af9f094bf905930cf387ed2"
+  },
+  "dom.cjs": {
+   "sha256": "5cb8df175749a3ff238b3697645e917e7a56384cdc9fdcf44d1c454e8aa6a78f",
+   "sha256_lf": "5cb8df175749a3ff238b3697645e917e7a56384cdc9fdcf44d1c454e8aa6a78f"
+  },
+  "gate.cjs": {
+   "sha256": "86b34df7decac92e66b7d84ae182cfd43eedc7919aebe67cc483cbb87d5e7c7b",
+   "sha256_lf": "86b34df7decac92e66b7d84ae182cfd43eedc7919aebe67cc483cbb87d5e7c7b"
+  },
+  "harness.cjs": {
+   "sha256": "2b8d88e0ee95ead0ef9cc8a783b2d7b6744a682b53bc8384fa9fbca8613714cf",
+   "sha256_lf": "2b8d88e0ee95ead0ef9cc8a783b2d7b6744a682b53bc8384fa9fbca8613714cf"
+  },
+  "mutation-smoke.cjs": {
+   "sha256": "1f83d03dd56d148f6a0527500f1e427f00381e86ca34be292ab7b24251429a32",
+   "sha256_lf": "1f83d03dd56d148f6a0527500f1e427f00381e86ca34be292ab7b24251429a32"
+  },
+  "probe-aliases.json": {
+   "sha256": "f1c131989b55281e1ef5a72abb32d02f87a529909155ab0795a24ef1d6b3dff4",
+   "sha256_lf": "f1c131989b55281e1ef5a72abb32d02f87a529909155ab0795a24ef1d6b3dff4"
+  },
+  "probe.cjs": {
+   "sha256": "8a4f233f153541060a96532896cdefec019a277d20e511b1bb04383519285ac4",
+   "sha256_lf": "8a4f233f153541060a96532896cdefec019a277d20e511b1bb04383519285ac4"
+  },
+  "prove-recorder.cjs": {
+   "sha256": "0a0f7a737c1943d66d30fac6cdf41c7b54db252ee50b668e008ddf1efe8eaf58",
+   "sha256_lf": "0a0f7a737c1943d66d30fac6cdf41c7b54db252ee50b668e008ddf1efe8eaf58"
+  },
+  "provenance.cjs": {
+   "sha256": "98c25f231fa7a386fdc7a43512c13d5c5f749545c6baaad0f8142666ea22225f",
+   "sha256_lf": "98c25f231fa7a386fdc7a43512c13d5c5f749545c6baaad0f8142666ea22225f"
+  },
+  "record.cjs": {
+   "sha256": "d5d4b873513dc9d94474b9f0593e3ca30e63308f2ea8ccd7535492e616872095",
+   "sha256_lf": "d5d4b873513dc9d94474b9f0593e3ca30e63308f2ea8ccd7535492e616872095"
+  },
+  "runtime-names.cjs": {
+   "sha256": "98a525631b698f411e4d40e0eed05eb5a1c738be13d06364579b98d1875cfda8",
+   "sha256_lf": "98a525631b698f411e4d40e0eed05eb5a1c738be13d06364579b98d1875cfda8"
+  },
+  "scenarios.cjs": {
+   "sha256": "59a5526d4f72db9ab9571c52a40a3352a6128db5326fbdf7a3a5fd8a622b2577",
+   "sha256_lf": "59a5526d4f72db9ab9571c52a40a3352a6128db5326fbdf7a3a5fd8a622b2577"
+  },
+  "scene.cjs": {
+   "sha256": "bb2800fc2104c533abcbd8a967fe5f758f7674ed97cdad4f57b66fe63e6a9764",
+   "sha256_lf": "bb2800fc2104c533abcbd8a967fe5f758f7674ed97cdad4f57b66fe63e6a9764"
+  },
+  "webaudio.cjs": {
+   "sha256": "6a7fc853c3436e59a4bfb7618ae071d63a2f1b32d8b0a315f2889f7f04cf1c6d",
+   "sha256_lf": "6a7fc853c3436e59a4bfb7618ae071d63a2f1b32d8b0a315f2889f7f04cf1c6d"
+  },
+  "suites/audio.cjs": {
+   "sha256": "6b40ec53025d638fc4a94e9cb03aaf74aa7d1f129d7ad33ccba5bfe218d11a93",
+   "sha256_lf": "6b40ec53025d638fc4a94e9cb03aaf74aa7d1f129d7ad33ccba5bfe218d11a93"
+  },
+  "suites/flight.cjs": {
+   "sha256": "3b815f0a2edfba241649e5b17c266081a0acd99d4db3a9d99a1451673a1b1ff8",
+   "sha256_lf": "3b815f0a2edfba241649e5b17c266081a0acd99d4db3a9d99a1451673a1b1ff8"
+  },
+  "suites/hud.cjs": {
+   "sha256": "e88135d0612fc0e55fb0a4be04487c6710cf5cf04f1b80c91e9cf5984446dc1b",
+   "sha256_lf": "e88135d0612fc0e55fb0a4be04487c6710cf5cf04f1b80c91e9cf5984446dc1b"
+  },
+  "suites/models.cjs": {
+   "sha256": "1e3e5a08d108721a40cb76c959a4883c961c562d2281c0d8c9721a8ba9acdbd4",
+   "sha256_lf": "1e3e5a08d108721a40cb76c959a4883c961c562d2281c0d8c9721a8ba9acdbd4"
+  },
+  "suites/modules.cjs": {
+   "sha256": "6437b6da38eac2da9fbc67114edcd068840dbb2fab108daafb342e7dbb81d4f6",
+   "sha256_lf": "6437b6da38eac2da9fbc67114edcd068840dbb2fab108daafb342e7dbb81d4f6"
+  },
+  "suites/sessions.cjs": {
+   "sha256": "9a915e674a90a81933d315f518aaa814c5ad713053e9a86260420f3aa923d1ff",
+   "sha256_lf": "9a915e674a90a81933d315f518aaa814c5ad713053e9a86260420f3aa923d1ff"
+  },
+  "suites/settings.cjs": {
+   "sha256": "a55ddde92bd3b64f4e0d304bacf5367b881273c8f23166863e092abc95c516c5",
+   "sha256_lf": "a55ddde92bd3b64f4e0d304bacf5367b881273c8f23166863e092abc95c516c5"
+  },
+  "suites/ui.cjs": {
+   "sha256": "7653d03e821e0e8b75aeb1f7b61b0c0d070b80ad3043b483e5044d2f22d6f6a6",
+   "sha256_lf": "7653d03e821e0e8b75aeb1f7b61b0c0d070b80ad3043b483e5044d2f22d6f6a6"
+  },
+  "suites/world.cjs": {
+   "sha256": "9784852a112a9c0a61aa721dca20fc1cc12ec993647955df5f0d2679e0d61066",
+   "sha256_lf": "9784852a112a9c0a61aa721dca20fc1cc12ec993647955df5f0d2679e0d61066"
+  }
+ },
+ "node": "v24.19.0",
+ "suites": [
+  "flight",
+  "parity",
+  "sessions",
+  "world",
+  "audio",
+  "hud",
+  "settings",
+  "models",
+  "ui",
+  "modules",
+  "hookapi"
+ ],
+ "srcManifest": {
+  "vendor/three.min.js": {
+   "sha256": "170c6789f43217c96b3170f4b42fafe135de7f7cd48497a4218f9757ee1d49fa",
+   "sha256_lf": "170c6789f43217c96b3170f4b42fafe135de7f7cd48497a4218f9757ee1d49fa"
+  },
+  "world.js": {
+   "sha256": "034afb89e40c2aa12ec0c76af76c47194b661349762ffc6b83b4400a9163ad18",
+   "sha256_lf": "034afb89e40c2aa12ec0c76af76c47194b661349762ffc6b83b4400a9163ad18"
+  },
+  "physics.js": {
+   "sha256": "48a09dfb2128d5c6615c7f617939abc5c6b83ac1185aae64b623664503d65fba",
+   "sha256_lf": "48a09dfb2128d5c6615c7f617939abc5c6b83ac1185aae64b623664503d65fba"
+  },
+  "forest.js": {
+   "sha256": "f6542ffddda1d39742baf0864b1c554315419d0d0fd5779c6eba4af5700a7f80",
+   "sha256_lf": "f6542ffddda1d39742baf0864b1c554315419d0d0fd5779c6eba4af5700a7f80"
+  },
+  "scenery.js": {
+   "sha256": "e997feb9e1236d4c07bfdca6b3a8ee8bed02e63102ef7fa19f05c47f5f6246f5",
+   "sha256_lf": "e997feb9e1236d4c07bfdca6b3a8ee8bed02e63102ef7fa19f05c47f5f6246f5"
+  },
+  "missiles.js": {
+   "sha256": "06cfea854fa0479d8b60aebd94ea602d8c93a667bb77591831d9a3ad01d22a05",
+   "sha256_lf": "06cfea854fa0479d8b60aebd94ea602d8c93a667bb77591831d9a3ad01d22a05"
+  },
+  "audio.js": {
+   "sha256": "c46ba13248ca6e663b41cba2215c326db9f3651ee3171f8df02b532b26b86d89",
+   "sha256_lf": "c46ba13248ca6e663b41cba2215c326db9f3651ee3171f8df02b532b26b86d89"
+  },
+  "models.js": {
+   "sha256": "86dddc38f7c5db2683ffb1859966e78556cf793e0378948764ce9224089b0c7d",
+   "sha256_lf": "86dddc38f7c5db2683ffb1859966e78556cf793e0378948764ce9224089b0c7d"
+  },
+  "ground.js": {
+   "sha256": "a2f7970714de88892319ffb22e42486789ec8e94ab864ff4381d1e1b4dd6637a",
+   "sha256_lf": "a2f7970714de88892319ffb22e42486789ec8e94ab864ff4381d1e1b4dd6637a"
+  },
+  "bot.js": {
+   "sha256": "6fb278a4409c93d02529b1cf83303ccb657e09295a36b5cf809570c00ec1ff9a",
+   "sha256_lf": "6fb278a4409c93d02529b1cf83303ccb657e09295a36b5cf809570c00ec1ff9a"
+  },
+  "app.js": {
+   "sha256": "d3b5532147324161cf0668e146527341cd8d775d8067e52b69f15ed61c1bd5c2",
+   "sha256_lf": "d3b5532147324161cf0668e146527341cd8d775d8067e52b69f15ed61c1bd5c2"
+  },
+  "index.template.html": {
+   "sha256": "73b4f14e7fff5da31e74e7af5ce819aa334158a27ed55a7e8ded0f976c73ad55",
+   "sha256_lf": "73b4f14e7fff5da31e74e7af5ce819aa334158a27ed55a7e8ded0f976c73ad55"
+  }
+ },
+ "inputs": [
+  {
+   "file": "recordings/bench_v1.csv.gz",
+   "sha256": "ea114148c041dd1df9f64d126c4cde91dd752552e3bc71c4549e2dc9e8b52246"
+  },
+  {
+   "file": "recordings/bench_v2.csv.gz",
+   "sha256": "e2bc0005b8b8aa11fde81d747a706add01b3d21228c8062fb5f86ea21e87cfb4"
+  },
+  {
+   "file": "recordings/replay_v1.json",
+   "sha256": "36d67c5276482115be26008e9c048a1bd1eebdb691087b9f81ffee3318a569be"
+  },
+  {
+   "file": "recordings/replay_v2.json",
+   "sha256": "1cc939f1b35613b4e326d74607f047e0d82b126475fc36c9a054a5b610f3492f"
+  },
+  {
+   "file": "recordings/cross-curve.json",
+   "sha256": "a8dde10bbb659ab2901e5700a29527210d5d8c2246322a12eb1a985e65c9b2fb"
+  },
+  {
+   "file": "expected/harness-metrics.json",
+   "sha256": "387ec4c20288d392e8f1dc10b66a5737dcfd6ca2570b302d0f46ebfc1d4060b0"
+  },
+  {
+   "file": "expected/adopted-switches.json",
+   "sha256": "94e5f845d71800cfe7e6400e15735550a7037d168ae615e6f893e5093f9001df"
+  }
+ ],
+ "realms": {
+  "three": "own vm realm, Math.random = LCG stream T",
+  "game": "page realm, Math.random = LCG stream G (seeds per suite)",
+  "clock": "performance.now = harness clock; frames 100 Hz; physics 120 Hz"
+ }
+}

@@ -1,0 +1,265 @@
+# CI: every pull request and push to main; reused by the release workflow (workflow_call).
+# The one required status check of the main ruleset is "ci-ok", which depends on every job below:
+#   privacy  tracked files, whole history, commit identities (no npm in that job; private denylist when present)
+#   deps     lockfile install without scripts, registry signatures, install-script allowlist, audit, dependency review
+#   lint     ESLint and Prettier; build/icon.svg equals the icon design
+#   test     build, exact page policy, every Node suite (goldens G2a-G2g, fidelity, unit, integration, security,
+#            build, desktop policy and G5 parity in Node) on Linux and Windows
+#   repro    the page built on Linux and on Windows is the same file (G-REPRO)
+#   browser  Chromium on Windows with software Direct3D 11 (WARP): page policy, menus, modes, maps, pointer lock
+#            (emulated, asserted before every Start), G5 parity in the browser
+#   desktop  unpacked Electron build: fuses, app.asar allowlist, official runtime files, packaged self-test (emulated
+#            pointer lock, G5 parity, negative probes), refused switches, tampered app.asar refused
+#   golden-update  a change of the goldens says why ("Golden-Update: <reason>" in the pull request description, which
+#            becomes the squash commit message, and a CHANGELOG.md entry); a change of the recorder alone is proven
+#            neutral (scripts/check-golden-trailer.mjs; no npm)
+# browser and desktop are advisory in ci-ok until they have passed ten consecutive runs with a measured duration; the
+# release workflow calls this workflow with strict: true, where every job blocks.
+# Security: every action is GitHub-owned and pinned to a full commit SHA; the token is read-only; no credentials are
+# persisted; no cache; no pull_request_target; no ${{ }} expression inside a script.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      strict:
+        description: every job blocks ci-ok (no advisory job)
+        type: boolean
+        default: false
+    secrets:
+      PUBLISH_DENYLIST:
+        required: false
+
+permissions: {}
+
+jobs:
+  privacy:
+    name: privacy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # No npm install here: the scanner uses Node built-ins only, so the private denylist never meets third-party code.
+      # Pull requests from forks get no secret and run the public rules only. Matched text is never printed.
+      - name: Tracked files, whole history, commit identities
+        env:
+          PUBLISH_DENYLIST: ${{ secrets.PUBLISH_DENYLIST }}
+        run: |
+          if [ -n "$PUBLISH_DENYLIST" ]; then require=--require-denylist; else require=""; echo "::notice::no private denylist: public rules only"; fi
+          node scripts/privacy-scan.mjs --tracked --history --strict $require
+
+  deps:
+    name: deps
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm audit signatures
+      - run: node scripts/check-install-scripts.mjs
+      - run: npm audit --audit-level=critical
+      - if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: moderate
+
+  lint:
+    name: lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: node scripts/make-icon.mjs --check
+
+  test:
+    name: test (${{ matrix.os }})
+    needs: [privacy, deps]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run build
+      - run: npm run verify:build
+      - run: npm test
+      - name: sha256 of the page built here
+        shell: bash
+        run: node -e "const c=require('node:crypto'),f=require('node:fs');console.log(c.createHash('sha256').update(f.readFileSync('dist/web/index.html')).digest('hex'))" > "web-sha256-$RUNNER_OS.txt"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: web-sha256-${{ runner.os }}
+          path: web-sha256-${{ runner.os }}.txt
+          retention-days: 3
+          if-no-files-found: error
+
+  repro:
+    name: repro
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: web-sha256-*
+          merge-multiple: true
+      - name: The page built on Linux and on Windows is the same file
+        run: |
+          cat web-sha256-*.txt
+          test "$(ls web-sha256-*.txt | wc -l)" -eq 2
+          test "$(sort -u web-sha256-*.txt | wc -l)" -eq 1
+
+  browser:
+    name: browser
+    needs: test
+    runs-on: windows-2025
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    env:
+      LB_GL: warp
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      # Explicit (install scripts are off); no browser cache on purpose.
+      - run: npx playwright install chromium
+      - run: npm run test:browser
+      - if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: browser-test-results
+          path: test-results/
+          retention-days: 5
+
+  desktop:
+    name: desktop
+    needs: test
+    runs-on: windows-2025
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run dist:dir
+      - run: node scripts/check-fuses.mjs release/win-unpacked/LittleBirdTrainer.exe
+      - run: node scripts/check-asar.mjs release/win-unpacked/resources/app.asar dist/web/index.html
+      - run: node scripts/check-electron-runtime.mjs release/win-unpacked
+      - run: node scripts/desktop-smoke.mjs release/win-unpacked/LittleBirdTrainer.exe --warp --tamper --json desktop-smoke.json
+      # No installer is uploaded from CI: downloadable builds come only from the release workflow.
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-smoke
+          path: desktop-smoke.json
+          retention-days: 5
+          if-no-files-found: ignore
+
+  golden-update:
+    name: golden-update
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # No npm: the check and the golden recorder use Node built-ins only.
+      - name: Goldens change only with a declared reason; a recorder change alone is proven neutral
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_MESSAGE: ${{ github.event.head_commit.message }}
+        run: node scripts/check-golden-trailer.mjs --prove
+
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [privacy, deps, lint, test, repro, browser, desktop, golden-update]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      # browser and desktop are advisory until they have passed on ten consecutive runs with a measured duration; then
+      # remove them from ADVISORY and they block like the others. The release workflow calls with strict: true.
+      - name: Every required job succeeded
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+          ADVISORY: ${{ inputs.strict == true && 'none' || 'browser desktop' }}
+        run: |
+          node -e '
+            const needs = JSON.parse(process.env.RESULTS);
+            const advisory = process.env.ADVISORY.split(" ");
+            let ok = true;
+            for (const [job, { result }] of Object.entries(needs)) {
+              const soft = advisory.includes(job);
+              console.log(job + ": " + result + (soft ? " (advisory)" : ""));
+              if (result !== "success" && soft) console.log("::warning::" + job + " " + result + " (advisory)");
+              if (result !== "success" && !soft) ok = false;
+            }
+            process.exit(ok ? 0 : 1);
+          '

@@ -1,0 +1,120 @@
+{
+ "note": "G0 reference: the runtime as frozen on 2026-09-29 (profile revision 16) and imported unchanged (R0). sha256 = raw bytes of the import; sha256_lf = after CRLF and lone CR are normalised to LF. The golden fixtures were recorded on these sources (tests/fixtures/golden/meta.json srcManifest).",
+ "frozen": "2026-09-29",
+ "node": "v24.19.0",
+ "profileRevision": 16,
+ "files": [
+  {
+   "file": "src/app.js",
+   "bytes": 222248,
+   "sha256": "3c57958690041cbe84bb905aed54323c597562cc40efd3c16cc44b08b5e23785",
+   "sha256_lf": "3c57958690041cbe84bb905aed54323c597562cc40efd3c16cc44b08b5e23785",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/audio.js",
+   "bytes": 18340,
+   "sha256": "165f2ab571ad061723b03914adb0a8c0453680adf45d622883a43263aa03da4c",
+   "sha256_lf": "165f2ab571ad061723b03914adb0a8c0453680adf45d622883a43263aa03da4c",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/bot.js",
+   "bytes": 21122,
+   "sha256": "6fb278a4409c93d02529b1cf83303ccb657e09295a36b5cf809570c00ec1ff9a",
+   "sha256_lf": "6fb278a4409c93d02529b1cf83303ccb657e09295a36b5cf809570c00ec1ff9a",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/forest.js",
+   "bytes": 31301,
+   "sha256": "417cf1b5cec8d7fa1225c05a6caa4fe325a79a8c450b55f40fe2837bb5a3562f",
+   "sha256_lf": "417cf1b5cec8d7fa1225c05a6caa4fe325a79a8c450b55f40fe2837bb5a3562f",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/ground.js",
+   "bytes": 27349,
+   "sha256": "f6bef7d527d77e8f1294b4b2f38c4008c39fff3340e53bede85aac9b90295d5f",
+   "sha256_lf": "f6bef7d527d77e8f1294b4b2f38c4008c39fff3340e53bede85aac9b90295d5f",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/index.template.html",
+   "bytes": 34668,
+   "sha256": "53be264e70bbc1774c682d0a9c0bc925112c3892ae674ef8ac07362d993f4423",
+   "sha256_lf": "53be264e70bbc1774c682d0a9c0bc925112c3892ae674ef8ac07362d993f4423",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/missiles.js",
+   "bytes": 22846,
+   "sha256": "67223dc0d8d8460aa5073801505a646289afb47114932164f4c9aaf7f695fb78",
+   "sha256_lf": "67223dc0d8d8460aa5073801505a646289afb47114932164f4c9aaf7f695fb78",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/models.js",
+   "bytes": 94173,
+   "sha256": "48e6d6d9e1287e6714d87c2a5a2ee38723c4fa1bf27667392d8de7ea341c75df",
+   "sha256_lf": "92b9e9cf138d76e060a53e1a54b18a57ab3d35cd81df885b153528ca69ca1c6a",
+   "crlf": 828,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/physics.js",
+   "bytes": 22924,
+   "sha256": "d650c908433ad2949cd62c7605a4589ffa7f886656b4038f098c96eeb5f4f661",
+   "sha256_lf": "d650c908433ad2949cd62c7605a4589ffa7f886656b4038f098c96eeb5f4f661",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/scenery.js",
+   "bytes": 58909,
+   "sha256": "83ac9698858c0942f5a7e786e932214ec0f7974aee65c77dd7d70bcb45aed1be",
+   "sha256_lf": "83ac9698858c0942f5a7e786e932214ec0f7974aee65c77dd7d70bcb45aed1be",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/style.css",
+   "bytes": 14994,
+   "sha256": "8f40b4c185fb56e225afc18dea0f3466f1bc9f4cb3752ff0eb2265cce9c7d427",
+   "sha256_lf": "8f40b4c185fb56e225afc18dea0f3466f1bc9f4cb3752ff0eb2265cce9c7d427",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/vendor/three.LICENSE.txt",
+   "bytes": 1081,
+   "sha256": "852e0e8699169bf9f6fdc6bda3e682d078dcbc738b5d33e74df594721bff271d",
+   "sha256_lf": "852e0e8699169bf9f6fdc6bda3e682d078dcbc738b5d33e74df594721bff271d",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/vendor/three.min.js",
+   "bytes": 669884,
+   "sha256": "170c6789f43217c96b3170f4b42fafe135de7f7cd48497a4218f9757ee1d49fa",
+   "sha256_lf": "170c6789f43217c96b3170f4b42fafe135de7f7cd48497a4218f9757ee1d49fa",
+   "crlf": 0,
+   "lone_cr": 0
+  },
+  {
+   "file": "src/world.js",
+   "bytes": 34121,
+   "sha256": "0e187f63715e21ef81205d415c957004a777c880eabe0132981f9e29d01ede00",
+   "sha256_lf": "0e187f63715e21ef81205d415c957004a777c880eabe0132981f9e29d01ede00",
+   "crlf": 0,
+   "lone_cr": 0
+  }
+ ]
+}

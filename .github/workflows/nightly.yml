@@ -1,0 +1,129 @@
+# Nightly: what is too long or too random for every pull request. Read-only token; uploads only
+# reports, never an installer. Informative: a failure e-mails the maintainer and names the seed to replay.
+#   seeds    the stochastic suites 20 times with random seeds (LB_TEST_SEED, printed); the kind of run that caught the
+#            air-defence reload race
+#   golden   the full golden gate: two recordings byte-identical, coverage counters, check mode in both orders, the
+#            mutation smoke test (every mutant must be detected)
+#   perf     build and level-of-detail budgets, reported only (frame rates are measured on the maintainer's GPU)
+#   package  the full Windows packaging (installer and portable zip) and the release checks: fuses, app.asar, official
+#            runtime files, self-tests (emulated pointer lock, G5 parity), silent per-user install and uninstall
+#   browser-linux  the browser specs on Linux with SwiftShader (optional backend)
+name: Nightly
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  seeds:
+    name: seeds
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - name: Stochastic suites under 20 random seeds
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 20); do
+            export LB_TEST_SEED="$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')"
+            echo "run $i: LB_TEST_SEED=$LB_TEST_SEED"
+            node --test "tests/unit/ground-*.test.js" tests/unit/missiles.test.js tests/unit/weapons.test.js \
+              "tests/integration/app-*.test.js" tests/integration/bot.test.js \
+              || { echo "::error::failing seed LB_TEST_SEED=$LB_TEST_SEED"; exit 1; }
+          done
+
+  golden:
+    name: golden
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run test:golden:gate
+
+  perf:
+    name: perf
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run build
+      - name: Budgets (reported, not enforced without LB_PERF=1)
+        run: node --test --test-concurrency=1 "tests/perf/**/*.test.js"
+
+  package:
+    name: package
+    runs-on: windows-2025
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run dist
+      - run: node scripts/check-electron-runtime.mjs release/win-unpacked
+      - run: node scripts/desktop-smoke.mjs release/win-unpacked/LittleBirdTrainer.exe --warp --tamper
+      - run: node scripts/release-check.mjs release --warp --json release-check.json
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nightly-release-check
+          path: release-check.json
+          retention-days: 5
+          if-no-files-found: ignore
+
+  browser-linux:
+    name: browser-linux
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    continue-on-error: true
+    permissions:
+      contents: read
+    env:
+      LB_GL: swiftshader
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser

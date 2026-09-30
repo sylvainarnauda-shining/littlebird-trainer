@@ -1,0 +1,12 @@
+[/Script/Engine.GameUserSettings]
+bUseVSync=False
+[/Script/WDGame.WDUserSettings]
+RotaryMousePitchSensitivity=35.000000
+RotaryMouseYawSensitivity=12.000000
+AirVehicleSensitivityMultiplier=0.750000
+bInvertYAxisHelicopters=False
+RotaryMouseAxisIsolation=0.000000
+FirstPersonVehicleFieldOfView=90.000000
+ThirdPersonVehicleFieldOfView=75.000000
+RotaryMouseXFunction=Yaw
+RotaryMouseYFunction=Pitch

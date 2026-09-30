@@ -1,0 +1,19 @@
+LittleBird Trainer - version navigateur
+
+Ouvrez index.html avec Chrome ou Edge (clic droit > Ouvrir avec). Le programme tient entièrement dans ce fichier :
+aucune installation, aucun compte, aucune connexion Internet.
+
+- Démarrer capture la souris ; Échap la libère et met en pause. F11 : plein écran du navigateur.
+- Attention : Ctrl + W ferme l'onglet et aucune page ne peut l'empêcher. Avec les touches par défaut, descendre en
+  piquant fait Ctrl gauche + W : pendant une session, le navigateur demande alors confirmation ; choisissez
+  « Annuler » (ou « Rester »). Pour l'éviter : l'application Windows, ou une autre touche pour « Réduire le
+  collectif » ou « Piquer » (onglet Commandes).
+- Les réglages sont gardés par le navigateur, pour ce fichier à cet emplacement. Attention : les pages ouvertes
+  depuis des fichiers de l'ordinateur (adresse file://) partagent ce stockage entre elles dans le navigateur.
+- Pour sauvegarder vos réglages ou les passer à l'application Windows : « Exporter le profil » ici, puis
+  « Importer un profil » dans l'application.
+- L'application Windows (installation en un clic ou zip portable), les notes de version et les empreintes
+  SHA-256 sont sur la page Releases du dépôt GitHub sylvainarnauda-shining/littlebird-trainer.
+
+Projet non officiel, ni affilié, ni approuvé, ni soutenu par les éditeurs ou les développeurs du jeu d'origine.
+Licence : LICENSE.txt. Composants tiers : THIRD_PARTY_NOTICES.txt.

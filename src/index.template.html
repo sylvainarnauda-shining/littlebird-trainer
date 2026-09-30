@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LittleBird Trainer · Terrain d’entraînement</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<canvas id="world" tabindex="0" aria-label="Terrain d’entraînement 3D"></canvas><canvas id="hud" aria-hidden="true"></canvas>
+<div id="loading" class="overlay"><div class="loading-box"><div class="crumb">LittleBird Trainer</div><div class="loading-title">CHARGEMENT DE LA CARTE</div><div class="bar"><span></span></div><small>Relief, forêt, villages, usine et sons sont générés sur cet ordinateur.</small></div></div>
+<div id="mouseMode" class="mode-note" hidden>MANCHE SOURIS · Écarte pour tourner, ramène au neutre · X recentre · Échap : pause</div>
+<noscript>JavaScript doit être activé pour lancer cet entraîneur.</noscript>
+<header class="flight-top"><button id="menuButton" class="ghost">Pause <kbd>Échap</kbd></button></header>
+<div id="telemetry"><div><small>VITESSE</small><b id="speed">0</b><span>km/h</span></div><div><small>ALTITUDE / SOL</small><b id="altitude">70</b><span>m</span></div><div><small>COLLECTIF</small><b id="collective">0</b><span>%</span></div><div><small>VARIO</small><b id="vario">0</b><span>m/s</span></div></div>
+<div id="session"><span id="modeLabel">STAND DE TIR</span><strong id="timer">02:00</strong><div><span>Score <b id="score">0</b></span><span>Précision <b id="accuracy">—</b></span><span>Neutralisées <b id="kills">0</b></span></div><small id="tracking">Suivi de cible : 0 %</small></div>
+<div id="feed" aria-live="polite"></div>
+<div id="toast" role="status"></div>
+<footer></footer>
+
+<main id="menu" class="overlay hidden">
+ <section class="shell">
+  <div class="topbar">
+   <div class="logo" aria-hidden="true"><svg viewBox="0 0 40 40"><ellipse cx="20" cy="17" rx="5" ry="7" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M20 24 V36 M16 36 H24 M5 10 L35 24 M5 24 L35 10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></div>
+   <div class="title"><div class="crumb">LittleBird Trainer</div><div class="page" id="pageTitle">MODES DE JEU</div></div>
+   <nav aria-label="Menus"><button data-tab="modes" class="active">MODES</button><button data-tab="controls">COMMANDES</button><button data-tab="settings">RÉGLAGES</button></nav>
+   <div class="status"><span class="box">AH-6M · MINIGUNS</span><span class="box accent">v0.9</span></div>
+  </div>
+
+  <div id="modes" class="tab active">
+   <div class="mode-grid">
+    <button class="mode" data-mode="range"><i>⌖</i><b>STAND DE TIR</b><small>Cibles aériennes, terrestres ou mixtes. Précision et suivi.</small></button>
+    <button class="mode" data-mode="assault"><i>▲</i><b>ASSAUT AIR-SOL</b><em>Nouveau</em><small>Camps aléatoires à détruire : miradors, cabanes, bunkers, dépôts. Fantassins qui s’abritent, camions sur la route.</small></button>
+    <button class="mode" data-mode="missiles"><i>✹</i><b>DÉFENSE SOL-AIR</b><small>Tireurs Verba, postes SAM et canon CIWS de 20 mm à abattre ; accrochage, verrouillage, leurres sur V, esquive, relief, vol bas.</small></button>
+    <button class="mode" data-mode="match"><i>◎</i><b>PARTIE RÉELLE</b><em>Nouveau</em><small>Tout à la fois : zone chaude, camps, convois, hélicoptères ennemis pilotés par des bots, tireurs Verba, postes SAM et CIWS, tirs au sol, munitions et carburant limités, réarmement sur l’hélipad.</small></button>
+    <button class="mode" data-mode="towers"><i>▥</i><b>TOURS</b><small>Nettoie le toit des trois tours puis tiens la position au-dessus.</small></button>
+    <button class="mode" data-mode="free"><i>⌁</i><b>VOL LIBRE</b><small>Décoller de l’hélipad, explorer la vallée, atterrir.</small></button>
+    <button class="mode" data-mode="duel"><i>⚔</i><b>DUEL D’HÉLICOPTÈRES</b><em>Nouveau</em><small>Un à trois hélicoptères pilotés par des bots, avec ton modèle de vol et tes miniguns. Combat aérien, relief, son.</small></button>
+   </div>
+   <aside class="detail">
+    <div class="detail-head"><div class="crumb" id="modeCrumb">Mode</div><h2 id="modeTitle">STAND DE TIR</h2><p id="modeText">Cibles aériennes, terrestres ou mixtes.</p></div>
+    <div class="detail-body">
+     <div class="opt map-card" data-for="range assault missiles match duel towers free">
+      <canvas id="mapPreview" width="132" height="132" aria-label="Aperçu de la carte"></canvas>
+      <div class="map-text"><div class="crumb">Carte</div><b id="mapName">Vallée de référence</b><small id="mapInfo"></small>
+       <div class="map-actions"><button id="mapNew" class="primary small">NOUVELLE CARTE</button><button id="mapVideo" class="ghost small">VALLÉE DE RÉFÉRENCE</button></div></div>
+      <label class="wide">Lumière<select id="lighting"></select></label>
+      <label class="check wide"><input id="mapRandomEach" type="checkbox"> Nouvelle carte générée à chaque chargement de la page</label>
+     </div>
+     <div class="opt" data-for="range"><div class="seg"><button data-scenario="air">AIR / AIR</button><button data-scenario="ground">AIR / SOL</button><button data-scenario="mixed">MIXTE</button></div></div>
+     <div class="opt" data-for="range assault missiles match duel towers free"><label>Durée<select id="duration"><option value="60">1 minute</option><option value="120" selected>2 minutes</option><option value="300">5 minutes</option><option value="600">10 minutes</option><option value="900">15 minutes</option><option value="0">Libre</option></select></label></div>
+     <div class="opt" data-for="assault missiles match duel"><label>Difficulté<select id="difficulty"><option value="easy">Découverte · aides visuelles, ennemis lents</option><option value="normal" selected>Normal</option><option value="real">Réaliste · son seul, pas de repères</option></select></label></div>
+     <div class="opt grid2" data-for="range">
+      <label>Trajectoire<select id="trajectory"><option value="evasive">Évasive</option><option value="cross">Traversée</option><option value="circle">Cercle</option><option value="zigzag">Zigzag</option><option value="static">Immobile</option></select></label>
+      <label>Cibles <output></output><input id="targetCount" type="range" min="1" max="8" step="1"></label>
+      <label>Vitesse <output></output><input id="targetSpeed" type="range" min="0" max="180" step="5" data-unit="km/h"></label>
+      <label>Distance <output></output><input id="targetDistance" type="range" min="80" max="600" step="10" data-unit="m"></label>
+      <label>Taille <output></output><input id="targetSize" type="range" min="0.5" max="2.5" step="0.1" data-unit="×"></label>
+      <label>Altitude (air) <output></output><input id="targetAltitude" type="range" min="15" max="220" step="5" data-unit="m"></label>
+      <label>Résistance hélicos <output></output><input id="airHealth" type="range" min="10" max="1000" step="10" data-unit="réf."></label>
+      <label>Résistance véhicules <output></output><input id="groundHealth" type="range" min="10" max="1500" step="10" data-unit="réf."></label>
+     </div>
+     <div class="opt grid2" data-for="duel">
+      <label>Hélicoptères ennemis <output></output><input id="duelBots" type="range" min="1" max="3" step="1"></label>
+      <label>Résistance des hélicoptères <output></output><input id="duelHealth" type="range" min="20" max="200" step="10" data-unit="réf."></label>
+     </div>
+     <div class="opt" data-for="duel"><label>Hélicoptères ennemis<select id="duelEnemy"><option value="ah6m">AH-6M · miniguns · comme toi</option><option value="ah6r">AH-6R · 8 roquettes de 122 mm</option><option value="mix">Mélange des deux</option></select></label></div>
+     <div class="opt" data-for="duel"><label>Départ<select id="duelStart"><option value="front">Face à face · 1,3 km au nord</option><option value="behind">Ils arrivent dans ton dos · 750 m</option><option value="random">Au hasard dans la vallée · 0,9 à 1,6 km</option></select></label></div>
+     <div class="opt" data-for="duel"><label class="check"><input id="duelRespawn" type="checkbox"> Réapparitions (sinon mort subite : le duel s’arrête quand tu es abattu ou quand tous les ennemis le sont)</label></div>
+     <div class="opt" data-for="duel"><p class="muted">Niveau des bots : Découverte (réaction 0,55 s, visée ± 2,8°, rares esquives, repères et flèches vers les ennemis), Normal (0,35 s, ± 1,1°, repères), Réaliste (0,2 s, ± 0,45°, esquives fréquentes, aucun repère : écoute leur rotor et leurs rafales). Résistance : la même pour toi et pour eux, en impacts de référence de 36,02 points (inconnue dans le jeu, choix d’entraînement).</p></div>
+     <div class="opt grid2" data-for="assault match">
+      <label>Camps ennemis <output></output><input id="camps" type="range" min="1" max="8" step="1"></label>
+      <label>Fantassins par camp <output></output><input id="infantryPerCamp" type="range" min="0" max="12" step="1"></label>
+      <label>Véhicules sur la route (Humvee minigun, pick-up armé, camion) <output></output><input id="convoy" type="range" min="0" max="8" step="1"></label>
+      <label>Tireurs de roquettes par camp (RPG-7, MAAWS) <output></output><input id="rpgPerCamp" type="range" min="0" max="3" step="1"></label>
+     </div>
+     <div class="opt" data-for="assault"><label class="check"><input id="enemyFire" type="checkbox"> Les fantassins ripostent (dégâts sur l’hélicoptère)</label><label class="check"><input id="aaEverywhere" type="checkbox"> Ajouter la défense sol-air</label></div>
+     <div class="opt grid2" data-for="missiles match">
+      <label>Tireurs Verba et postes SAM <output></output><input id="aaLaunchers" type="range" min="1" max="8" step="1"></label>
+      <label>Portée de verrouillage Verba et SAM (même missile) <output></output><input id="aaLockRange" type="range" min="500" max="3000" step="50" data-unit="m"></label>
+      <label>Canons CIWS 20 mm <output></output><input id="ciwsCount" type="range" min="0" max="3" step="1"></label>
+      <label>Tireurs de roquettes (RPG-7, MAAWS) · exercice <output></output><input id="aaRockets" type="range" min="0" max="4" step="1"></label>
+     </div>
+     <div class="opt" data-for="missiles"><label>Objectif<select id="aaObjective"><option value="survive">Survivre et esquiver · lanceurs remplacés</option><option value="destroy">Neutraliser la DCA · abattre tous les lanceurs</option></select></label></div>
+     <div class="opt grid2" data-for="towers"><label>Défenses sur les toits <output></output><input id="baseHealth" type="range" min="10" max="500" step="10" data-unit="réf."></label></div>
+     <details class="opt advanced" data-for="missiles match assault">
+      <summary>Paramètres avancés de la DCA</summary>
+      <div class="grid2">
+       <label>Temps d’accrochage <output></output><input id="aaLockTime" type="range" min="0.5" max="6" step="0.1" data-unit="s"></label>
+       <label>Altitude min. de verrouillage <output></output><input id="aaMinAltitude" type="range" min="0" max="40" step="1" data-unit="m"></label>
+       <label>Délai verrouillage → tir <output></output><input id="aaLaunchDelay" type="range" min="0" max="3" step="0.1" data-unit="s"></label>
+       <label>Vitesse des missiles · bases communautaires 450 <output></output><input id="aaMissileSpeed" type="range" min="150" max="700" step="10" data-unit="m/s"></label>
+       <label>Agilité des missiles <output></output><input id="aaAgility" type="range" min="5" max="60" step="1" data-unit="g"></label>
+       <label>Rechargement d’un lanceur <output></output><input id="aaReload" type="range" min="3" max="40" step="1" data-unit="s"></label>
+       <label>Engagements simultanés <output></output><input id="aaMaxConcurrent" type="range" min="1" max="4" step="1"></label>
+       <label>Dégâts d’un missile<select id="aaHitsToKill"><option value="0">Bases communautaires · 200 pts sur 400 (impact direct), éclats jusqu’à 10,8 m</option><option value="1">Un impact abat l’hélicoptère</option><option value="2">Deux impacts</option><option value="3">Trois impacts</option></select></label>
+      </div>
+      <label class="check"><input id="aaTreesBlock" type="checkbox"> Les arbres bloquent verrouillage et missiles</label>
+     </details>
+     <div class="opt" data-for="range towers free"><label class="check"><input id="showMarkers" type="checkbox"> Repères de cibles et distances</label></div>
+     <div class="opt" data-for="assault missiles match"><p class="muted">La difficulté règle les aides : Découverte et Normal affichent repères et aides visuelles, Réaliste ne garde que le son, comme dans le jeu.</p></div>
+     <div class="opt" data-for="missiles"><label class="check"><input id="aaAssist" type="checkbox"> Aides visuelles missiles en Normal (verrouillage, direction, temps avant impact)</label></div>
+     <div class="opt" data-for="range assault missiles duel towers free"><label class="check"><input id="unlimitedAmmo" type="checkbox"> Munitions et carburant illimités (sinon 300 coups, réarmement avec B et plein sur l’hélipad, consommation mesurée sur les enregistrements de référence)</label></div>
+     <div class="opt" data-for="assault missiles"><label class="check"><input id="aaRespawn" type="checkbox"> Réapparaître au-dessus de l’hélipad après un impact ou un accident</label></div>
+     <div class="opt" data-for="match"><p class="muted">Règles fixes de la partie : munitions, leurres et carburant limités, riposte au sol, tireurs Verba et postes SAM dans les camps, réapparition à l’hélipad (−100 points).</p></div>
+     <div class="opt" data-for="range"><label class="check"><input id="indestructible" type="checkbox"> Cibles indestructibles (suivi continu)</label></div>
+    </div>
+    <div class="detail-foot"><span id="saveState">Chargement…</span><div><button id="resume" class="ghost" hidden>REPRENDRE</button><button id="start" class="primary" disabled>DÉMARRER</button></div></div>
+   </aside>
+  </div>
+
+  <div id="controls" class="tab">
+   <div class="columns">
+    <div class="card-panel"><div class="crumb">Touches (AZERTY, position physique)</div><p class="muted">Clique une touche pour la remplacer ; les boutons de souris sont acceptés, Échap annule, les doublons sont refusés.</p><div id="bindings" class="bindings"></div></div>
+    <div class="card-panel"><div class="crumb">Souris</div>
+     <label>Loi de la souris<select id="mouseLaw"><option value="rate">Vitesse du geste → vitesse de rotation · mesurée sur les enregistrements de référence</option><option value="stick">Manche virtuel (v12)</option></select></label>
+     <p class="muted">Mesurée sur 43 passages rapides du point de visée dans les enregistrements de référence : dans le jeu, la vitesse du geste donne la vitesse de rotation ; la rotation culmine 0,2 s après le passage du point et s’éteint vers 0,9 s. Il faut un geste plus ample qu’avec le manche virtuel de la v12, qui gardait la déviation en mémoire : le nez tournait encore 3 s après l’arrêt de la souris, contre 1,4 s avec la loi mesurée. L’entraîneur suppose que le jeu applique la sensibilité choisie proportionnellement (non vérifié en jeu).</p>
+     <div class="grid2"><label>Tangage souris <output></output><input id="pitchSens" type="range" min="1" max="100" step="1" data-unit="%"></label><label>Lacet souris <output></output><input id="yawSens" type="range" min="1" max="100" step="1" data-unit="%"></label>
+      <label>Multiplicateur aérien <output></output><input id="vehicleMultiplier" type="range" min="0.1" max="2" step="0.05" data-unit="×"></label><label>Isolation des axes <output></output><input id="isolation" type="range" min="0" max="1" step="0.05"></label></div>
+     <label class="check"><input id="invertY" type="checkbox"> Axe vertical inversé — souris vers le bas : nez vers le haut</label>
+     <p class="muted">Souris horizontale → lacet, souris verticale → tangage. Regard libre : maintenir Alt gauche.</p>
+     <div class="actions"><label class="file-button">Importer les réglages du jeu (Wardogs)<input type="file" id="importGame" accept=".ini,text/plain"></label></div>
+     <p class="muted">Fichier du jeu : <b>%LOCALAPPDATA%\Wardogs\Saved\Config\WindowsClient\GameUserSettings.ini</b>. L’entraîneur y lit tes sensibilités hélicoptère, l’inversion, l’isolation et les champs de vision ; il ne modifie rien dans le jeu.</p></div>
+   </div>
+  </div>
+
+  <div id="settings" class="tab">
+   <div class="columns three">
+    <div class="card-panel"><div class="crumb">Son</div><div class="grid1">
+     <label>Volume général <output></output><input id="volume" type="range" min="0" max="0.6" step="0.02"></label>
+     <label>Moteur et rotor <output></output><input id="volEngine" type="range" min="0" max="2" step="0.05" data-unit="×"></label>
+     <label>Armes et explosions <output></output><input id="volWeapons" type="range" min="0" max="2" step="0.05" data-unit="×"></label>
+     <label>Alertes de verrouillage <output></output><input id="volAlerts" type="range" min="0" max="2" step="0.05" data-unit="×"></label>
+     <label>Tonalité d’alerte · non mesurée <output></output><input id="aaToneHz" type="range" min="400" max="2500" step="50" data-unit="Hz"></label>
+     <label>Cadence des bips · non mesurée <output></output><input id="aaBeepRate" type="range" min="1" max="12" step="0.5" data-unit="/s"></label></div>
+     <p class="muted">Rotor et minigun sont synthétisés d’après les enregistrements de référence : grondement 120–250 Hz, claquements toutes les 33 ms.</p></div>
+    <div class="card-panel"><div class="crumb">Affichage</div><div class="grid1">
+     <label>Qualité graphique<select id="graphics"><option value="high">Haute · ombres, ~290 000 arbres</option><option value="medium">Moyenne · ~170 000 arbres</option><option value="low">Basse · sans ombres, ~85 000 arbres</option></select></label>
+     <label>Champ de vision vue pilote <output></output><input id="fovCockpit" type="range" min="60" max="120" step="1" data-unit="°"></label>
+     <label>Champ de vision vue poursuite <output></output><input id="fovChase" type="range" min="60" max="120" step="1" data-unit="°"></label></div>
+     <label class="check"><input id="chaseSpeedView" type="checkbox"> Vue poursuite : champ et recul qui augmentent avec la vitesse (+24° dès 190 km/h, ajoutés au champ réglé : de 85° à 109° au champ des enregistrements ; caméra reculée de 14 à 15,5 m, la queue paraît deux fois plus petite comme sur les enregistrements) — mesuré sur les enregistrements de référence (rotation du décor comparée au cap, par tranche de vitesse) ; forme de la rampe et lissage de 0,5 s supposés. La vue pilote reste fixe.</label>
+     <label class="check"><input id="showTelemetry" type="checkbox"> Télémétrie d’entraînement (vitesse, altitude, collectif, vario)</label><label class="check"><input id="showMinimap" type="checkbox"> Mini-carte</label><label class="check"><input id="showKeyHints" type="checkbox"> Rappel des touches (comme dans le jeu)</label>
+     <p class="muted">La qualité s’applique au prochain chargement de la page.</p></div>
+    <div class="card-panel"><div class="crumb">Armes</div><div class="grid1">
+     <label>Dégâts par impact<select id="impactDamage"><option value="0">Distribution observée · 42 impacts, moyenne 58,23</option><option value="18.01">18,01</option><option value="30.01">30,01</option><option value="36.01">36,01 · la plus fréquente</option><option value="54.02">54,02</option><option value="74.12">74,12</option><option value="78.01">78,01</option><option value="85.81">85,81</option><option value="150.02">150,02</option></select></label>
+     <label>Cadence de tir · mesurée 1 500 <output></output><input id="rpm" type="range" min="600" max="12000" step="100" data-unit="coups/min"></label>
+     <label>Lancement des miniguns · mesuré 0,35 <output></output><input id="spinUp" type="range" min="0" max="1" step="0.01" data-unit="s"></label>
+     <label>Vitesse des projectiles <output></output><input id="bulletSpeed" type="range" min="300" max="1200" step="10" data-unit="m/s"></label>
+     <label>Dispersion <output></output><input id="spread" type="range" min="0" max="2" step="0.05" data-unit="°"></label>
+     <label>Convergence <output></output><input id="gunConvergence" type="range" min="50" max="1000" step="10" data-unit="m"></label>
+     <label>Charges de leurres · enregistrements : 2 <output></output><input id="flareCharges" type="range" min="1" max="10" step="1"></label>
+     <label>Délai entre salves de leurres <output></output><input id="flareCooldown" type="range" min="0" max="30" step="1" data-unit="s"></label></div>
+     <label class="check"><input id="flareUnlimited" type="checkbox"> Leurres illimités</label></div>
+   </div>
+   <details class="card-panel flight-tuning"><summary>Modèle de vol (v6 et réglages v13 mesurés sur les enregistrements de référence)</summary>
+    <div class="actions"><button id="demanding">Rétablir le modèle mesuré (v6 + v13)</button></div>
+    <p class="muted">Chaque valeur indique sa source : « mesuré » sur les enregistrements de référence (avec le nombre de mesures), « supposé » ou « choix » quand ils ne permettent pas de la mesurer. IC90 = intervalle de confiance à 90 %.</p>
+    <div class="grid3">
+     <label>Souris · gain de la loi mesurée · 0,339 (mesuré sur 43 passages ; proportionnalité au réglage supposée ; IC90 0,276–0,429) <output></output><input id="mouseRateScale" type="range" min="0.15" max="0.5" step="0.001"></label>
+     <label>Souris · gain en lacet · 0,339 supposé égal au tangage (non mesurable sur les enregistrements) <output></output><input id="mouseYawScale" type="range" min="0.1" max="0.6" step="0.001"></label>
+     <label>Souris · retard · 0,10 : meilleure valeur mesurée, non identifiée (IC90 0,05–0,20) <output></output><input id="mouseLag" type="range" min="0.02" max="0.4" step="0.01" data-unit="s"></label>
+     <label>Souris · ajustement fin · ×1 (choix, limité à ×0,7–1,4 ; couvre l’IC90 du gain, ×0,81–1,26) <output></output><input id="mouseFine" type="range" min="0.7" max="1.4" step="0.01" data-unit="×"></label>
+     <label>Manche v12 · gain de calibration <output></output><input id="gain" type="range" min="0.005" max="0.15" step="0.005"></label>
+     <label>Manche v12 · retour au neutre <output></output><input id="mouseReturn" type="range" min="0" max="12" step="0.2" data-unit="/s"></label>
+     <label>Manche v12 · amplification lacet <output></output><input id="mouseYawBoost" type="range" min="0.5" max="3" step="0.05" data-unit="×"></label>
+     <label>Manche v12 · amplification tangage <output></output><input id="mousePitchBoost" type="range" min="0.5" max="3" step="0.05" data-unit="×"></label>
+     <label>Roulis max. · mesuré 80 <output></output><input id="rollRate" type="range" min="20" max="240" step="5" data-unit="°/s"></label>
+     <label>Lacet max. · mesuré 36 <output></output><input id="yawRate" type="range" min="15" max="180" step="1" data-unit="°/s"></label>
+     <label>Tangage max. · estimé 52 <output></output><input id="pitchRate" type="range" min="20" max="200" step="1" data-unit="°/s"></label>
+     <label>Retard du cyclique, tangage et roulis · 0,30 mesuré <output></output><input id="cyclicResponse" type="range" min="0.02" max="0.8" step="0.02" data-unit="s"></label>
+     <label>Retard du cyclique, lacet · 0 mesuré (sauté : les 0,30 s étaient la caméra poursuite) <output></output><input id="cyclicYaw" type="range" min="0" max="0.8" step="0.02" data-unit="s"></label>
+     <label>Inertie de rotation, tangage et roulis · 0,40 mesuré <output></output><input id="response" type="range" min="0.04" max="1.2" step="0.02" data-unit="s"></label>
+     <label>Inertie de rotation, lacet · 0,35 choisi dans l’IC90 mesuré 0,35–0,70 pour le cap après un lacet (valeur v6 : 0,40 ; ajustement libre 0,55–0,6) <output></output><input id="responseYaw" type="range" min="0.04" max="1.2" step="0.01" data-unit="s"></label>
+     <label>Montée du collectif · 3 <output></output><input id="collectiveUpRate" type="range" min="0.5" max="6" step="0.1" data-unit="/s"></label>
+     <label>Baisse du collectif · 1 (mesuré 0,89, IC90 0,81–0,98, sans gain en validation : non retenu) <output></output><input id="collectiveDownRate" type="range" min="0.3" max="4" step="0.1" data-unit="/s"></label>
+     <label>Collectif en vol stationnaire · −0,14 mesuré (653 images) <output></output><input id="leverHover" type="range" min="-0.4" max="0.2" step="0.01"></label>
+     <label>Autorité en montée · 8 <output></output><input id="collectiveAccel" type="range" min="3" max="14" step="0.5" data-unit="m/s²"></label>
+     <label>Autorité en descente · 3,5 <output></output><input id="collectiveDownAccel" type="range" min="1" max="10" step="0.5" data-unit="m/s²"></label>
+     <label>Maintien auto · vitesse vert. 0,098 <output></output><input id="holdGain" type="range" min="0" max="0.4" step="0.002"></label>
+     <label>Maintien auto · accélération 0,075 <output></output><input id="holdDamping" type="range" min="0" max="0.3" step="0.005"></label>
+     <label>Amortissement vertical · 0,3 <output></output><input id="verticalDamping" type="range" min="0" max="1.5" step="0.05" data-unit="/s"></label>
+     <label>Écoulement axe rotor · 0,6 <output></output><input id="bodyFlowDrag" type="range" min="0" max="1.5" step="0.05" data-unit="/s"></label>
+     <label>Traînée quadratique · 0,0003 <output></output><input id="quadraticDrag" type="range" min="0" max="0.0015" step="0.00005"></label>
+     <label>Traînée latérale · 0,12 <output></output><input id="lateralDrag" type="range" min="0" max="1" step="0.02" data-unit="/s"></label>
+     <label>Nez sur la trajectoire · 1 <output></output><input id="weathervane" type="range" min="0" max="2" step="0.05" data-unit="×"></label>
+    </div>
+    <label class="check"><input id="altitudeHold" type="checkbox"> Maintien automatique du collectif quand ses touches sont relâchées (comportement du jeu)</label>
+    <label class="check"><input id="mouseClamp" type="checkbox"> Souris + touches plafonnées aux vitesses des touches (52 °/s en tangage, 36 °/s en lacet) · supposé</label>
+   </details>
+   <div class="actions"><button id="export">Exporter le profil</button><label class="file-button">Importer un profil<input type="file" id="import" accept=".json"></label><button id="defaults">Réglages initiaux</button></div>
+  </div>
+
+ </section>
+</main>
+
+<div id="pause" class="overlay hidden"><section class="small-panel"><div class="crumb">Session en pause</div><h2>PAUSE</h2>
+ <button id="pauseResume" class="primary wide">REPRENDRE</button><button id="pauseRestart" class="wide">RECOMMENCER</button><button id="pauseModes" class="wide">CHANGER DE MODE</button><button id="pauseSettings" class="wide">RÉGLAGES ET COMMANDES</button></section></div>
+
+<div id="shop" class="overlay hidden"><section class="shop"><div class="shop-top"><div class="crumb">Ravitaillement</div><div class="page">MUNITIONS</div><div class="shop-tabs"><span class="on">MUNITIONS</span><span>CONTRE-MESURES</span></div></div>
+ <div class="shop-body"><div class="shop-items"><button class="item" data-item="ammo"><span class="badge">150</span><b>.308 WIN STANDARD (FMJ)</b><small>Munitions standard · dégâts identiques sur toutes les cibles</small></button><button class="item" data-item="flare"><span class="badge">1</span><b>LEURRES</b><small>Une salve de leurres (touche V)</small></button><button class="item" data-item="repair"><span class="badge">+</span><b>RÉPARATION</b><small>Remet l’hélicoptère en état</small></button></div>
+  <div class="shop-vehicle"><div class="veh-title">AH-6M · MINIGUNS</div><div class="veh-tags"><span>VÉHICULE : HÉLICOPTÈRE</span><span id="shopSlots">INVENTAIRE DU VÉHICULE 4/9</span></div><div id="inventory" class="inventory"></div><button id="shopClose" class="wide">RETOUR</button></div></div>
+ <p class="muted">Clic sur un article : ajouter · clic sur une case de l’inventaire : retirer. Comme dans le jeu : boîtes de 150 coups, 9 emplacements.</p></section></div>
+
+<div id="results" class="overlay hidden"><section class="small-panel results"><div class="crumb">Débriefing</div><h2 id="resultTitle">Session terminée</h2><div id="resultStats"></div><p id="resultDetail"></p><div class="actions"><button id="resultSettings">MENU</button><button id="retry" class="primary">REJOUER</button></div></section></div>
+<script>window.addEventListener('error',function(event){var note=document.getElementById('saveState');if(note)note.textContent='Erreur de lancement : '+event.message;var l=document.getElementById('loading');if(l)l.querySelector('small').textContent='Erreur : '+event.message;var button=document.getElementById('start');if(button&&!window.trainerDiagnostics)button.disabled=true;});</script>
+<script src="vendor/three.min.js"></script><script src="world.js"></script><script src="physics.js"></script><script src="forest.js"></script><script src="scenery.js"></script><script src="missiles.js"></script><script src="audio.js"></script><script src="models.js"></script><script src="ground.js"></script><script src="bot.js"></script><script src="app.js"></script>
+</body></html>

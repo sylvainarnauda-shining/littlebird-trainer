@@ -1,0 +1,287 @@
+{
+  "_comment": "Every check that ties the trainer to a measurement (reference recordings, the game's settings or interface, community databases) or to an adopted analysis figure, and the test files that hold it. Bands are never widened in a refactor step. basis: recordings = measured on the two reference recordings; game = the game's settings or interface; databases = values published by community databases (not verified in game); analysis = an adopted figure of the flight analysis. tests/fidelity/index.test.js checks that every id is present and tested where listed.",
+  "checks": [
+    {
+      "id": "F01",
+      "check": "hover holds altitude for 60 s",
+      "band": "|dy| < 0.2 m",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F02",
+      "check": "roll rate after 0.5 s and 1 s of click",
+      "band": "24-40 and 47-63 deg/s (fit P 80, tau 0.267/0.44)",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F03",
+      "check": "0.1 s click bank; no auto-levelling",
+      "band": "6.5-9.5 deg; drift < 2 deg over 3 s",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F04",
+      "check": "yaw key plateau",
+      "band": "36 +- 1.5 deg/s",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F05",
+      "check": "S 0.5 s then settle",
+      "band": "22-30 deg nose-up",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F06",
+      "check": "collective Z 0.7 s / Shift 2 s",
+      "band": "lever > 0.95, peak climb 4.5-9 m/s, gain 5-35 m, stops < 0.5 m/s; lever < -0.95, min VS -3..-9",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F07",
+      "check": "take-off from idle lever",
+      "band": "stays down at idle, hover > 8 m after Z 1.2 s",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F08",
+      "check": "top speed at 13 deg nose-down, lever saturates, sinks",
+      "band": "255-300 km/h (289 seen)",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F09",
+      "check": "zoom climb from ~280 km/h",
+      "band": "> 50 m, > 150 km/h bled, lever < -0.95",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F10",
+      "check": "weathervane ratio; yaw at 220 km/h; bank turn altitude",
+      "band": "0.5-1.1 at 250 km/h, |r| < 0.25 at 60; peak > 12 deg/s; |dy| < 8 m",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-identified.test.js"]
+    },
+    {
+      "id": "F11",
+      "check": "minigun spin-up and rate",
+      "band": "first round 0.35 +- 0.02 s, 49-51 rounds in 2.35 s, short release keeps spin",
+      "basis": "recordings",
+      "files": ["tests/unit/weapons.test.js"]
+    },
+    {
+      "id": "F12",
+      "check": "observed hit damage distribution",
+      "band": "42 values, mean 58.23, sum = four on-screen totals",
+      "basis": "recordings",
+      "files": ["tests/unit/weapons.test.js"]
+    },
+    {
+      "id": "F13",
+      "check": "attitude-forced replay, both recordings",
+      "band": "VS rms < 3 m/s, lever rms < 0.45, >= 8 windows, hold and body-flow terms help, drag < 0.5 x v3 error",
+      "basis": "recordings",
+      "fixture": "recordings/replay_v{1,2}.json",
+      "files": ["tests/fidelity/replay-legacy.test.js"]
+    },
+    {
+      "id": "F14",
+      "check": "mouse crossing response vs the game curve (43 crossings)",
+      "band": "rms <= 3 deg/s, peak 0.22 +- 0.05 s, analysis 2.42 reproduced +- 0.05; p99 <= 30 deg/s; v12 stick reproduces 17.11",
+      "basis": "recordings + analysis",
+      "fixture": "recordings/cross-curve.json, expected/harness-metrics.json",
+      "files": ["tests/fidelity/flight-metrics.test.js"]
+    },
+    {
+      "id": "F15",
+      "check": "nose stops after a swipe (rate law)",
+      "band": "< 1.5 s (stick > 2 s)",
+      "basis": "analysis",
+      "files": ["tests/fidelity/flight-metrics.test.js"]
+    },
+    {
+      "id": "F16",
+      "check": "roll replay on 467 windows and 0.1 s tap",
+      "band": "rms <= 7.8705, tap 5.4-9 deg, unchanged vs v12",
+      "basis": "recordings",
+      "fixture": "recordings/bench_v{1,2}.csv.gz",
+      "files": ["tests/fidelity/flight-metrics.test.js"]
+    },
+    {
+      "id": "F17",
+      "check": "chase heading after D from hover (physics level and as rendered at 100 Hz)",
+      "band": "7.5 +- 1.5 deg at 0.73 s, 31.6 +- 2.5 at 1.47 s; analysis figures +- 0.02; tape = camera heading",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-metrics.test.js", "tests/integration/app-input-camera.test.js"]
+    },
+    {
+      "id": "F18",
+      "check": "turn ratio by speed (report, not adopted)",
+      "band": "unchanged vs v12 within 0.01",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-metrics.test.js"]
+    },
+    {
+      "id": "F19",
+      "check": "collective in hover and limits",
+      "band": "hover lever -0.14 +- 0.04, reset -0.14, down rate 1, Z/Shift 5 s VS within 0.3 of v12",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-metrics.test.js"]
+    },
+    {
+      "id": "F20",
+      "check": "dense replay and named segments",
+      "band": "analysis VS and 4-6 s dalt reproduced 1e-3, better than v12, cruise spd <= 1.2; named segments within v12 + 1 m / + 0.2 m/s",
+      "basis": "recordings + analysis",
+      "fixture": "recordings/replay_v{1,2}.json, expected/harness-metrics.json",
+      "files": ["tests/fidelity/flight-metrics.test.js"]
+    },
+    {
+      "id": "F21",
+      "check": "level trim",
+      "band": "-8.5 +- 1 deg at 235 km/h; 27/55 km/h unchanged",
+      "basis": "recordings",
+      "files": ["tests/fidelity/flight-metrics.test.js"]
+    },
+    {
+      "id": "F22",
+      "check": "rotor and minigun spectra, report decay, rate",
+      "band": "<= 5 dB per octave band, loudest 120-250 Hz / 20-60 Hz, 50 % in 1-4 ms and 10 % in 15-40 ms, 30 reports/s",
+      "basis": "recordings (audio.js MEASURED)",
+      "files": ["tests/fidelity/audio-spectra.test.js"]
+    },
+    {
+      "id": "F23",
+      "check": "cabin mix in the pilot view",
+      "band": "shelf < -7 dB above 4.5 kHz, rotor bus > x1.8; chase view plain",
+      "basis": "recordings",
+      "files": ["tests/browser/modes.spec.mjs"]
+    },
+    {
+      "id": "F24",
+      "check": "valley relief, slopes, trees, densities, canopy, AGL over trees",
+      "band": "pad flat at 84 m ASL, floor -10..135 m, slope median < 0.1 and p90 0.07-0.25, tops 10-20.5 m, dense >= 150/ha, floor median < 40, AGL p90 13-21 m, max <= 23",
+      "basis": "recordings",
+      "files": ["tests/fidelity/valley.test.js"]
+    },
+    {
+      "id": "F25",
+      "check": "structures and towers",
+      "band": "hall 14-20 m, chimney 75-105 m, pylon 30-40 m, container 12.19 m, towers 32-35 m, river 1.2 m lower",
+      "basis": "recordings",
+      "files": ["tests/fidelity/valley.test.js"]
+    },
+    {
+      "id": "F26",
+      "check": "eight light presets (ids, daytime, two foggy)",
+      "band": "ids and order of the game's presets",
+      "basis": "game",
+      "files": ["tests/unit/world-maps.test.js"]
+    },
+    {
+      "id": "F27",
+      "check": "fields of view and views",
+      "band": "85 deg horizontal, no shake, no widening in the pilot view, sight only in the cockpit, key hints worded and ordered as in the game",
+      "basis": "game + recordings",
+      "files": ["tests/integration/app-hud-views.test.js", "tests/integration/app-boot-modes.test.js"]
+    },
+    {
+      "id": "F28",
+      "check": "AGL counts trees and roofs; ASL 84 on the pad",
+      "band": "AGL over a tree ~10 +- 1.5 m; roof <= 13; pad AGL 0 / ASL 84",
+      "basis": "recordings",
+      "files": ["tests/integration/app-hud-views.test.js"]
+    },
+    {
+      "id": "F29",
+      "check": "fuel burn and refuel",
+      "band": "0.02 + 0.0011 x 270 %/s +- 0.03; refuel 5 %/s; dry tank sinks",
+      "basis": "recordings (gauge)",
+      "files": ["tests/integration/app-assault-match.test.js"]
+    },
+    {
+      "id": "F30",
+      "check": "load-out",
+      "band": "300 rounds (recording 1), boxes of 150, 2 s burst ~42 rounds, 2 flare charges",
+      "basis": "recordings",
+      "files": ["tests/integration/app-assault-match.test.js", "tests/integration/app-boot-modes.test.js"]
+    },
+    {
+      "id": "F31",
+      "check": "missile values",
+      "band": "450 m/s, 20 m/s ejection, arming 0.13 s, 200/400 points, blast 10.8 m, ranges 1 000/100 m, emplacement cone > 77 deg and 3 s cycle",
+      "basis": "databases",
+      "files": ["tests/unit/missiles.test.js"]
+    },
+    {
+      "id": "F32",
+      "check": "rocket and vehicle values",
+      "band": "RPG-7 100 m/s 110/12/2.5, MAAWS 230 m/s 100, Humvee 22 HP minigun 650 m, pickup 12 HP M249 500 m",
+      "basis": "databases",
+      "files": ["tests/unit/ground-rockets-vehicles.test.js"]
+    },
+    {
+      "id": "F33",
+      "check": "damage values in the app",
+      "band": "emplacement 416 hits, CIWS 694 hits, round 1/60 at 36.01, RPG-7 27.5 %, AH-6R rocket 25 %, Humvee 1.8 %/round, M249 0.8 %/round, CIWS 224 m/s 30 rds/s 15 %/hit",
+      "basis": "databases",
+      "files": ["tests/integration/app-air-defence.test.js", "tests/integration/app-duel-bots.test.js"]
+    },
+    {
+      "id": "F34",
+      "check": "mouse law through the app handlers",
+      "band": "steady rate = K x 500 px/s within 3 %, nose stops < 1.5 s, stick saturates > 48 deg/s, mouse + key capped at 52 deg/s",
+      "basis": "analysis",
+      "files": ["tests/integration/app-input-camera.test.js"]
+    },
+    {
+      "id": "F35",
+      "check": "chase view with speed",
+      "band": "85 deg to 140 km/h, 109 +- 0.05 at 250, distance x1.11, ratio within 0.05 of game medians in 8 bands, stabiliser span ratio 0.51-0.58, spans and hub row, 0.5 s smoothing",
+      "basis": "recordings",
+      "files": ["tests/fidelity/chase-camera.test.js"]
+    },
+    {
+      "id": "F36",
+      "check": "render interpolation",
+      "band": "per-frame displacement CV < 0.02 at 100 Hz for view and targets; physics unchanged",
+      "basis": "analysis",
+      "files": ["tests/integration/app-input-camera.test.js"]
+    },
+    {
+      "id": "F37",
+      "check": "measured exterior key points",
+      "band": "hub 1.768, stabiliser 1.721 / x 0.836, boom 0.70 at z 4.2, skids -1.25, grips 0.81 m, cowl recess z 1.215, boom top 0.93 at z 2.4, end cap z 4.985, rotor band 25-50 km/h",
+      "basis": "recordings",
+      "files": ["tests/fidelity/exterior-keypoints.test.js"]
+    }
+  ],
+  "goldens": [
+    {
+      "id": "G01",
+      "check": "the switches at their v12 values equal the frozen v12 physics and input path step for step",
+      "files": ["tests/regression/golden.test.js"],
+      "note": "recorded into the flight goldens while the equality held (stick law and v12-switch configurations)"
+    },
+    {
+      "id": "G02",
+      "check": "physics.js defaults equal the adopted analysis candidate, free flight and dense replay",
+      "files": ["tests/regression/golden.test.js"],
+      "note": "the flight goldens with the default configuration"
+    },
+    {
+      "id": "G03",
+      "check": "same seed = same map; layout rules on 10 seeds",
+      "files": ["tests/unit/world-maps.test.js", "tests/regression/golden.test.js"]
+    }
+  ]
+}

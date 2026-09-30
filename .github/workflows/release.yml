@@ -1,0 +1,360 @@
+# Release. Trigger: a tag vX.Y.Z pushed by the maintainer (tag ruleset: admins only), or a manual run, which is always a
+# dry run (everything is built and verified, nothing is published; artifacts are kept 3 days).
+# Separation of duties:
+#   preflight          no npm: the tag is on main and equals package.json's version; CHANGELOG section (dated for a
+#                      real release); the page built with the zero-dependency build, its sha256 in the release notes;
+#                      privacy scan of the files and the whole history
+#   ci                 the whole CI (reused, strict: the browser and desktop jobs block too), on the tagged commit; it
+#                      ends before any shipped file is built, so no lint or test tool runs while they exist
+#   web                Linux: page, deterministic browser zip, SBOM; their sha256 are job outputs
+#   package            Windows, no cache, read-only token, no secret: installer and portable zip; runtime files equal
+#                      the official Electron release; their sha256 are job outputs
+#   verify-artifacts   Windows: the downloaded files equal the sha256 their jobs reported; page built on Windows == page
+#                      built on Linux == page of the release notes (G-REPRO); portable zip and installed app: fuses,
+#                      metadata, app.asar allowlist and page, self-test; installer: silent per-user install in a temporary
+#                      folder, silent uninstall (profile kept)
+#   artifact-privacy   no npm: privacy scan of every shipped text file (browser zip, app.asar, resources)
+#   publish            runs no project code: downloads the named artifacts only, requires every file to equal the sha256
+#                      its building job reported (job outputs, not a file of the same artifact), writes SHA256SUMS.txt,
+#                      attests provenance and SBOM, creates a DRAFT release. Environment "release" (the maintainer's
+#                      approval). The maintainer then publishes the draft by hand; immutable releases lock tag and files.
+name: Release
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.gate.outputs.version }}
+      publish: ${{ steps.gate.outputs.publish }}
+      page_sha256: ${{ steps.gate.outputs.page_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # The build uses Node built-ins only: the page (and its sha256 in the release notes) comes without any npm package.
+      - name: Tag, version, changelog, page, release notes
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          node scripts/build.mjs
+          page=$(sha256sum dist/web/index.html | cut -d' ' -f1)
+          if [ "$EVENT" = push ] && [ "$REF_TYPE" = tag ]; then
+            git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+            node scripts/release-notes.mjs "$TAG" release-notes.md --page dist/web/index.html
+            publish=true
+          else
+            node scripts/release-notes.mjs --dry-run release-notes.md --page dist/web/index.html
+            publish=false
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+          echo "page_sha256=$page" >> "$GITHUB_OUTPUT"
+      - name: Privacy scan of the files and the whole history
+        env:
+          PUBLISH_DENYLIST: ${{ secrets.PUBLISH_DENYLIST }}
+          PUBLISH: ${{ steps.gate.outputs.publish }}
+        run: |
+          if [ -n "$PUBLISH_DENYLIST" ] || [ "$PUBLISH" = true ]; then require=--require-denylist; else require=""; fi
+          node scripts/privacy-scan.mjs --tracked --history --strict $require
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: notes
+          path: release-notes.md
+          retention-days: 3
+          if-no-files-found: error
+
+  ci:
+    name: ci
+    needs: preflight
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      strict: true
+    secrets:
+      PUBLISH_DENYLIST: ${{ secrets.PUBLISH_DENYLIST }}
+
+  web:
+    name: web
+    needs: [preflight, ci]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      zip_sha256: ${{ steps.sums.outputs.zip_sha256 }}
+      sbom_sha256: ${{ steps.sums.outputs.sbom_sha256 }}
+      page_sha256: ${{ steps.sums.outputs.page_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run build
+      - run: npm run verify:build
+      - name: Browser zip and SBOM (deterministic)
+        id: sums
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          set -euo pipefail
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          node scripts/make-web-zip.mjs --out assets
+          node scripts/sbom.mjs --out assets
+          cp dist/web/index.html page-linux.html
+          sum() { sha256sum "$1" | cut -d' ' -f1; }
+          echo "zip_sha256=$(sum "assets/LittleBird-Trainer-$VERSION-navigateur.zip")" >> "$GITHUB_OUTPUT"
+          echo "sbom_sha256=$(sum "assets/LittleBird-Trainer-$VERSION.sbom.cdx.json")" >> "$GITHUB_OUTPUT"
+          echo "page_sha256=$(sum page-linux.html)" >> "$GITHUB_OUTPUT"
+          test "$(ls assets | wc -l)" -eq 2
+          cat "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: web
+          path: |
+            assets/
+            page-linux.html
+          retention-days: 3
+          if-no-files-found: error
+
+  package:
+    name: package
+    needs: [preflight, ci]
+    runs-on: windows-2025
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    outputs:
+      setup_sha256: ${{ steps.collect.outputs.setup_sha256 }}
+      portable_sha256: ${{ steps.collect.outputs.portable_sha256 }}
+      page_sha256: ${{ steps.collect.outputs.page_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      # Only the project's zero-dependency build scripts, electron-builder and @electron/fuses run here; lint and test
+      # tools never run in the job that produces the shipped files.
+      - run: npm run dist
+      - run: node scripts/check-electron-runtime.mjs release/win-unpacked
+      - name: Collect
+        id: collect
+        shell: bash
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir desktop-assets
+          cp "release/LittleBird-Trainer-Setup-$VERSION.exe" "release/LittleBird-Trainer-$VERSION-win-x64.zip" desktop-assets/
+          cp dist/web/index.html page-windows.html
+          sum() { sha256sum "$1" | cut -d' ' -f1; }
+          echo "setup_sha256=$(sum "desktop-assets/LittleBird-Trainer-Setup-$VERSION.exe")" >> "$GITHUB_OUTPUT"
+          echo "portable_sha256=$(sum "desktop-assets/LittleBird-Trainer-$VERSION-win-x64.zip")" >> "$GITHUB_OUTPUT"
+          echo "page_sha256=$(sum page-windows.html)" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop
+          path: |
+            desktop-assets/
+            page-windows.html
+          retention-days: 3
+          if-no-files-found: error
+
+  verify-artifacts:
+    name: verify-artifacts
+    needs: [preflight, web, package]
+    runs-on: windows-2025
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci # the pinned @electron/asar and @electron/fuses readers
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: web
+          path: in/web
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: desktop
+          path: in/desktop
+      # Hashes from the building jobs' outputs (a trusted channel), not from a file of the same artifact.
+      - name: The downloaded files are the files their jobs built; one page on Linux, Windows and in the notes (G-REPRO)
+        shell: bash
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+          NOTES_PAGE: ${{ needs.preflight.outputs.page_sha256 }}
+          WEB_ZIP: ${{ needs.web.outputs.zip_sha256 }}
+          WEB_SBOM: ${{ needs.web.outputs.sbom_sha256 }}
+          WEB_PAGE: ${{ needs.web.outputs.page_sha256 }}
+          SETUP: ${{ needs.package.outputs.setup_sha256 }}
+          PORTABLE: ${{ needs.package.outputs.portable_sha256 }}
+          WIN_PAGE: ${{ needs.package.outputs.page_sha256 }}
+        run: |
+          set -euo pipefail
+          check() { test -n "$2" && test "$(sha256sum "$1" | cut -d' ' -f1)" = "$2" || { echo "::error::$1 is not the file its job built"; exit 1; }; }
+          check "in/web/assets/LittleBird-Trainer-$VERSION-navigateur.zip" "$WEB_ZIP"
+          check "in/web/assets/LittleBird-Trainer-$VERSION.sbom.cdx.json" "$WEB_SBOM"
+          check in/web/page-linux.html "$WEB_PAGE"
+          check "in/desktop/desktop-assets/LittleBird-Trainer-Setup-$VERSION.exe" "$SETUP"
+          check "in/desktop/desktop-assets/LittleBird-Trainer-$VERSION-win-x64.zip" "$PORTABLE"
+          check in/desktop/page-windows.html "$WIN_PAGE"
+          test "$WEB_PAGE" = "$WIN_PAGE" || { echo "::error::the pages built on Linux and Windows differ"; exit 1; }
+          test "$WEB_PAGE" = "$NOTES_PAGE" || { echo "::error::the page differs from the one of the release notes"; exit 1; }
+          echo "same files, same page"
+      - name: Portable zip, installer, uninstall, self-tests
+        run: node scripts/release-check.mjs in/desktop/desktop-assets --page in/web/page-linux.html --warp --extract extracted --json release-check.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: extracted-text
+          path: extracted/
+          retention-days: 3
+          if-no-files-found: error
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-check
+          path: release-check.json
+          retention-days: 5
+          if-no-files-found: ignore
+
+  artifact-privacy:
+    name: artifact-privacy
+    needs: [preflight, verify-artifacts]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: web
+          path: in/web
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: extracted-text
+          path: in/extracted-text
+      - name: Every shipped text file, private denylist
+        env:
+          PUBLISH_DENYLIST: ${{ secrets.PUBLISH_DENYLIST }}
+          PUBLISH: ${{ needs.preflight.outputs.publish }}
+        run: |
+          set -euo pipefail
+          if [ -n "$PUBLISH_DENYLIST" ] || [ "$PUBLISH" = true ]; then require=--require-denylist; else require=""; fi
+          mkdir -p shipped/navigateur
+          unzip -q in/web/assets/*-navigateur.zip -d shipped/navigateur
+          cp -r in/extracted-text shipped/desktop
+          node scripts/privacy-scan.mjs --dir shipped --shipped $require
+
+  publish:
+    name: publish
+    needs: [preflight, ci, web, package, verify-artifacts, artifact-privacy]
+    if: needs.preflight.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: release
+    permissions:
+      contents: write # the draft release
+      id-token: write # Sigstore certificate of the attestations
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: web
+          path: in/web
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: desktop
+          path: in/desktop
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: notes
+          path: in/notes
+      # Each shipped file must be the one its building job reported (job outputs); nothing else is published.
+      - name: The files are the ones their jobs built; SHA256SUMS.txt
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+          WEB_ZIP: ${{ needs.web.outputs.zip_sha256 }}
+          WEB_SBOM: ${{ needs.web.outputs.sbom_sha256 }}
+          SETUP: ${{ needs.package.outputs.setup_sha256 }}
+          PORTABLE: ${{ needs.package.outputs.portable_sha256 }}
+        run: |
+          set -euo pipefail
+          mkdir out
+          cp "in/web/assets/LittleBird-Trainer-$VERSION-navigateur.zip" "in/web/assets/LittleBird-Trainer-$VERSION.sbom.cdx.json" out/
+          cp "in/desktop/desktop-assets/LittleBird-Trainer-Setup-$VERSION.exe" "in/desktop/desktop-assets/LittleBird-Trainer-$VERSION-win-x64.zip" out/
+          {
+            echo "$WEB_ZIP  LittleBird-Trainer-$VERSION-navigateur.zip"
+            echo "$WEB_SBOM  LittleBird-Trainer-$VERSION.sbom.cdx.json"
+            echo "$SETUP  LittleBird-Trainer-Setup-$VERSION.exe"
+            echo "$PORTABLE  LittleBird-Trainer-$VERSION-win-x64.zip"
+          } > expected.sha256
+          (cd out && sha256sum --check --strict ../expected.sha256)
+          test "$(ls out | wc -l)" -eq 4
+          (cd out && sha256sum -- * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            out/*.exe
+            out/*.zip
+            out/*.sbom.cdx.json
+            out/SHA256SUMS.txt
+      - uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-path: out/*.exe
+          sbom-path: out/LittleBird-Trainer-${{ needs.preflight.outputs.version }}.sbom.cdx.json
+      - name: Draft release (the maintainer reviews and publishes it)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          gh release create "$TAG" out/* --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+            --title "LittleBird Trainer $VERSION" --notes-file in/notes/release-notes.md

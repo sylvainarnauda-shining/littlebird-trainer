@@ -1,0 +1,31 @@
+# Dependabot version updates (security updates are enabled in the repository settings and are not delayed by the
+# cooldown). One pull request per group; an Electron update is followed by the desktop checks and a flight check, and,
+# once merged, by a release (the shipped Chromium is only as fresh as the last release: docs/PUBLIER-UNE-VERSION.md).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    groups:
+      desktop-runtime:
+        patterns: ['electron', 'electron-builder', '@electron/*']
+      test-tools:
+        patterns: ['@playwright/*', 'playwright', '@napi-rs/canvas']
+      lint:
+        patterns: ['eslint', '@eslint/*', 'globals', 'prettier', 'acorn']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']

@@ -1,0 +1,4 @@
+{
+ "_comment": "Known soft findings, waived until they are fixed. Counts only, never the matched text. Each count may only go down; the release gate (--strict) requires an empty list.",
+ "items": []
+}

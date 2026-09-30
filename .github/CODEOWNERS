@@ -1,0 +1,8 @@
+# Every change is reviewed by the maintainer; the goldens, the page policy, the desktop shell and the pipelines above
+# all (a golden update must be a declared behaviour step: CONTRIBUTING.md).
+*                          @sylvainarnauda-shining
+/tests/fixtures/golden/    @sylvainarnauda-shining
+/desktop/                  @sylvainarnauda-shining
+/scripts/                  @sylvainarnauda-shining
+/.github/                  @sylvainarnauda-shining
+/publish-policy.json       @sylvainarnauda-shining

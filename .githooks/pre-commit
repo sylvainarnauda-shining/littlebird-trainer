@@ -1,0 +1,4 @@
+#!/bin/sh
+# Privacy gate before every commit: scans the staged content and the commit identity (scripts/privacy-scan.mjs).
+# Enabled per clone with: git config core.hooksPath .githooks
+exec node scripts/privacy-scan.mjs --staged
