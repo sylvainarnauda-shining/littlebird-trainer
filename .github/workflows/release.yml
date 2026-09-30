@@ -2,8 +2,9 @@
 # dry run (everything is built and verified, nothing is published; artifacts are kept 3 days).
 # Separation of duties:
 #   preflight          no npm: the tag is on main and equals package.json's version; CHANGELOG section (dated for a
-#                      real release); the page built with the zero-dependency build, its sha256 in the release notes;
-#                      privacy scan of the files and the whole history of the tag
+#                      real release); the French release notes docs/notes-de-version/<version>.md, with the sha256 of
+#                      the page built with the zero-dependency build; pre-release or not (0.x is a pre-release); privacy
+#                      scan of the files and the whole history of the tag
 #   ci                 the whole CI (reused, strict: the browser and desktop jobs block too), on the tagged commit; it
 #                      ends before any shipped file is built, so no lint or test tool runs while they exist
 #   web                Linux: page, deterministic browser zip, SBOM; their sha256 are job outputs
@@ -16,8 +17,9 @@
 #   artifact-privacy   no npm: privacy scan of every shipped text file (browser zip, app.asar, resources)
 #   publish            runs no project code: downloads the named artifacts only, requires every file to equal the sha256
 #                      its building job reported (job outputs, not a file of the same artifact), writes SHA256SUMS.txt,
-#                      attests provenance and SBOM, creates a DRAFT release. Environment "release" (the maintainer's
-#                      approval). The maintainer then publishes the draft by hand; immutable releases lock tag and files.
+#                      attests provenance and SBOM, creates a DRAFT release (marked pre-release for 0.x) with the notes.
+#                      Environment "release" (the maintainer's approval). The maintainer then publishes the draft by
+#                      hand; immutable releases lock tag and files.
 name: Release
 
 on:
@@ -41,6 +43,7 @@ jobs:
     outputs:
       version: ${{ steps.gate.outputs.version }}
       publish: ${{ steps.gate.outputs.publish }}
+      prerelease: ${{ steps.gate.outputs.prerelease }}
       page_sha256: ${{ steps.gate.outputs.page_sha256 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -71,8 +74,10 @@ jobs:
             node scripts/release-notes.mjs --dry-run release-notes.md --page dist/web/index.html
             publish=false
           fi
+          prerelease=$(node --input-type=module -e "import { isPrerelease } from './scripts/release-notes.mjs'; console.log(isPrerelease(process.argv[1]))" "$version")
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "publish=$publish" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
           echo "page_sha256=$page" >> "$GITHUB_OUTPUT"
       - name: Privacy scan of the files and the whole history of the tag
         env:
@@ -350,11 +355,15 @@ jobs:
         with:
           subject-path: out/*.exe
           sbom-path: out/LittleBird-Trainer-${{ needs.preflight.outputs.version }}.sbom.cdx.json
+      # Always a draft; a 0.x version is also marked as a pre-release (scripts/release-notes.mjs isPrerelease).
       - name: Draft release (the maintainer reviews and publishes it)
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
           VERSION: ${{ needs.preflight.outputs.version }}
+          PRERELEASE: ${{ needs.preflight.outputs.prerelease }}
         run: |
-          gh release create "$TAG" out/* --repo "$GITHUB_REPOSITORY" --draft --verify-tag \
+          set -euo pipefail
+          test "$PRERELEASE" = true || test "$PRERELEASE" = false
+          gh release create "$TAG" out/* --repo "$GITHUB_REPOSITORY" --draft --verify-tag --prerelease="$PRERELEASE" \
             --title "LittleBird Trainer $VERSION" --notes-file in/notes/release-notes.md

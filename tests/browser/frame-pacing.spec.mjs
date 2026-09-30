@@ -4,7 +4,7 @@
 // pilot view keeps its set field of view.
 import { test, expect, openTrainer, diag, start, frames, leave } from './fixtures.mjs';
 
-test('100 Hz frames at 250 km/h: view displacement variation < 2 % (raw states > 30 %); chase widened by 24 deg, pilot fixed', async ({
+test('100 Hz frames at 250 km/h: view displacement variation < 2 % (raw states > 30 %); chase widened by 24 deg, pilot fixed @gpu', async ({
   page,
 }) => {
   await openTrainer(page, { manualClock: true });

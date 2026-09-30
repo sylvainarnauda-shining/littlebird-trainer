@@ -5,9 +5,17 @@
 //    by traps that only count calls, so no page code can ever reach them;
 //  - the page's own automation shim must then emulate the pointer lock (window.__LB_EMULATED_POINTER_LOCK__ under
 //    navigator.webdriver): openTrainer() asserts it before returning, that is before any Start click;
-//  - after each test the traps must show zero calls, and the page must have thrown no error.
+//  - after each test the traps must show zero calls, the page must have thrown no error, and the page's content
+//    security policy must have refused nothing (no `securitypolicyviolation` event since the last page load).
 // Sessions are reproducible: Math.random is seeded in the page, and with manualClock the frames are driven by the test
 // at exactly 100 Hz through the exposed frame(now) instead of real time.
+//
+// Scope. A test whose title ends with the tag @gpu renders hundreds to thousands of frames (every simulated 10 ms is a
+// rendered frame of the valley): seconds with a graphics card, hours with software WebGL (measured with WARP: 0.9 s per
+// frame at 1600x900 on a 12-thread desktop CPU, about 1.2 s with 4 CPUs; SwiftShader 5 s). `npm run test:browser` runs
+// every test (the maintainer's GPU, required before each release: docs/PUBLIER-UNE-VERSION.md); the CI job, which has
+// no GPU, runs the others (`npm run test:browser:ci`, --grep-invert @gpu): the page and its policy in Chromium, WebGL2,
+// the emulated pointer lock, G5 parity, stored-profile migrations, export and import, the leave guard.
 import { test as base, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,6 +25,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const PAGE = path.join(ROOT, 'dist', 'web', 'index.html');
 export const PROFILE_KEY = 'littlebird-range-v1';
 export const SEED = Number.parseInt(process.env.LB_TEST_SEED || '20260929', 10);
+
+// Every refusal of the page's content security policy since the page loaded (checked after each test).
+function recordPolicyViolations() {
+  if (window.__LB_TEST_CSP__) return;
+  const list = [];
+  Object.defineProperty(window, '__LB_TEST_CSP__', { value: list });
+  document.addEventListener('securitypolicyviolation', (e) => list.push(e.effectiveDirective));
+}
 
 function installTraps() {
   if (window.__LB_TEST_TRAPS__) return;
@@ -65,6 +81,7 @@ export const test = base.extend({
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.addInitScript(installTraps);
+    await page.addInitScript(recordPolicyViolations);
     page.lbErrors = errors;
     await use(page);
     const traps = await page.evaluate(() => ({ ...window.__LB_TEST_TRAPS__ })).catch(() => null);
@@ -76,6 +93,10 @@ export const test = base.extend({
         keyboardLock: 0,
       });
     expect(errors, 'no uncaught page error').toEqual([]);
+    const refused = await page
+      .evaluate(() => (window.__LB_TEST_CSP__ ? [...window.__LB_TEST_CSP__] : []))
+      .catch(() => []);
+    expect(refused, 'no content security policy violation').toEqual([]);
   },
 });
 export { expect };

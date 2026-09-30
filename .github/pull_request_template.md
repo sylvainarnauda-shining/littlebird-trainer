@@ -12,7 +12,9 @@
 ## Vérifications
 
 - [ ] `npm run verify` (scanner de confidentialité, lint, format, construction, politique de la page, tests Node)
-- [ ] `npm run test:browser` si la page ou ses tests changent
+- [ ] `npm run test:browser` si la page ou ses tests changent (sur une carte graphique ; pour une version, la ligne
+      `Browser-GPU: <N> passed, tree <git rev-parse HEAD^{tree}>` dans cette description, voir
+      `docs/PUBLIER-UNE-VERSION.md`)
 - [ ] `npm run dist:dir` puis `npm run desktop:check` si l'application Windows ou son empaquetage changent
 
 ## Confidentialité

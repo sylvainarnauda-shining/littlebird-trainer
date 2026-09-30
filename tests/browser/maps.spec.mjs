@@ -13,7 +13,7 @@ test('map card of the reference valley; the light menu offers "random" and the e
   expect(await page.locator('#lighting option').count(), 'random + the 8 presets').toBe(9);
 });
 
-test('a foggy preset chosen in the menu is the light of the session', async ({ page }) => {
+test('a foggy preset chosen in the menu is the light of the session @gpu', async ({ page }) => {
   await openTrainer(page, { manualClock: true });
   await page.locator('[data-mode="free"]').click();
   await page.selectOption('#lighting', NAMES.foggyMorning);
@@ -26,7 +26,7 @@ test('a foggy preset chosen in the menu is the light of the session', async ({ p
   await leave(page);
 });
 
-test('a generated map from its address: name, three towers, a forest and a village, a take-off; new map and back to the valley', async ({
+test('a generated map from its address: name, three towers, a forest and a village, a take-off; new map and back to the valley @gpu', async ({
   page,
 }) => {
   await openTrainer(page, { hash: '#carte=gen-123456', manualClock: true });

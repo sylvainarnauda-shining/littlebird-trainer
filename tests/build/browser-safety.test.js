@@ -25,6 +25,25 @@ test('the Playwright configurations run headless, one worker, no retries', () =>
   assert.doesNotMatch(perf, /headless/);
 });
 
+test('the CI scope (the tests whose title does not end with @gpu) keeps the browser-only proofs', () => {
+  const tagged = [];
+  const ci = [];
+  for (const f of specs.filter((s) => s.startsWith(path.join('tests', 'browser')))) {
+    const text = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    for (const m of text.matchAll(/\btest\(\s*'((?:[^'\\]|\\.)+)',\s*async\b/g))
+      (/ @gpu$/.test(m[1]) ? tagged : ci).push(m[1]);
+    assert.ok(!/@gpu(?!')/.test(text.replace(/^\s*\/\/.*$/gm, '')), f + ': @gpu only at the end of a title');
+  }
+  for (const want of [/^G5: /, /^boots with the pointer lock emulated/, /^beforeunload: /, /^export \(revision 16\)/])
+    assert.ok(
+      ci.some((t) => want.test(t)),
+      'in the CI scope: ' + want,
+    );
+  assert.ok(tagged.length >= 10 && ci.length >= 6, `${tagged.length} tagged, ${ci.length} in the CI scope`);
+  const fixture = fs.readFileSync(path.join(ROOT, 'tests', 'browser', 'fixtures.mjs'), 'utf8');
+  assert.match(fixture, /expect\(refused, 'no content security policy violation'\)\.toEqual\(\[\]\)/);
+});
+
 test('every spec uses the safety fixture; Start only through start(); no real capture API anywhere', () => {
   assert.ok(specs.length >= 7, 'specs found: ' + specs.length);
   for (const f of specs) {

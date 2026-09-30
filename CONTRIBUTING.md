@@ -27,6 +27,7 @@ Merci de votre intérêt. Ce projet vise un entraîneur **fidèle au jeu mesuré
 | `npm run verify:build`     | politique CSP exacte, blocs hachés, aucune référence externe, construction reproductible                 |
 | `npm test`                 | tests unitaires, de fidélité, de non-régression (goldens), d'intégration, de construction et de sécurité |
 | `npm run test:browser`     | construit la page, puis la teste dans Chrome, sans fenêtre (voir la règle de sécurité ci-dessous)        |
+| `npm run test:browser:ci`  | la même chose sans les tests marqués `@gpu` (la portée de la CI, en rendu logiciel)                      |
 | `npm run test:golden:gate` | la porte complète des goldens (trois enregistrements, déterminisme, test de mutation)                    |
 | `npm run test:perf`        | images par seconde sur la machine locale (mesurées, imposées seulement avec `LB_PERF=1`)                 |
 | `npm run dist:dir`         | l'application Windows non installée dans `release/win-unpacked/` (Windows)                               |
@@ -47,6 +48,17 @@ Un test ne doit **jamais** capturer la souris ou le clavier de la machine qui le
 - `scripts/build.mjs` refuse de construire une page dont `app.js` n'a plus cette simulation.
 - Aucun test ne demande le plein écran, le vrai verrouillage ou le verrouillage du clavier ;
   `tests/build/browser-safety.test.js` le vérifie.
+- Après chaque test, la page ne doit avoir levé aucune erreur ni enfreint aucune règle de sa politique de sécurité.
+
+**Portée et durée.** Avec l'horloge manuelle, chaque pas de 10 ms simulé est une image rendue. Le titre d'un test qui
+rend des centaines à des milliers d'images finit par l'étiquette `@gpu` : il prend quelques secondes avec une carte
+graphique, des heures en rendu logiciel (mesuré avec WARP : environ 0,9 s par image en 1600 × 900 sur un processeur de
+bureau à 12 fils, et environ une minute pour démarrer une page avec 4 processeurs ; SwiftShader est cinq fois plus
+lent). La CI n'a pas de carte graphique : son travail `browser` lance `npm run test:browser:ci` (sans les tests
+`@gpu`), en deux parties, avec au plus 8 minutes par test et 35 par partie (`LB_BROWSER_TEST_MIN`,
+`LB_BROWSER_BUDGET_MIN` ; le travail de nuit sous Linux, avec SwiftShader : 20 et 60).
+`npm run test:browser` lance tout ; il est exigé sur une carte graphique avant chaque version. Un nouveau test qui rend
+plus d'une centaine d'images prend l'étiquette `@gpu`.
 
 La même règle vaut pour l'application Windows. Elle n'est jamais pilotée de l'extérieur (Playwright ne peut pas
 s'y attacher : ses fusibles refusent `--inspect` et son code refuse les ports de débogage). Elle se teste par son
@@ -55,6 +67,9 @@ auto-test (`--lb-self-test=<nonce>` avec la variable d'environnement `LB_SELF_TE
 cliquer sur « Démarrer » et encore juste avant le clic, toutes les permissions refusées (la capture et le plein écran
 sont donc impossibles), fenêtre qui ne peut pas prendre le focus et laisse passer la souris, profil temporaire. Aucun
 test ne lance l'application sans son auto-test ; `tests/desktop/self-test-safety.test.js` vérifie cet ordre.
+L'auto-test ne mesure pas une durée fixe : il attend que la session ait simulé 2 s de vol sur au moins 20 images qui
+font avancer le vol et dessinent la scène (3 minutes au plus), ce qui prend 2 s avec une carte graphique et environ 30 s
+en rendu logiciel (`--warp`, la CI) ; son rapport (`desktop-smoke.json` dans la CI) garde la chronologie des images.
 
 Sous Windows 11, le **Contrôle intelligent des applications**, s'il est activé, peut refuser de lancer un exécutable
 non signé que l'on vient de construire (`spawn UNKNOWN`) : les vérifications qui lancent l'application empaquetée

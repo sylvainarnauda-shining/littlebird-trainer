@@ -25,7 +25,7 @@ const nonce = () => crypto.randomBytes(12).toString('hex');
 // Starts the executable, waits for its exit (killing the process tree after `timeout` ms), returns {code, report}.
 // The self-test also needs LB_SELF_TEST=<nonce> in its environment (desktop/policy.cjs selfTestArgs); selfTestEnv:
 // false leaves it out (a launch that must be refused).
-export function launch(exe, args, { env = {}, timeout = 420_000, id = nonce(), selfTestEnv = true } = {}) {
+export function launch(exe, args, { env = {}, timeout = 540_000, id = nonce(), selfTestEnv = true } = {}) {
   const report = path.join(REPORTS, `report-${id}.json`);
   fs.rmSync(report, { force: true });
   return new Promise((resolve) => {
@@ -156,7 +156,9 @@ function summary(r) {
     `Electron ${r.versions.electron} / Chromium ${r.versions.chrome}`,
     `emulated lock ${s.emulation.emulated}`,
     `G5 parity ${s.parity.ok ? 'OK' : 'FAIL'} (${s.parity.engine} digest ${s.parity.final.slice(0, 16)}, max position difference ${s.parity.maxDelta.position} m)`,
-    `session ${s.session.simulated} s simulated`,
+    `session ${s.session.simulated} s simulated over ${s.session.frames} frames` +
+      ` (${s.session.flyingFrames} advanced and drew) in ${s.session.wallMs / 1000} s` +
+      ` (longest frame ${s.session.longestFrameMs} ms)`,
     `export ${s.export.state}`,
     `negative ${Object.values(s.negative).every(Boolean) ? 'all refused' : 'FAIL'}`,
   ].join('; ');

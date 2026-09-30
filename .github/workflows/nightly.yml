@@ -7,7 +7,10 @@
 #   perf     build and level-of-detail budgets, reported only (frame rates are measured on the maintainer's GPU)
 #   package  the full Windows packaging (installer and portable zip) and the release checks: fuses, app.asar, official
 #            runtime files, self-tests (emulated pointer lock, G5 parity), silent per-user install and uninstall
-#   browser-linux  the browser specs on Linux with SwiftShader (optional backend)
+#   browser-linux  the CI scope of the browser specs (npm run test:browser:ci) on Linux with SwiftShader (optional
+#            backend, about five times slower than WARP per frame of the valley). Measured on 30/09/2026 with Chrome
+#            154, SwiftShader and 4 CPUs: 8 tests in 10.3 minutes, the longest (the leave guard) 5.2 minutes; bounds:
+#            20 minutes per test, 60 per run, 75 for the job
 name: Nightly
 
 on:
@@ -110,12 +113,14 @@ jobs:
   browser-linux:
     name: browser-linux
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 75
     continue-on-error: true
     permissions:
       contents: read
     env:
       LB_GL: swiftshader
+      LB_BROWSER_TEST_MIN: 20
+      LB_BROWSER_BUDGET_MIN: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -126,4 +131,4 @@ jobs:
           package-manager-cache: false
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
+      - run: npm run test:browser:ci

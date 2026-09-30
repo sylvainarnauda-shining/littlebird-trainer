@@ -32,10 +32,21 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
 ## À chaque version
 
 1. Sur une branche : la version dans `package.json` (`npm version X.Y.Z --no-git-tag-version`) et, dans
-   `CHANGELOG.md`, la section `## [X.Y.Z] — AAAA-MM-JJ` datée (le workflow refuse une section non datée). Tout ce qui
-   change dans les sensations de vol y est écrit.
+   `CHANGELOG.md`, la section `## [X.Y.Z] — AAAA-MM-JJ` datée du jour de l'étiquette (le workflow refuse une section
+   non datée). Tout ce qui change dans les sensations de vol y est écrit. Puis les **notes de version** en français,
+   `docs/notes-de-version/<version>.md` (modèle : [notes de la 0.9.0](notes-de-version/0.9.0.md)), écrites pour les
+   joueurs : ce qu'est l'entraîneur, son statut (une version 0.x est une préversion), quel fichier prendre,
+   SmartScreen et le Contrôle intelligent des applications avec la version navigateur en repli, la vérification des
+   empreintes et des attestations. `{{version}}`, `{{repo}}` et `{{page_sha256}}` y sont remplacés à la publication ;
+   le workflow refuse des notes absentes ou incomplètes (`scripts/release-notes.mjs`).
 2. Sur le PC du mainteneur, avec sa carte graphique :
-   - `npm run verify` puis `npm run test:browser` ;
+   - `npm run verify` puis `npm run test:browser` (tous les tests, y compris ceux marqués `@gpu`, que la CI ne lance
+     pas faute de carte graphique : vol libre, modes, cartes, loi de la souris, cadence des images, politique de
+     sécurité sur chaque écran), sur le dernier commit de la branche, et sa trace dans la description de la pull
+     request : `Browser-GPU: <N> passed, tree <empreinte>`, avec la dernière ligne de Playwright et l'empreinte de
+     l'arbre testé (`git rev-parse HEAD^{tree}`). La fusion par écrasement garde cet arbre tant que `main` n'a pas
+     bougé : avant l'étiquette, `git rev-parse <commit fusionné>^{tree}` doit redonner la même empreinte, sinon on
+     relance `npm run test:browser` sur le commit fusionné ;
    - `npm run test:perf` (seuils d'images par seconde imposés avec `LB_PERF=1`) ;
    - `npm run dist`, puis `npm run desktop:check` (fusibles, contenu de `app.asar`, fichiers d'Electron officiels,
      auto-test de l'application empaquetée) et `npm run release:check` (zip portable, installation et
@@ -46,7 +57,9 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
    - avec les **réglages initiaux** : la sensation de la souris (sensibilités par défaut choisies, voir
      [`REGLAGES.md`](REGLAGES.md)) ; dans Chrome, Ctrl gauche + W pendant une session doit afficher la demande de
      confirmation du navigateur (et « Annuler » garder la session).
-3. Pull request, `ci-ok` vert, fusion dans `main`.
+3. Branche `ci/...` d'essai si les travaux consultatifs (`browser`, `desktop`) doivent être vus verts avant la pull
+   request, puis pull request, `ci-ok` vert, fusion dans `main`. Tant que `browser` et `desktop` sont consultatifs
+   dans `ci-ok`, lire leur résultat : le workflow de publication les rend bloquants, et un échec là arrête la version.
 4. Essai à blanc : Actions › **Release** › **Run workflow** construit et vérifie tout sans rien publier (fichiers
    gardés 3 jours).
 5. Étiquette sur le commit fusionné : `git switch main`, `git pull`, `git tag vX.Y.Z`, `git push origin vX.Y.Z`.
@@ -57,7 +70,8 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
    à ces empreintes, même page sous Linux, sous Windows et dans les notes, fusibles, contenu, auto-tests du zip et de
    l'application installée, installation et désinstallation), l'analyse de confidentialité des fichiers livrés, puis,
    après **votre approbation** de l'environnement `release`, la même vérification des empreintes,
-   `SHA256SUMS.txt`, les attestations et un **brouillon** de version.
+   `SHA256SUMS.txt`, les attestations et un **brouillon** de version (marqué préversion pour une version 0.x), avec
+   les notes de version suivies de la section du journal.
 7. Relire le brouillon (fichiers, notes), télécharger l'installateur, vérifier son empreinte et son attestation
    ([`VERIFIER-UN-TELECHARGEMENT.md`](VERIFIER-UN-TELECHARGEMENT.md)), l'installer, voler, puis **Publish release**.
 
@@ -71,11 +85,17 @@ nouvelle version d'Electron. Règle du projet : une version de l'entraîneur sor
 d'Electron, **dans les 7 jours** si Chromium signale une faille exploitée ; le workflow hebdomadaire `maintenance.yml`
 échoue quand ce délai est dépassé ou quand la version majeure n'est plus suivie.
 
-Dependabot propose la mise à jour (groupe `desktop-runtime`). Avant de fusionner : CI verte, puis sur le PC
-`npm run dist` et `npm run desktop:check`. L'auto-test compare le calcul du vol dans le moteur d'Electron à la
-référence (porte G5, `desktop/parity.cjs`) : si la nouvelle version de Chromium calcule autrement, il échoue ; on mesure
-alors l'écart (il doit rester sous la tolérance), on enregistre la nouvelle empreinte dans `CHROMIUM` avec la version
-qui l'a donnée, et on le note dans `CHANGELOG.md`. Enfin quelques minutes de vol (souris capturée, 100 Hz, son).
+Dependabot propose la mise à jour (groupe `desktop-runtime`). Avant de fusionner : lire les notes de version d'Electron
+(correctifs de sécurité), `node scripts/check-install-scripts.mjs` (relire tout script d'installation nouveau), CI
+verte, puis sur le PC `npm run dist` et `npm run desktop:check`. L'auto-test compare le calcul du vol dans le moteur
+d'Electron à la référence (porte G5, `desktop/parity.cjs`) : si la nouvelle version de Chromium calcule autrement, il
+échoue ; on mesure alors l'écart (il doit rester sous la tolérance), on enregistre la nouvelle empreinte dans
+`CHROMIUM` avec la version qui l'a donnée (`measuredWith`), et on le note dans `CHANGELOG.md`. L'empreinte complète se
+lit dans le rapport de l'auto-test (`steps.parity.final`, fichier `desktop-smoke.json` de la CI) et, pour le Chromium
+de Playwright, dans le journal du test `G5` du navigateur ; pour une empreinte inconnue, le rapport
+(`steps.parity.checkpointHex`) et le journal (ligne `G5 checkpointHex`) donnent aussi les points de contrôle, tout ce
+qu'il faut pour l'enregistrer après avoir vérifié l'écart. Même sans changement d'empreinte, la mesure est notée
+(exemple : 44.4.5 puis 44.5.1, même empreinte). Enfin quelques minutes de vol (souris capturée, 100 Hz, son).
 
 ## Signature
 

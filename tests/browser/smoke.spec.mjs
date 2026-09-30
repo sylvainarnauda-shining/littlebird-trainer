@@ -36,7 +36,7 @@ test('boots with the pointer lock emulated, WebGL2 drawing, an old profile migra
   expect(s.scenery.trees, 'forest of about 290 000 trees').toBeGreaterThan(250000);
 });
 
-test('free flight: landed at idle, sound running, take-off to a hover, forest and effects, a burst, the pause screen', async ({
+test('free flight: landed at idle, sound running, take-off to a hover, forest and effects, a burst, the pause screen @gpu', async ({
   page,
 }) => {
   await openTrainer(page, { profile: REVISION_7, manualClock: true });

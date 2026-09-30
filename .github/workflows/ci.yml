@@ -11,10 +11,13 @@
 #   test     build, exact page policy, every Node suite (goldens G2a-G2g, fidelity, unit, integration, security,
 #            build, desktop policy and G5 parity in Node) on Linux and Windows
 #   repro    the page built on Linux and on Windows is the same file (G-REPRO)
-#   browser  Chromium on Windows with software Direct3D 11 (WARP): page policy, menus, modes, maps, pointer lock
-#            (emulated, asserted before every Start), G5 parity in the browser
+#   browser  Chromium on Windows with software Direct3D 11 (WARP), two shards: the page and its policy (no violation in
+#            any test), WebGL2, pointer lock (emulated, asserted before every Start), G5 parity in the browser, stored
+#            profiles, export and import, the leave guard; the frame-heavy specs tagged @gpu run on a GPU before each
+#            release (npm run test:browser), since WARP renders about one frame per second
 #   desktop  unpacked Electron build: fuses, app.asar allowlist, official runtime files, packaged self-test (emulated
-#            pointer lock, G5 parity, negative probes), refused switches, tampered app.asar refused
+#            pointer lock, G5 parity, a session flown until 2 s are simulated, negative probes), refused switches,
+#            tampered app.asar refused
 #   golden-update  a change of the goldens says why ("Golden-Update: <reason>" in the pull request description, which
 #            becomes the squash commit message, and a CHANGELOG.md entry); a change of the recorder alone is proven
 #            neutral (scripts/check-golden-trailer.mjs; no npm). A ci/** branch is judged against main as its pull
@@ -161,15 +164,24 @@ jobs:
           test "$(ls web-sha256-*.txt | wc -l)" -eq 2
           test "$(sort -u web-sha256-*.txt | wc -l)" -eq 1
 
+  # Software WebGL (WARP) boots the page in about a minute and renders about one frame per second: the specs tagged
+  # @gpu (hundreds to thousands of frames each) run only on a machine with a graphics card (npm run test:browser before
+  # every release, docs/PUBLIER-UNE-VERSION.md); this job runs the others in two shards of about 4 tests, each bounded
+  # by Playwright (8 minutes per test, 35 minutes per run, playwright.config.mjs) and by the job timeout.
   browser:
-    name: browser
+    name: browser (${{ matrix.shard }}/2)
     needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     runs-on: windows-2025
-    timeout-minutes: 60
+    timeout-minutes: 45
     permissions:
       contents: read
     env:
       LB_GL: warp
+      SHARD: ${{ matrix.shard }}/2
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -181,11 +193,12 @@ jobs:
       - run: npm ci
       # Explicit (install scripts are off); no browser cache on purpose.
       - run: npx playwright install chromium
-      - run: npm run test:browser
+      - shell: bash
+        run: npm run test:browser:ci -- --shard="$SHARD"
       - if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: browser-test-results
+          name: browser-test-results-${{ matrix.shard }}
           path: test-results/
           retention-days: 5
 
