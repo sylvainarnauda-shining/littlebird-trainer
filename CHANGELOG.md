@@ -125,6 +125,10 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   semaine dans `maintenance.yml`. Les robots Dependabot et GitHub Actions sont admis sous leur nom et leur adresse
   « noreply » exacts, et les messages de commit peuvent citer l'adresse « noreply » de GitHub (aussi comme texte d'un
   lien Markdown) et la signature de Dependabot ; toute autre adresse reste refusée.
+- Scanner de confidentialité, identités : le champ d'adresse doit être tout entier une adresse « noreply » (avant, il
+  suffisait qu'il se termine par le domaine « noreply ») et le nom ne doit contenir aucune adresse
+  (`identity-name-email`) ; un domaine admis ne couvre plus que les hôtes placés juste sous lui, pas un autre domaine
+  écrit devant lui.
 - Outils sans dépendance : zip déterministe, sommes SHA-256, notes de version, SBOM CycloneDX, contrôle des scripts
   d'installation, réglages GitHub en code (`scripts/github-settings.mjs`), vérifications de l'application et des
   fichiers livrés. Le scanner de confidentialité analyse aussi les fichiers livrés (`--shipped`).

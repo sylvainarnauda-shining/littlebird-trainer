@@ -489,11 +489,13 @@ test('commit messages: GitHub noreply addresses and Dependabot sign-off accepted
     accepted.forEach((m, i) => R.commit('m' + i + '.js', '//\n', m));
     let r = R.scan(['--tracked', '--history']);
     assert.equal(r.code, 0, r.out);
-    // Refused: GitHub's support address outside Dependabot's sign-off, another sign-off, a private address.
+    // Refused: GitHub's support address outside Dependabot's sign-off, another sign-off, a private address, a private
+    // address disguised as a host under an allowed domain.
     const refused = [
       'Ask ' + at('support', 'github.com') + ' about it',
       'Fix\n\nSigned-off-by: someone <' + at('support', 'github.com') + '>',
       'Fix\n\nSigned-off-by: someone <' + at('someone', 'mailhost.io') + '>',
+      'Fix\n\nCo-authored-by: someone <' + at('someone', 'mailhost.io.users.noreply.github.com') + '>',
     ];
     for (const m of refused) {
       R.commit('r.js', m.length + '\n', m);
@@ -503,13 +505,21 @@ test('commit messages: GitHub noreply addresses and Dependabot sign-off accepted
       assert.ok(!r.out.includes('mailhost') && !r.out.includes('support@'), 'nothing printed');
       R.ok(['reset', '-q', '--hard', 'HEAD^']);
     }
-    // Files never get the message allowances.
+    // Files never get the message allowances. An allowed domain covers a host directly under it, not another domain
+    // written in front of it.
     const dir = path.join(R.base, 'tree');
     fs.mkdirSync(dir);
     fs.writeFileSync(path.join(dir, 'a.txt'), 'x\n' + at('noreply', 'github.com') + '\n');
+    fs.writeFileSync(path.join(dir, 'b.txt'), 'x\n' + at('someone', 'mailhost.io.example.com') + '\n');
+    fs.writeFileSync(
+      path.join(dir, 'c.txt'),
+      at('someone', 'mail.example.com') + ' ' + at('1+x', 'users.noreply.github.com'),
+    );
     r = R.scan(['--dir', dir, '--policy', path.join(R.base, 'publish-policy.json')]);
     assert.equal(r.code, 1);
     assert.match(r.out, /ERROR email-address\s+a\.txt:2/);
+    assert.match(r.out, /ERROR email-address\s+b\.txt:2/);
+    assert.ok(!/ERROR email-address\s+c\.txt/.test(r.out), 'a host under an allowed domain is accepted: ' + r.out);
   } finally {
     R.cleanup();
   }
@@ -551,6 +561,52 @@ test('identities: Dependabot and GitHub Actions only with their own noreply addr
       assert.ok(!r.out.includes('mailhost'), 'nothing printed');
       R.ok(['reset', '-q', '--hard', 'HEAD^']);
     }
+  } finally {
+    R.cleanup();
+  }
+});
+
+test('identities: the whole address must be a noreply one, and no name may hold an address', () => {
+  const R = scratchRepo();
+  const at = (local, domain) => local + '@' + domain;
+  const NOREPLY = at('1+tester', 'users.noreply.github.com');
+  const as = (name, email) => ({ GIT_AUTHOR_NAME: name, GIT_AUTHOR_EMAIL: email });
+  try {
+    // A noreply address with or without the account id.
+    R.commit('n.js', '//\n', 'old form', as('tester', at('tester', 'users.noreply.github.com')));
+    let r = R.scan(['--tracked', '--history']);
+    assert.equal(r.code, 0, r.out);
+    const refused = [
+      // A private address written in the address field next to a noreply one, or in front of the noreply domain.
+      [as('tester', at('some.one', 'mailhost.io') + ' ' + NOREPLY), 'identity-email-not-noreply'],
+      [as('tester', at('some.one', 'mailhost.io') + ',' + NOREPLY), 'identity-email-not-noreply'],
+      [as('tester', at('some.one', 'mailhost.io.users.noreply.github.com')), 'identity-email-not-noreply'],
+      [as('tester', at('-tester-', 'users.noreply.github.com')), 'identity-email-not-noreply'],
+      // An address as the name, with a noreply address; "Name <address>" as the name (git drops the brackets); an
+      // address with a fullwidth at sign.
+      [as(at('some.one', 'mailhost.io'), NOREPLY), 'identity-name-email'],
+      [as('Some One <' + at('some.one', 'mailhost.io') + '>', NOREPLY), 'identity-name-email'],
+      [as('Some One some.one' + String.fromCharCode(0xff20) + 'mailhost.io', NOREPLY), 'identity-name-email'],
+    ];
+    for (const [env, rule] of refused) {
+      R.commit('x.js', rule + '\n', 'change', env);
+      r = R.scan(['--tracked', '--history']);
+      assert.equal(r.code, 1, JSON.stringify(env));
+      assert.match(r.out, new RegExp(`ERROR ${rule}\\s+commit:[0-9a-f]{12} \\(author\\)`), JSON.stringify(env));
+      assert.ok(!/\(committer\)/.test(r.out), 'the committer is accepted');
+      assert.ok(!r.out.includes('mailhost'), 'nothing printed');
+      R.ok(['reset', '-q', '--hard', 'HEAD^']);
+    }
+    // The staged check (pre-commit) judges the identity that would commit, name included.
+    fs.writeFileSync(path.join(R.base, 'src', 's.js'), '//\n');
+    R.ok(['add', '-A']);
+    const staged = spawnSync(process.execPath, [path.join(R.base, 'scripts', 'privacy-scan.mjs'), '--staged'], {
+      cwd: R.base,
+      encoding: 'utf8',
+      env: R.env({ GIT_AUTHOR_NAME: at('some.one', 'mailhost.io') }),
+    });
+    assert.equal(staged.status, 1, staged.stdout + staged.stderr);
+    assert.match(staged.stdout, /ERROR identity-name-email\s+\(author identity\)/);
   } finally {
     R.cleanup();
   }

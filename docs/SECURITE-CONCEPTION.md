@@ -66,7 +66,10 @@ exécutables non signés (voir [`INSTALLATION.md`](INSTALLATION.md)).
   GitHub lui-même comme « committer » (fusions, modifications en ligne, Dependabot) et, sous leur nom et leur adresse
   « noreply » exacts, les robots Dependabot et GitHub Actions ; dans les messages de commit, l'adresse « noreply » de
   GitHub et la ligne de signature de Dependabot. Toute autre adresse, par exemple celle d'une personne dans le commit
-  de fusion d'essai d'une pull request, fait échouer la CI.
+  de fusion d'essai d'une pull request, fait échouer la CI. Le champ d'adresse d'une identité doit être tout entier une
+  adresse « noreply », et son nom ne doit contenir aucune adresse ; un domaine admis couvre les hôtes placés juste sous
+  lui, pas un autre domaine écrit devant lui. Une adresse volontairement déguisée (« nom [at] domaine ») n'est pas
+  cherchée : le scanner vise les fuites accidentelles.
 - Goldens : le travail `golden-update` de la CI refuse une modification des goldens sans la ligne
   `Golden-Update: <raison>` dans la description de la pull request et sans entrée dans `CHANGELOG.md`, et refait la
   preuve de neutralité d'un changement de l'enregistreur seul.

@@ -40,15 +40,17 @@
 // counts; a count above the listed one fails, and so does an unlisted soft finding. Game-invented names the naming step
 // replaced are forbidden terms, listed in the policy as sha256 hashes of the lower-cased word (forbiddenTermHashes) so
 // that the policy does not spell them out.
-// Commit identities: every author, committer and tagger address must match commitEmailPattern (GitHub noreply). Two
-// exceptions, both exact: a committer listed in committerIdentitiesAllowed, GitHub's own web-flow identity (name
-// "GitHub", address noreply at github.com), which commits squash merges, web edits and Dependabot updates and is never
-// accepted as an author or a tagger; and the bots of botIdentities (Dependabot, GitHub Actions), each accepted only
-// with its own name and its own noreply address. Any other identity in the bot form ("...[bot]") fails, and so does
-// any other address (a person's own address in GitHub's test merge commit of a pull request, for example).
+// Commit identities: every author, committer and tagger address must match commitEmailPattern (GitHub noreply, the
+// whole field). Two exceptions, both exact: a committer listed in committerIdentitiesAllowed, GitHub's own web-flow
+// identity (name "GitHub", address noreply at github.com), which commits squash merges, web edits and Dependabot updates
+// and is never accepted as an author or a tagger; and the bots of botIdentities (Dependabot, GitHub Actions), each
+// accepted only with its own name and its own noreply address. Any other identity in the bot form ("...[bot]") fails,
+// and so does any other address (a person's own address in GitHub's test merge commit of a pull request, for example).
+// No identity's name may hold an address (identity-name-email).
 // Commit and tag messages: addresses of emailAllowDomains (GitHub noreply) are accepted anywhere, as in files, and the
 // entries of commitMessageEmailsAllowed only in messages (GitHub's noreply address; its support address only on
-// Dependabot's own sign-off line).
+// Dependabot's own sign-off line). An allowed domain covers the hosts directly under it, not a longer name in front.
+// Out of scope: deliberately disguised addresses ("name [at] host [dot] tld"); the scanner looks for accidental leaks.
 // Every regular expression below is written so that its own source text does not match it.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -305,6 +307,12 @@ function* emails(text) {
     if (m) yield { index: s, domain: m[0].toLowerCase(), address: text.slice(s, at + 1 + m[0].length).toLowerCase() };
   }
 }
+// An address's domain is allowed when it is one of the allowed domains or a host directly under one (one more label):
+// a longer name in front, such as another domain written before an allowed one (host.tld.example.com), is not.
+export const domainAllowed = (domain, allowed) =>
+  allowed.some(
+    (d) => domain === d || (domain.endsWith('.' + d) && !domain.slice(0, domain.length - d.length - 1).includes('.')),
+  );
 // The addresses a commit or tag message may name besides emailAllowDomains: [{address: RegExp, line: RegExp|null}]
 // from the policy's commitMessageEmailsAllowed ({email, line} regular expressions; line = the whole line it must be on).
 export function messageEmailRules(policy) {
@@ -385,7 +393,7 @@ export function scanContent({ file, buf, policy, rules, findings, emailDomains, 
     const emailRule = { id: 'email-address', level: 'hard' };
     for (const { index, domain, address } of emails(t)) {
       if (/\.(png|jpe?g|webp|svg|gif|js|mjs|cjs|css|json)$/.test(domain)) continue;
-      if (domains.some((d) => domain === d || domain.endsWith('.' + d))) continue;
+      if (domainAllowed(domain, domains)) continue;
       if (messageEmails.some((r) => r.address.test(address) && (!r.line || r.line.test(lineAround(t, index)))))
         continue;
       where(emailRule, lineAt(index));
@@ -543,6 +551,10 @@ export function runScan(argv) {
       if (!github && !new RegExp(policy.commitEmailPattern || '$^', 'i').test(address))
         findings.push({ rule: 'identity-email-not-noreply', level: 'hard', file: label, line: 0 });
     }
+    // A name holds no address at all (a user.name set to an address, or "Name <address>" whose brackets git dropped).
+    const nameText = String(name || '');
+    if (!emails(nameText).next().done || !emails(normalizeText(nameText)).next().done)
+      findings.push({ rule: 'identity-name-email', level: 'hard', file: label, line: 0 });
     if (denylist.some((re) => re.test(name || '') || re.test(address)))
       findings.push({ rule: 'identity-private-term', level: 'hard', file: label, line: 0 });
   };

@@ -131,11 +131,12 @@ le crochet `pre-push` pour une étiquette envoyée) ; `--all-refs` prend toutes 
 hebdomadaire de `maintenance.yml`, qui revérifie ainsi chaque branche et chaque étiquette publiées avec la liste
 privée du moment. Identités admises (auteur, « committer », étiquette) : les adresses « noreply » de GitHub ; GitHub
 lui-même, seulement comme « committer » (fusions, modifications en ligne) ; les robots Dependabot et GitHub Actions,
-chacun avec son nom et son adresse « noreply » exacts (`botIdentities`). Dans les messages de commit, les adresses
-« noreply » de GitHub et la ligne de signature de Dependabot sont admises (`commitMessageEmailsAllowed`). Toute autre
-adresse fait échouer le scanner, y compris dans le commit de fusion d'essai d'une pull request, qui porte l'adresse
-principale de son auteur : activez « Keep my email addresses private » dans les réglages de votre compte GitHub avant
-d'en ouvrir une.
+chacun avec son nom et son adresse « noreply » exacts (`botIdentities`). Le champ d'adresse doit être tout entier une
+adresse « noreply » (`commitEmailPattern`), et le nom d'une identité ne doit contenir aucune adresse (un `user.name`
+réglé sur une adresse, par exemple). Dans les messages de commit, les adresses « noreply » de GitHub et la ligne de
+signature de Dependabot sont admises (`commitMessageEmailsAllowed`). Toute autre adresse fait échouer le scanner, y
+compris dans le commit de fusion d'essai d'une pull request, qui porte l'adresse principale de son auteur : activez
+« Keep my email addresses private » dans les réglages de votre compte GitHub avant d'en ouvrir une.
 
 Le dépôt fonctionne par liste d'autorisation (`.gitignore` et `allowedPaths` de `publish-policy.json`) : un nouveau
 fichier à la racine s'ajoute aux deux, volontairement. `npm run scan` lance le scanner ; ses règles génériques sont
