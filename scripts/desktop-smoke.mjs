@@ -156,7 +156,8 @@ function summary(r) {
     `Electron ${r.versions.electron} / Chromium ${r.versions.chrome}`,
     `emulated lock ${s.emulation.emulated}`,
     `G5 parity ${s.parity.ok ? 'OK' : 'FAIL'} (${s.parity.engine} digest ${s.parity.final.slice(0, 16)}, max position difference ${s.parity.maxDelta.position} m)`,
-    `session ${s.session.simulated} s simulated over ${s.session.frames} frames in ${s.session.wallMs / 1000} s` +
+    `session ${s.session.simulated} s simulated over ${s.session.frames} frames` +
+      ` (${s.session.flyingFrames} advanced and drew) in ${s.session.wallMs / 1000} s` +
       ` (longest frame ${s.session.longestFrameMs} ms)`,
     `export ${s.export.state}`,
     `negative ${Object.values(s.negative).every(Boolean) ? 'all refused' : 'FAIL'}`,

@@ -37,40 +37,64 @@ test('self-test.cjs: the emulation is asserted before Start is clicked, and agai
     assert.ok(!src.includes(banned), banned);
 });
 
-test('self-test.cjs: a session flies until it has simulated 2 s over 20 frames, whatever the machine speed', async () => {
+test('self-test.cjs: a session flies until it has simulated 2 s over 20 drawn frames, whatever the machine speed', async () => {
   const st = require(path.join(ROOT, 'desktop', 'self-test.cjs'));
   assert.deepEqual(st.SESSION, { simulated: 2, frames: 20, wallMs: 180000 });
   const src = code('desktop/self-test.cjs');
   assert.ok(!/await sleep\(3000\)/.test(src), 'no fixed stretch of real time');
   assert.match(src, /js\(`\(\$\{flyUntil\.toString\(\)\}\)\(\$\{JSON\.stringify\(SESSION\)\}\)`\)/);
-  // flyUntil, run here on a fake page whose frame loop counts at most 0.1 s per frame (a slow software renderer).
+  // flyUntil, run here on a fake page: perFrame(n) is the simulated time frame n adds (the real page counts at most
+  // 0.1 s per frame, a slow software renderer), calls(n) its WebGL draw calls, running(n) whether the session runs.
   const saved = { window: globalThis.window, document: globalThis.document, raf: globalThis.requestAnimationFrame };
-  const page = (running, perFrame) => {
+  const page = ({ perFrame, running = () => true, calls = () => 300 }) => {
     let time = 0;
     let frames = 0;
     globalThis.window = {
-      trainerDiagnostics: () => ({ time, running: running(frames), webgl: { calls: 300 }, fps: 50 }),
+      trainerDiagnostics: () => ({ time, running: running(frames), webgl: { calls: calls(frames) }, fps: 50 }),
     };
     globalThis.document = { hidden: false, hasFocus: () => true };
     globalThis.requestAnimationFrame = (cb) =>
       setImmediate(() => {
         frames++;
-        time += perFrame;
+        time += perFrame(frames);
         cb();
       });
   };
+  const fly = (wallMs = 60000) => st.flyUntil({ simulated: 2, frames: 20, wallMs });
   try {
-    page(() => true, 0.1);
-    const slow = await st.flyUntil({ simulated: 2, frames: 20, wallMs: 60000 });
+    page({ perFrame: () => 0.1 });
+    const slow = await fly();
     assert.equal(slow.flown, true);
-    assert.ok(slow.frames >= 20 && slow.simulated >= 2, JSON.stringify(slow));
-    page(() => true, 1 / 120);
+    assert.ok(slow.flyingFrames >= 20 && slow.simulated >= 2, JSON.stringify(slow));
+    page({ perFrame: () => 1 / 120 });
     const fast = await st.flyUntil({ simulated: 0.5, frames: 20, wallMs: 60000 });
     assert.equal(fast.flown, true);
     assert.ok(fast.frames >= 60, 'at 1/120 s per frame, 0.5 s takes 60 frames: ' + fast.frames);
-    page((n) => n < 5, 0.1);
-    const paused = await st.flyUntil({ simulated: 2, frames: 20, wallMs: 60000 });
+    // A display faster than the 120 Hz steps: frames without a step do not count, and are not a failure.
+    page({ perFrame: (n) => (n % 3 === 0 ? 0 : 1 / 120) });
+    const fastDisplay = await st.flyUntil({ simulated: 0.5, frames: 20, wallMs: 60000 });
+    assert.equal(fastDisplay.flown, true);
+    assert.ok(fastDisplay.frames > fastDisplay.flyingFrames, JSON.stringify(fastDisplay));
+    // Not flown:
+    page({ perFrame: () => 0.1, running: (n) => n < 5 });
+    const paused = await fly();
     assert.deepEqual([paused.flown, paused.running], [false, false], 'a session that stops running has not flown');
+    page({ perFrame: () => 0 });
+    const frozen = await fly(300);
+    assert.equal(frozen.flown, false, 'a frame loop whose simulation does not advance');
+    page({ perFrame: () => 1 / 60, calls: () => 0 });
+    const noDraw = await fly(300);
+    assert.deepEqual([noDraw.flown, noDraw.drawnFrames], [false, 0], 'a loop that simulates without drawing');
+    page({ perFrame: () => 0.1, calls: (n) => (n <= 10 ? 300 : 0) });
+    const stopsDrawing = await fly(300);
+    assert.deepEqual([stopsDrawing.flown, stopsDrawing.flyingFrames], [false, 10], 'a loop that stops drawing');
+    // Enough simulated time and frames from frame 20 or 21, but frames 20-23 draw nothing: the verdict waits for 24.
+    page({ perFrame: () => 0.1, calls: (n) => (n >= 20 && n <= 23 ? 0 : 300) });
+    const lastUndrawn = await st.flyUntil({ simulated: 2, frames: 5, wallMs: 60000 });
+    assert.deepEqual([lastUndrawn.flown, lastUndrawn.frames], [true, 24], 'the verdict waits for a drawn frame');
+    page({ perFrame: (n) => (n === 1 ? 2 : 0) });
+    const jump = await fly(300);
+    assert.deepEqual([jump.flown, jump.flyingFrames], [false, 1], 'one jump of simulated time, then a stall');
   } finally {
     globalThis.window = saved.window;
     globalThis.document = saved.document;

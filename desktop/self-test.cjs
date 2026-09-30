@@ -35,8 +35,11 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // make the helicopter jump), so the flight runs in slow motion there: three seconds of real time simulated 0.46 s on
 // that desktop and 0.1 s on a CI runner, while the session was running, visible and focused. (The page's fps reading is
 // an average seeded at 60 that moves 5 % per frame, so after a few such frames it still read 44-51.) With a GPU the same
-// wait takes about 2 s. 2 s simulated at 0.1 s per frame needs at least 20 frames; the report keeps the timeline (first,
-// median and longest frame, stalls, long tasks) to tell a slow machine from a broken loop.
+// wait takes about 2 s. A frame counts toward `frames` only if it both advanced the simulation and drew the scene
+// (WebGL draw calls of that frame, which the page counts from zero at the start of each frame): a loop that simulates
+// without drawing, or that stalls after a jump of time, never flies. 2 s simulated at 0.1 s per frame needs at least 20
+// such frames; the report keeps the timeline (first, median and longest frame, stalls, long tasks) to tell a slow
+// machine from a broken loop.
 const SESSION = { simulated: 2, frames: 20, wallMs: 180000 };
 // Bounds of the waits for asynchronous evidence (a download, a navigation attempt, policy violation events): generous,
 // since each wait ends as soon as the evidence is there.
@@ -63,7 +66,9 @@ function frameTimes(count, wallMs) {
 
 // Evaluated in the page (its source text is sent, no closure): resolves once the session has flown as `want` asks, or
 // has stopped running, or after want.wallMs; returns the timeline. One requestAnimationFrame callback per display frame,
-// registered after the page's own, so each one sees the state that frame computed.
+// registered after the page's own, so each one sees the state that frame computed (its simulated time and its draw
+// calls). Flown: at least want.simulated seconds simulated, at least want.frames frames that advanced the simulation and
+// drew, the last frame drew, and the session is still running.
 function flyUntil(want) {
   return new Promise((resolve) => {
     const read = () => {
@@ -85,13 +90,20 @@ function flyUntil(want) {
       observer = null;
     }
     let last = t0;
+    let previous = start.time;
+    let flying = 0; // frames that advanced the simulation and drew the scene
+    let drawn = 0; // frames that drew the scene
     const tick = () => {
       const now = performance.now();
       intervals.push(now - last);
       last = now;
       const s = read();
+      const advanced = s.time > previous;
+      previous = s.time;
+      if (s.calls > 0) drawn++;
+      if (advanced && s.calls > 0) flying++;
       const simulated = s.time - start.time;
-      const flown = simulated >= want.simulated && intervals.length >= want.frames;
+      const flown = simulated >= want.simulated && flying >= want.frames && s.calls > 0;
       if (!(flown || !s.running || now - t0 > want.wallMs)) return requestAnimationFrame(tick);
       if (observer) observer.disconnect();
       const sorted = [...intervals].sort((a, b) => a - b);
@@ -101,6 +113,8 @@ function flyUntil(want) {
         flown: flown && s.running,
         simulated: r(simulated, 1000),
         frames: intervals.length,
+        flyingFrames: flying,
+        drawnFrames: drawn,
         wallMs: Math.round(now - t0),
         firstFrameMs: Math.round(intervals[0]),
         longestFrameMs: Math.round(sorted[sorted.length - 1]),
@@ -307,8 +321,9 @@ function run(win, app, { args, session, policy }) {
       if (!flight) return finish('the session did not fly: no display frame answered');
       if (!flight.flown)
         return finish(
-          `the session did not fly: ${flight.simulated} s simulated over ${flight.frames} frames in ${flight.wallMs} ms` +
-            ` (running ${flight.running}, hidden ${flight.hidden}, focus ${flight.focus})`,
+          `the session did not fly: ${flight.simulated} s simulated over ${flight.frames} frames` +
+            ` (${flight.flyingFrames} advanced and drew, ${flight.drawnFrames} drew) in ${flight.wallMs} ms` +
+            ` (running ${flight.running}, calls ${flight.calls}, hidden ${flight.hidden}, focus ${flight.focus})`,
         );
       await js('document.exitPointerLock()');
       await poll('!trainerDiagnostics().running', 30000, 'the pause');
