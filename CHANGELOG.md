@@ -100,6 +100,14 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   capture simulée vérifiée avant « Démarrer » et encore juste avant le clic, calcul du vol comparé à la référence
   (G5), session, export, et refus du réseau, des fenêtres, de la navigation, des scripts injectés et des
   téléchargements non prévus ; fenêtre qui ne prend ni le focus ni la souris, permissions toutes refusées.
+- **Auto-test : la session vole jusqu'à 2 s simulées** (au moins 20 images, 3 minutes au plus) au lieu d'être mesurée
+  sur 3 s de temps réel. En rendu logiciel (WARP, les machines de la CI n'ont pas de carte graphique), la vallée
+  s'affiche à environ une image par seconde (0,6 s par image sur un processeur de bureau à 12 fils, 1,2 à 1,4 s avec
+  4 processeurs) et chaque image compte au plus 0,1 s de vol : 3 s de temps réel ne simulaient que 0,1 à 0,5 s, et
+  l'auto-test échouait (« the session did not fly ») alors que la session tournait, visible et avec le focus. Le rapport
+  garde la chronologie des images (première, médiane, plus longue, blocages). Les sondes négatives attendent leur
+  preuve avant de conclure : le téléchargement refusé enregistré, la tentative de navigation vue par l'application
+  (avant, la vérification pouvait réussir sans que la tentative ait eu lieu) et les violations de la politique reçues.
 - Défense en profondeur : politique de sécurité de la page vérifiée sur une liste exacte au démarrage, WebRTC limité
   au mandataire (aucun n'est configuré), commutateurs refusés étendus (commandes lancées devant un processus de
   Chromium, fonctionnalités, journaux, profil ailleurs).

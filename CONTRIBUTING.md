@@ -55,6 +55,9 @@ auto-test (`--lb-self-test=<nonce>` avec la variable d'environnement `LB_SELF_TE
 cliquer sur « Démarrer » et encore juste avant le clic, toutes les permissions refusées (la capture et le plein écran
 sont donc impossibles), fenêtre qui ne peut pas prendre le focus et laisse passer la souris, profil temporaire. Aucun
 test ne lance l'application sans son auto-test ; `tests/desktop/self-test-safety.test.js` vérifie cet ordre.
+L'auto-test ne mesure pas une durée fixe : il attend que la session ait simulé 2 s de vol sur au moins 20 images (3
+minutes au plus), ce qui prend 2 s avec une carte graphique et environ 30 s en rendu logiciel (`--warp`, la CI) ; son
+rapport (`desktop-smoke.json` dans la CI) garde la chronologie des images.
 
 Sous Windows 11, le **Contrôle intelligent des applications**, s'il est activé, peut refuser de lancer un exécutable
 non signé que l'on vient de construire (`spawn UNKNOWN`) : les vérifications qui lancent l'application empaquetée

@@ -37,6 +37,58 @@ test('self-test.cjs: the emulation is asserted before Start is clicked, and agai
     assert.ok(!src.includes(banned), banned);
 });
 
+test('self-test.cjs: a session flies until it has simulated 2 s over 20 frames, whatever the machine speed', async () => {
+  const st = require(path.join(ROOT, 'desktop', 'self-test.cjs'));
+  assert.deepEqual(st.SESSION, { simulated: 2, frames: 20, wallMs: 180000 });
+  const src = code('desktop/self-test.cjs');
+  assert.ok(!/await sleep\(3000\)/.test(src), 'no fixed stretch of real time');
+  assert.match(src, /js\(`\(\$\{flyUntil\.toString\(\)\}\)\(\$\{JSON\.stringify\(SESSION\)\}\)`\)/);
+  // flyUntil, run here on a fake page whose frame loop counts at most 0.1 s per frame (a slow software renderer).
+  const saved = { window: globalThis.window, document: globalThis.document, raf: globalThis.requestAnimationFrame };
+  const page = (running, perFrame) => {
+    let time = 0;
+    let frames = 0;
+    globalThis.window = {
+      trainerDiagnostics: () => ({ time, running: running(frames), webgl: { calls: 300 }, fps: 50 }),
+    };
+    globalThis.document = { hidden: false, hasFocus: () => true };
+    globalThis.requestAnimationFrame = (cb) =>
+      setImmediate(() => {
+        frames++;
+        time += perFrame;
+        cb();
+      });
+  };
+  try {
+    page(() => true, 0.1);
+    const slow = await st.flyUntil({ simulated: 2, frames: 20, wallMs: 60000 });
+    assert.equal(slow.flown, true);
+    assert.ok(slow.frames >= 20 && slow.simulated >= 2, JSON.stringify(slow));
+    page(() => true, 1 / 120);
+    const fast = await st.flyUntil({ simulated: 0.5, frames: 20, wallMs: 60000 });
+    assert.equal(fast.flown, true);
+    assert.ok(fast.frames >= 60, 'at 1/120 s per frame, 0.5 s takes 60 frames: ' + fast.frames);
+    page((n) => n < 5, 0.1);
+    const paused = await st.flyUntil({ simulated: 2, frames: 20, wallMs: 60000 });
+    assert.deepEqual([paused.flown, paused.running], [false, false], 'a session that stops running has not flown');
+  } finally {
+    globalThis.window = saved.window;
+    globalThis.document = saved.document;
+    globalThis.requestAnimationFrame = saved.raf;
+  }
+});
+
+test('self-test.cjs: the negative probes wait for their evidence before judging', () => {
+  const src = code('desktop/self-test.cjs');
+  assert.match(src, /contents\.on\('will-frame-navigate'/);
+  assert.match(src, /const attempted = await until\(\(\) => attempts\.includes\(PROBE_URL\), EVIDENCE_MS\)/);
+  assert.match(src, /navigation: report\.steps\.navigation\.attempted && report\.steps\.navigation\.stayed/);
+  assert.match(
+    src,
+    /await until\(\(\) => downloads\.some\(\(d\) => d\.name === 'little-bird-probe\.exe'\), EVIDENCE_MS\)/,
+  );
+});
+
 test('every permission is denied during a self-test, and the self-test window cannot take input', () => {
   for (const perm of ['pointerLock', 'fullscreen', 'keyboardLock', 'media', 'openExternal'])
     assert.equal(p.permissionAllowed(perm, 'app://littlebird/index.html', { selfTest: true }), false, perm);
