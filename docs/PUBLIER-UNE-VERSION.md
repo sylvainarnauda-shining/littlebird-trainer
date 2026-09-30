@@ -71,11 +71,15 @@ nouvelle version d'Electron. Règle du projet : une version de l'entraîneur sor
 d'Electron, **dans les 7 jours** si Chromium signale une faille exploitée ; le workflow hebdomadaire `maintenance.yml`
 échoue quand ce délai est dépassé ou quand la version majeure n'est plus suivie.
 
-Dependabot propose la mise à jour (groupe `desktop-runtime`). Avant de fusionner : CI verte, puis sur le PC
-`npm run dist` et `npm run desktop:check`. L'auto-test compare le calcul du vol dans le moteur d'Electron à la
-référence (porte G5, `desktop/parity.cjs`) : si la nouvelle version de Chromium calcule autrement, il échoue ; on mesure
-alors l'écart (il doit rester sous la tolérance), on enregistre la nouvelle empreinte dans `CHROMIUM` avec la version
-qui l'a donnée, et on le note dans `CHANGELOG.md`. Enfin quelques minutes de vol (souris capturée, 100 Hz, son).
+Dependabot propose la mise à jour (groupe `desktop-runtime`). Avant de fusionner : lire les notes de version d'Electron
+(correctifs de sécurité), `node scripts/check-install-scripts.mjs` (relire tout script d'installation nouveau), CI
+verte, puis sur le PC `npm run dist` et `npm run desktop:check`. L'auto-test compare le calcul du vol dans le moteur
+d'Electron à la référence (porte G5, `desktop/parity.cjs`) : si la nouvelle version de Chromium calcule autrement, il
+échoue ; on mesure alors l'écart (il doit rester sous la tolérance), on enregistre la nouvelle empreinte dans
+`CHROMIUM` avec la version qui l'a donnée (`measuredWith`), et on le note dans `CHANGELOG.md`. L'empreinte complète se
+lit dans le rapport de l'auto-test (`steps.parity.final`, fichier `desktop-smoke.json` de la CI) et, pour le Chromium
+de Playwright, dans le journal du test `G5` du navigateur. Même sans changement d'empreinte, la mesure est notée
+(exemple : 44.4.5 puis 44.5.1, même empreinte). Enfin quelques minutes de vol (souris capturée, 100 Hz, son).
 
 ## Signature
 

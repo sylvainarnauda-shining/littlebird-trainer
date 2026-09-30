@@ -116,8 +116,8 @@ test('SBOM: CycloneDX 1.6, Electron with its official zip sha256, three.js with 
   assert.match(a.serialNumber, /^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   const electron = a.components.find((c) => c.name === 'electron');
   const sums = JSON.parse(fs.readFileSync(path.join(ROOT, 'node_modules', 'electron', 'checksums.json'), 'utf8'));
-  assert.equal(electron.version, '44.4.5');
-  assert.equal(electron.hashes[0].content, sums['electron-v44.4.5-win32-x64.zip']);
+  assert.equal(electron.version, '44.5.1');
+  assert.equal(electron.hashes[0].content, sums['electron-v44.5.1-win32-x64.zip']);
   const three = a.components.find((c) => c.name === 'three');
   const policy = JSON.parse(fs.readFileSync(path.join(ROOT, 'publish-policy.json'), 'utf8'));
   assert.equal(three.hashes[0].content, policy.vendorChecksums['src/vendor/three.min.js']);

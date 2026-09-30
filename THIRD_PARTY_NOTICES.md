@@ -44,7 +44,7 @@ THE SOFTWARE.
 
 ## Composants de l'application Windows
 
-L'installateur et le zip portable contiennent, en plus de la page ci-dessus, le moteur d'exécution **Electron 44.4.5**,
+L'installateur et le zip portable contiennent, en plus de la page ci-dessus, le moteur d'exécution **Electron 44.5.1**,
 tel que publié par le projet Electron (ses fichiers sont vérifiés octet pour octet contre l'archive officielle).
 
 - Electron : https://www.electronjs.org, licence MIT (texte dans `LICENSE.electron.txt`, à côté de
@@ -54,7 +54,7 @@ tel que publié par le projet Electron (ses fichiers sont vérifiés octet pour 
   de `LittleBirdTrainer.exe`.
 - Ce fichier (`THIRD_PARTY_NOTICES.txt`) et la licence du projet (`LICENSE.txt`) sont dans le dossier `resources`.
 
-_The Windows installer and portable zip also contain the Electron 44.4.5 runtime as published by the Electron project
+_The Windows installer and portable zip also contain the Electron 44.5.1 runtime as published by the Electron project
 (MIT, `LICENSE.electron.txt`), which includes Chromium, Node.js, V8 and FFmpeg under their own licenses (BSD, MIT,
 LGPL-2.1 for the dynamically linked `ffmpeg.dll`, and others), all reproduced in `LICENSES.chromium.html` next to the
 executable._
@@ -77,7 +77,7 @@ dans la page construite.
 | @napi-rs/canvas                                   | 0.1.100 | MIT        |
 | @playwright/test (et playwright, playwright-core) | 1.62.1  | Apache-2.0 |
 | acorn                                             | 8.18.0  | MIT        |
-| electron (téléchargé à l'empaquetage)             | 44.4.5  | MIT        |
+| electron (téléchargé à l'empaquetage)             | 44.5.1  | MIT        |
 | electron-builder                                  | 26.15.3 | MIT        |
 | eslint                                            | 10.11.0 | MIT        |
 | globals                                           | 17.12.0 | MIT        |

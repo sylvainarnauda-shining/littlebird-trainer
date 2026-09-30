@@ -26,8 +26,9 @@ const PAGES = new Map([
 // started with one of them exits at once (code 2). The Node ones are also disabled by the fuses (build/fuses.cjs); this
 // is defence in depth. Not listed: allow-file-access-from-files, which Electron itself puts on the browser process's
 // command line (measured on 44.4.5, and the only switch of this kind it adds; the others below are absent from a normal
-// start, measured on 30/09/2026); it concerns file:// pages only, and the shell never loads one (navigation guard,
-// request filter, GrantFileProtocolExtraPrivileges fuse off).
+// start, measured on 30/09/2026, and again on 44.5.1, where the packaged self-test, which stops at any of them, runs);
+// it concerns file:// pages only, and the shell never loads one (navigation guard, request filter,
+// GrantFileProtocolExtraPrivileges fuse off).
 const REFUSED_SWITCHES = [
   // debugging endpoints and debuggers
   'remote-debugging-port',

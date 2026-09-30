@@ -82,7 +82,7 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 
 ### Application Windows
 
-- **Nouvelle application Windows** (P5), sur Electron 44.4.5 (Chromium 152) : la même page, dans une fenêtre sans
+- **Nouvelle application Windows** (P5), sur Electron 44.5.1 (Chromium 152) : la même page, dans une fenêtre sans
   Node.js, servie depuis l'origine `app://littlebird`. Installateur en un clic pour l'utilisateur courant, sans droits
   administrateur, avec raccourcis Bureau et menu Démarrer (`LittleBird-Trainer-Setup-0.9.0.exe`), et zip portable
   (`LittleBird-Trainer-0.9.0-win-x64.zip`). La désinstallation garde le profil (`%APPDATA%\LittleBird Trainer`).
@@ -92,6 +92,10 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   politique de sécurité stricte dans la page ou avec un commutateur de débogage, fusibles d'Electron (pas de mode
   Node.js, `app.asar` vérifié au démarrage), aucune mise à jour automatique. Règles testées sans Electron
   (`desktop/policy.cjs`).
+- **Electron 44.5.1** (au lieu de 44.4.5, avant la première version) : correctifs de sécurité reportés de Chromium,
+  ANGLE, Dawn et V8 (44.5.1), et une trentaine de corrections, dont des plantages du processus graphique (44.5.0).
+  Chromium reste 152.0.7977.130 et V8 15.2. Le calcul du vol dans le moteur de l'application a été mesuré de nouveau
+  (G5) : même empreinte qu'avec 44.4.5.
 - Auto-test intégré (`--lb-self-test`, avec la variable d'environnement `LB_SELF_TEST` égale au nonce) : page,
   capture simulée vérifiée avant « Démarrer » et encore juste avant le clic, calcul du vol comparé à la référence
   (G5), session, export, et refus du réseau, des fenêtres, de la navigation, des scripts injectés et des
@@ -101,9 +105,9 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   Chromium, fonctionnalités, journaux, profil ailleurs).
 - Icône propre, dessinée par le code (`scripts/make-icon.mjs`, `build/icon.svg`).
 - Aucun changement de comportement du vol ni du jeu : la page livrée est octet pour octet celle de la version
-  navigateur ; les goldens sont inchangés. Mesure (G5) : le moteur de Chromium (Electron 44.4.5, Chrome 154) arrondit
-  certaines fonctions mathématiques autrement que Node.js 24 au dernier chiffre binaire ; le vol calculé reste à
-  1,3 × 10⁻¹² m du golden sur 60 s, et l'application calcule exactement comme Chrome (`docs/FIDELITE.md`).
+  navigateur ; les goldens sont inchangés. Mesure (G5) : le moteur de Chromium (Electron 44.4.5 et 44.5.1, Chrome 154)
+  arrondit certaines fonctions mathématiques autrement que Node.js 24 au dernier chiffre binaire ; le vol calculé reste
+  à 1,3 × 10⁻¹² m du golden sur 60 s, et l'application calcule exactement comme Chrome (`docs/FIDELITE.md`).
 
 ### Intégration continue et publication
 

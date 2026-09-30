@@ -9,8 +9,9 @@
 // References:
 //  - EXPECTED: the golden, recorded in Node 24.19 (V8 13.6); equal to tests/fixtures/golden/parity.json and to the
 //    samples of the flight golden's run synthetic/rate-alt (a test checks both).
-//  - CHROMIUM: the same script in Chromium's V8 (measured on 30/09/2026: Electron 44.4.5 / Chromium 152 / V8 15.2, and
-//    Chrome 154, bit for bit identical). Chromium's V8 computes Math.sin, cos, tan, exp, log, atan2 and the other
+//  - CHROMIUM: the same script in Chromium's V8 (measured on 30/09/2026: Electron 44.4.5 and 44.5.1 / Chromium
+//    152.0.7977.130 / V8 15.2, in the packaged self-test on a GPU and with WARP, and Chrome 154, bit for bit identical).
+//    Chromium's V8 computes Math.sin, cos, tan, exp, log, atan2 and the other
 //    transcendental functions with a different last bit than Node 24.19's for some inputs (measured; pow, hypot and
 //    sqrt agree), so the two digests differ while the trajectories agree to 1.3e-12 m in position over the 60 s
 //    (measured). The game itself was measured on video recordings and the model fitted in Node; the trainer was tuned
@@ -159,11 +160,14 @@ const EXPECTED = {
 };
 
 // Chromium's V8 (measured, see the header). An Electron upgrade that changes it fails G5 until it is measured again.
+// Provenance: first measured with Electron 44.4.5; measured again after the bump to 44.5.1 (same Chromium and V8
+// version strings, with backported V8 fixes) with the packaged self-test's G5 step, identical digest and checkpoints.
 const CHROMIUM = {
   measuredWith: {
-    electron: '44.4.5',
+    electron: '44.5.1',
     chrome: '152.0.7977.130',
     v8: '15.2.124.28-electron.0',
+    alsoElectron: '44.4.5',
     alsoChrome: '154.0.8037.58',
   },
   final: '7dd69a12993716bbe8e0812ff55b25a99b071bc64d2fa6a6fbaa2acd5da0caed',

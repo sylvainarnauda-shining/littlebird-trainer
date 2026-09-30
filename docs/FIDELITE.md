@@ -78,7 +78,8 @@ Chaque constante indique dans le code si elle est **measured** (mesurée), **rea
 - **Même calcul dans le moteur des joueurs (porte G5)** : les goldens sont enregistrés avec Node.js. Un script de vol
   de 60 s (`desktop/parity.cjs`) est rejoué par la page elle-même dans le moteur qui la fait tourner : dans
   l'application Windows empaquetée (son auto-test), dans Chrome (`tests/browser/parity.spec.mjs`) et dans Node.
-  Mesure du 30/09/2026 : le moteur JavaScript de Chromium (Electron 44.4.5 et Chrome 154, identiques bit pour bit)
+  Mesure du 30/09/2026 : le moteur JavaScript de Chromium (Electron 44.4.5 puis 44.5.1, et Chrome 154, identiques bit
+  pour bit)
   arrondit certaines fonctions mathématiques (sinus, cosinus, exponentielle, logarithme…) autrement que celui de
   Node.js 24 au dernier chiffre binaire. Les deux calculs du vol ne sont donc pas identiques bit pour bit, mais ils
   restent à **1,3 × 10⁻¹² m** l'un de l'autre sur les 60 s (un millième de milliardième de mètre). La porte exige que

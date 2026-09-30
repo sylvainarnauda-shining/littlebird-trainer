@@ -16,7 +16,7 @@ Pour signaler une faille : [`SECURITY.md`](../SECURITY.md).
 
 ## L'application Windows
 
-Electron 44.4.5 (Chromium 152), épinglé. Le processus principal (`desktop/main.cjs`) ne fait que brancher des règles
+Electron 44.5.1 (Chromium 152), épinglé. Le processus principal (`desktop/main.cjs`) ne fait que brancher des règles
 pures, testées sans Electron (`desktop/policy.cjs`, `tests/desktop/policy.test.js`) :
 
 | Règle                                                                                                                                                                                                 | Où                                          |

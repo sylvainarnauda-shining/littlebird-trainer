@@ -100,7 +100,7 @@ test('exact pins of the desktop toolchain, no runtime dependency, version 0.9.0 
   assert.equal(pkg.version, '0.9.0');
   assert.equal(pkg.dependencies, undefined, 'the app has no npm runtime dependency');
   for (const [name, v] of Object.entries({
-    electron: '44.4.5',
+    electron: '44.5.1',
     'electron-builder': '26.15.3',
     '@electron/fuses': '2.1.3',
     '@electron/asar': '4.3.1',
@@ -108,7 +108,7 @@ test('exact pins of the desktop toolchain, no runtime dependency, version 0.9.0 
     assert.equal(pkg.devDependencies[name], v, name);
   for (const v of Object.values(pkg.devDependencies)) assert.match(v, /^\d+\.\d+\.\d+$/, 'exact pin');
   const lock = JSON.parse(read('package-lock.json'));
-  assert.equal(lock.packages['node_modules/electron'].version, '44.4.5');
+  assert.equal(lock.packages['node_modules/electron'].version, '44.5.1');
   assert.match(read('CHANGELOG.md'), /^## \[0\.9\.0\]/m);
 });
 
