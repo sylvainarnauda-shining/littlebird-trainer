@@ -23,6 +23,30 @@ const parity = require('./parity.cjs');
 const ROOT = path.join(os.tmpdir(), 'littlebird-self-test');
 const reportPath = (nonce) => path.join(ROOT, `report-${nonce}.json`);
 const profilePath = (nonce) => path.join(ROOT, `profile-${nonce}`);
+// The folder of the reports and throw-away profiles, used only if it is a real folder (not a link that would send the
+// files elsewhere). On Windows it lies in the user's own %TEMP% and the modes below only set the read-only bit; where
+// the temporary folder is shared (POSIX /tmp), a folder another user made first is refused, and ours is kept to us.
+function privateRoot() {
+  fs.mkdirSync(ROOT, { recursive: true, mode: 0o700 });
+  const stat = fs.lstatSync(ROOT);
+  if (!stat.isDirectory()) throw new Error(ROOT + ' is not a folder');
+  if (typeof process.getuid === 'function') {
+    if (stat.uid !== process.getuid()) throw new Error(ROOT + ' belongs to another user');
+    if (stat.mode & 0o077) fs.chmodSync(ROOT, 0o700);
+  }
+}
+// The report is a new file (mode 0600 where the system has POSIX modes): an existing file or link of that name (the
+// launcher removes any stale report before it starts the app) is never written through. Returns whether it was
+// written; it never throws, so that the verdict is always given by the exit code.
+function writeReport(nonce, report) {
+  try {
+    privateRoot();
+    fs.writeFileSync(reportPath(nonce), JSON.stringify(report, null, 1) + '\n', { flag: 'wx', mode: 0o600 });
+    return true;
+  } catch {
+    return false;
+  }
+}
 // An address that can never resolve (RFC 2606 .invalid): a probe that got through would fail by name, not reach anyone.
 const PROBE_URL = 'https://littlebird-probe.invalid/';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -136,7 +160,12 @@ function flyUntil(want) {
 // Before the app is ready: throw-away profile (the single-instance lock lives in it, so a running copy of the game is
 // not disturbed), automation mode (navigator.webdriver: the page emulates the pointer lock), software WebGL if asked.
 function configure(app, args) {
-  fs.mkdirSync(ROOT, { recursive: true });
+  try {
+    privateRoot();
+  } catch {
+    // No report can be written and no profile made: the exit code alone says so (the app is not ready yet).
+    process.exit(1);
+  }
   // Whatever happens next, the self-test ends within eight minutes with a verdict.
   setTimeout(() => {
     writeShortReport(app, args, 'timeout (480 s)');
@@ -228,11 +257,8 @@ function run(win, app, { args, session, policy }) {
     report.gpu = app.getGPUFeatureStatus();
     report.downloads = downloads.map(({ name, allowed, state }) => ({ name, allowed, state }));
     report.seconds = Math.round((Date.now() - started) / 100) / 10;
-    try {
-      fs.writeFileSync(reportPath(args.nonce), JSON.stringify(report, null, 1) + '\n');
-    } finally {
-      app.exit(report.ok ? 0 : 1);
-    }
+    const written = writeReport(args.nonce, report);
+    app.exit(report.ok && written ? 0 : 1);
   };
   const started = Date.now();
   const deadline = setTimeout(() => finish('timeout (420 s)'), 420000);
@@ -416,7 +442,6 @@ function run(win, app, { args, session, policy }) {
 }
 
 function writeShortReport(app, args, failure, extra = {}) {
-  fs.mkdirSync(ROOT, { recursive: true });
   const report = {
     nonce: args.nonce,
     ok: false,
@@ -425,7 +450,7 @@ function writeShortReport(app, args, failure, extra = {}) {
     packaged: app.isPackaged,
     ...extra,
   };
-  fs.writeFileSync(reportPath(args.nonce), JSON.stringify(report, null, 1) + '\n');
+  writeReport(args.nonce, report);
 }
 // A failure before the window exists (for example a page without a strict policy): same report, exit code 1.
 function fail(app, args, failure) {
@@ -447,6 +472,7 @@ module.exports = {
   ROOT,
   reportPath,
   profilePath,
+  writeReport,
   PROBE_URL,
   SESSION,
   flyUntil,

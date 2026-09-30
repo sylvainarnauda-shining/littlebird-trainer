@@ -6,9 +6,12 @@
 //  - it clicks Start once, and calls no real capture or fullscreen API;
 //  - every permission is denied while it runs (policy.permissionAllowed with selfTest), and main.cjs passes that flag;
 //  - the self-test window cannot take focus, is click-through and absent from the taskbar;
+//  - its report is a new file in a real folder of the temporary folder (on POSIX, one of this user with mode 0700),
+//    never written through an existing file or link;
 //  - the shell enters the self-test only with LB_SELF_TEST set to the nonce, and every launcher sets it.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { ROOT } = require('../helpers/paths');
@@ -111,6 +114,33 @@ test('self-test.cjs: the negative probes wait for their evidence before judging'
     src,
     /await until\(\(\) => downloads\.some\(\(d\) => d\.name === 'little-bird-probe\.exe'\), EVIDENCE_MS\)/,
   );
+});
+
+test('self-test.cjs: the report is a new file in a real folder, never written through an existing one', () => {
+  const st = require(path.join(ROOT, 'desktop', 'self-test.cjs'));
+  const src = code('desktop/self-test.cjs');
+  assert.equal((src.match(/writeFileSync\(/g) || []).length, 1, 'every report goes through writeReport');
+  assert.match(src, /writeFileSync\(reportPath\(nonce\), .*, \{ flag: 'wx', mode: 0o600 \}\)/);
+  assert.match(
+    src,
+    /fs\.mkdirSync\(ROOT, \{ recursive: true, mode: 0o700 \}\);\n\s*const stat = fs\.lstatSync\(ROOT\);\n\s*if \(!stat\.isDirectory\(\)\)/,
+  );
+  assert.match(src, /if \(stat\.uid !== process\.getuid\(\)\) throw /, 'on POSIX, a folder of another user is refused');
+  const nonce = crypto.randomBytes(12).toString('hex');
+  const file = st.reportPath(nonce);
+  try {
+    assert.equal(st.writeReport(nonce, { ok: true }), true);
+    assert.equal(st.writeReport(nonce, { ok: false }), false, 'an existing file is not written through');
+    assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')), { ok: true });
+    if (typeof process.getuid === 'function') {
+      const folder = fs.lstatSync(st.ROOT);
+      assert.equal(folder.uid, process.getuid(), 'the folder is this user');
+      assert.equal(folder.mode & 0o077, 0, 'the folder is closed to other users');
+      assert.equal(fs.statSync(file).mode & 0o077, 0, 'the report is closed to other users');
+    }
+  } finally {
+    fs.rmSync(file, { force: true });
+  }
 });
 
 test('every permission is denied during a self-test, and the self-test window cannot take input', () => {
