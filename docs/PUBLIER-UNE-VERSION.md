@@ -86,7 +86,9 @@ d'Electron à la référence (porte G5, `desktop/parity.cjs`) : si la nouvelle v
 échoue ; on mesure alors l'écart (il doit rester sous la tolérance), on enregistre la nouvelle empreinte dans
 `CHROMIUM` avec la version qui l'a donnée (`measuredWith`), et on le note dans `CHANGELOG.md`. L'empreinte complète se
 lit dans le rapport de l'auto-test (`steps.parity.final`, fichier `desktop-smoke.json` de la CI) et, pour le Chromium
-de Playwright, dans le journal du test `G5` du navigateur. Même sans changement d'empreinte, la mesure est notée
+de Playwright, dans le journal du test `G5` du navigateur ; pour une empreinte inconnue, le rapport
+(`steps.parity.checkpointHex`) et le journal (ligne `G5 checkpointHex`) donnent aussi les points de contrôle, tout ce
+qu'il faut pour l'enregistrer après avoir vérifié l'écart. Même sans changement d'empreinte, la mesure est notée
 (exemple : 44.4.5 puis 44.5.1, même empreinte). Enfin quelques minutes de vol (souris capturée, 100 Hz, son).
 
 ## Signature

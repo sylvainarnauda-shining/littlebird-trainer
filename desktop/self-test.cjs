@@ -295,6 +295,9 @@ function run(win, app, { args, session, policy }) {
       const got = await js(parity.pageExpression());
       const verdict = parity.compare(got);
       report.steps.parity = { ...verdict, final: got.final, steps: got.steps, ms: Date.now() - t };
+      // A new engine digest: the checkpoints too, so that it can be measured and recorded from this report alone
+      // (desktop/parity.cjs CHROMIUM, docs/PUBLIER-UNE-VERSION.md).
+      if (verdict.engine === 'unknown') report.steps.parity.checkpointHex = got.checkpointHex;
       if (!verdict.ok) return finish('engine parity (G5): ' + JSON.stringify(verdict));
       // 4. Local storage of the app:// origin.
       report.steps.storage = await js(

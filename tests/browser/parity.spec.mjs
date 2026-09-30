@@ -17,6 +17,8 @@ test('G5: the page engine replays the golden parity script', async ({ page, brow
   const description = `${v.engine} digest ${r.final}; largest position difference ${v.maxDelta.position} m; browser ${browser.version()}`;
   test.info().annotations.push({ type: 'G5', description });
   console.log('G5 ' + description);
+  // A new engine: its checkpoints too, so that it can be recorded in desktop/parity.cjs from the CI log alone.
+  if (v.engine === 'unknown') console.log('G5 checkpointHex ' + r.checkpointHex);
   expect(v.script, 'the same input script').toBe(true);
   expect(v.within, 'every sample within the tolerance of the Node golden').toBe(true);
   expect(v.engine, 'a known engine digest').not.toBe('unknown');
