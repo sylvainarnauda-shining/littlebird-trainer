@@ -396,7 +396,7 @@ function run(win, app, { args, session, policy }) {
       // shell has seen the attempt (a check made before it would pass without testing anything), then after a moment.
       await until(() => downloads.some((d) => d.name === 'little-bird-probe.exe'), EVIDENCE_MS);
       await js(`location.href = ${JSON.stringify(PROBE_URL)}`).catch(() => {});
-      const attempted = await until(() => attempts.includes(PROBE_URL), EVIDENCE_MS);
+      const attempted = await until(() => attempts.some((url) => url === PROBE_URL), EVIDENCE_MS);
       await sleep(1500);
       report.steps.navigation = { attempted, stayed: policy.isAppUrl(contents.getURL()) };
       // The shell's own network layer, below the page's policy: a request of the session is cancelled.

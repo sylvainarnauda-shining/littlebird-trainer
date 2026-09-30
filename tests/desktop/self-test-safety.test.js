@@ -108,7 +108,10 @@ test('self-test.cjs: a session flies until it has simulated 2 s over 20 drawn fr
 test('self-test.cjs: the negative probes wait for their evidence before judging', () => {
   const src = code('desktop/self-test.cjs');
   assert.match(src, /contents\.on\('will-frame-navigate'/);
-  assert.match(src, /const attempted = await until\(\(\) => attempts\.includes\(PROBE_URL\), EVIDENCE_MS\)/);
+  assert.match(
+    src,
+    /const attempted = await until\(\(\) => attempts\.some\(\(url\) => url === PROBE_URL\), EVIDENCE_MS\)/,
+  );
   assert.match(src, /navigation: report\.steps\.navigation\.attempted && report\.steps\.navigation\.stayed/);
   assert.match(
     src,
