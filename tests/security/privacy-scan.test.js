@@ -277,7 +277,7 @@ test('history: every blob of every commit is scanned; commit identities must be 
       'the leak removed later is still found in the history',
     );
     assert.match(out, /ERROR identity-email-not-noreply\s+commit:/);
-    assert.ok(!out.includes('mailhost.io') && !out.includes(LEAKS['secret-token']), 'nothing printed');
+    assert.ok(!out.includes('mailhost') && !out.includes(LEAKS['secret-token']), 'nothing printed');
   } finally {
     fs.rmSync(base, { recursive: true, force: true });
   }
