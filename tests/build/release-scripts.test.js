@@ -124,11 +124,12 @@ test('SBOM: CycloneDX 1.6, Electron with its official zip sha256, three.js with 
   assert.equal(a.metadata.timestamp, '2026-09-21T14:13:20Z');
 });
 
-test('install-script gate: the lockfile list equals the reviewed list', async () => {
-  const { installScripts } = await load('check-install-scripts.mjs');
+test('install-script gate: every install script of the lockfile is reviewed (details: install-scripts.test.js)', async () => {
+  const { installScripts, installScriptVerdict } = await load('check-install-scripts.mjs');
   const lock = JSON.parse(fs.readFileSync(path.join(ROOT, 'package-lock.json'), 'utf8'));
   const policy = JSON.parse(fs.readFileSync(path.join(ROOT, 'publish-policy.json'), 'utf8'));
-  assert.deepEqual(installScripts(lock), [...policy.installScriptsReviewed].sort());
+  const v = installScriptVerdict(installScripts(lock), policy.installScriptsReviewed);
+  assert.equal(v.ok, true, JSON.stringify(v));
   assert.deepEqual(
     installScripts({
       lockfileVersion: 3,

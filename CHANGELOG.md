@@ -129,6 +129,10 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   suffisait qu'il se termine par le domaine « noreply ») et le nom ne doit contenir aucune adresse
   (`identity-name-email`) ; un domaine admis ne couvre plus que les hôtes placés juste sous lui, pas un autre domaine
   écrit devant lui.
+- Contrôle des scripts d'installation : un paquet revu qu'une mise à jour retire du fichier de verrouillage ne fait
+  plus échouer la CI (avertissement, et `--prune` pour le retirer de la liste) ; un paquet nouveau ou une version
+  nouvelle qui déclare un script d'installation échoue toujours jusqu'à sa relecture, et la version revue reste listée
+  jusque-là.
 - Outils sans dépendance : zip déterministe, sommes SHA-256, notes de version, SBOM CycloneDX, contrôle des scripts
   d'installation, réglages GitHub en code (`scripts/github-settings.mjs`), vérifications de l'application et des
   fichiers livrés. Le scanner de confidentialité analyse aussi les fichiers livrés (`--shipped`).

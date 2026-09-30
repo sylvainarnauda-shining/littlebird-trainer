@@ -74,7 +74,10 @@ exécutables non signés (voir [`INSTALLATION.md`](INSTALLATION.md)).
   `Golden-Update: <raison>` dans la description de la pull request et sans entrée dans `CHANGELOG.md`, et refait la
   preuve de neutralité d'un changement de l'enregistreur seul.
 - Dépendances à versions exactes, `npm ci`, aucun script d'installation exécuté (`.npmrc`), liste revue des paquets qui
-  en déclarent (`scripts/check-install-scripts.mjs`), signatures du registre vérifiées, audit.
+  en déclarent (`scripts/check-install-scripts.mjs`, `nom@version`) : un nouveau paquet ou une nouvelle version fait
+  échouer la CI jusqu'à sa relecture ; une entrée qu'une mise à jour a retirée du fichier de verrouillage est seulement
+  signalée, et `node scripts/check-install-scripts.mjs --prune` la retire de la liste. Signatures du registre
+  vérifiées, audit.
 - Workflows : jeton en lecture seule par défaut, seulement des actions de GitHub épinglées par empreinte de commit,
   aucun identifiant conservé, aucun cache, pas de `pull_request_target`, aucune expression dans un script
   (`tests/build/workflows.test.js`, et `actionlint`). Une seule vérification requise, `ci-ok`.
