@@ -11,9 +11,10 @@ Merci de votre intérêt. Ce projet vise un entraîneur **fidèle au jeu mesuré
   message. `LB_GOLDEN_ANY_NODE=1 npm test` lance quand même les goldens, pour regarder les différences.
 - `npm ci` installe les outils de développement, à versions exactes (`package-lock.json`).
 - `git config core.hooksPath .githooks` active les deux crochets du dépôt : le scanner de confidentialité avant chaque
-  commit (`--staged`) et, avant chaque envoi, sur tout l'arbre et tout l'historique (`--strict`). Ne les contournez
-  jamais (`--no-verify` est interdit dans ce dépôt) : tout ce qui est poussé est public aussitôt, et la CI ne voit un
-  envoi qu'une fois publié.
+  commit (`--staged`) et, avant chaque envoi, sur tout l'arbre et tout l'historique de chaque branche ou étiquette
+  envoyée (`--strict`, une option `--rev` par révision envoyée ; un envoi qui ne fait que supprimer des références ne
+  publie rien et n'est pas vérifié). Ne les contournez jamais (`--no-verify` est interdit dans ce dépôt) : tout ce qui
+  est poussé est public aussitôt, et la CI ne voit un envoi qu'une fois publié.
 - Pour les tests dans le navigateur : Chrome installé (canal `chrome` de Playwright), ou
   `npx playwright install chromium` puis `LB_BROWSER_CHANNEL=` (vide) pour le Chromium de Playwright.
 
@@ -122,6 +123,19 @@ Chaque constante qui décrit le jeu dit d'où elle vient, dans un commentaire en
   « noreply » de GitHub, détails de matériel.
 - Les noms inventés par le jeu que l'entraîneur a remplacés par des noms neutres (factions, noms d'emplacements, écran
   de ravitaillement, ambiances de lumière) : le scanner les refuse.
+
+L'historique vérifié est celui de `HEAD` (`--history`) : dans une pull request, le commit de fusion d'essai que GitHub
+crée, c'est-à-dire la branche de base et les commits proposés, pas les autres branches du dépôt ; `--rev <révision>`
+choisit d'autres révisions (une étiquette annotée n'est alors vérifiée que si elle est elle-même donnée, comme le fait
+le crochet `pre-push` pour une étiquette envoyée) ; `--all-refs` prend toutes les références, comme le contrôle
+hebdomadaire de `maintenance.yml`, qui revérifie ainsi chaque branche et chaque étiquette publiées avec la liste
+privée du moment. Identités admises (auteur, « committer », étiquette) : les adresses « noreply » de GitHub ; GitHub
+lui-même, seulement comme « committer » (fusions, modifications en ligne) ; les robots Dependabot et GitHub Actions,
+chacun avec son nom et son adresse « noreply » exacts (`botIdentities`). Dans les messages de commit, les adresses
+« noreply » de GitHub et la ligne de signature de Dependabot sont admises (`commitMessageEmailsAllowed`). Toute autre
+adresse fait échouer le scanner, y compris dans le commit de fusion d'essai d'une pull request, qui porte l'adresse
+principale de son auteur : activez « Keep my email addresses private » dans les réglages de votre compte GitHub avant
+d'en ouvrir une.
 
 Le dépôt fonctionne par liste d'autorisation (`.gitignore` et `allowedPaths` de `publish-policy.json`) : un nouveau
 fichier à la racine s'ajoute aux deux, volontairement. `npm run scan` lance le scanner ; ses règles génériques sont

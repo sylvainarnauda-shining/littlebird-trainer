@@ -55,13 +55,18 @@ exécutables non signés (voir [`INSTALLATION.md`](INSTALLATION.md)).
 ## Le dépôt et la chaîne de publication
 
 - Liste d'autorisation des fichiers (`.gitignore` et `publish-policy.json`) et scanner de confidentialité
-  (`scripts/privacy-scan.mjs`) sur les fichiers, tout l'historique (chaque chemin de chaque arbre, messages, étiquettes
-  annotées), les identités de commit et les fichiers livrés ; le texte est aussi lu décodé (Unicode normalisé,
-  caractères invisibles retirés, `%XX` et références HTML décodés) et les termes privés sont cherchés en hexadécimal et
-  en base64. Les termes privés et l'organisation des dossiers du mainteneur ne sont pas dans le dépôt : fichier non
-  versionné et secret `PUBLISH_DENYLIST`, jamais affichés, même quand une ligne est mal formée. Seule l'identité de
-  GitHub lui-même (fusions, modifications en ligne, Dependabot) est admise comme « committer » en plus des adresses
-  « noreply ».
+  (`scripts/privacy-scan.mjs`) sur les fichiers, tout l'historique de ce qui est publié (chaque chemin de chaque arbre,
+  messages, étiquettes annotées : ce que `HEAD` atteint dans la CI, le commit de fusion d'essai pour une pull request ;
+  chaque révision et chaque étiquette envoyées pour le crochet `pre-push` ; chaque semaine, toutes les branches et
+  étiquettes du dépôt avec la liste privée du moment, dans `maintenance.yml`), les identités de commit et les fichiers
+  livrés ; le texte est aussi lu décodé (Unicode normalisé, caractères invisibles retirés, `%XX` et références HTML
+  décodés) et les termes privés sont cherchés en hexadécimal et en base64. Les termes privés et l'organisation des
+  dossiers du mainteneur ne sont pas dans le dépôt : fichier non versionné et secret `PUBLISH_DENYLIST`, jamais
+  affichés, même quand une ligne est mal formée. En plus des adresses « noreply », seules sont admises l'identité de
+  GitHub lui-même comme « committer » (fusions, modifications en ligne, Dependabot) et, sous leur nom et leur adresse
+  « noreply » exacts, les robots Dependabot et GitHub Actions ; dans les messages de commit, l'adresse « noreply » de
+  GitHub et la ligne de signature de Dependabot. Toute autre adresse, par exemple celle d'une personne dans le commit
+  de fusion d'essai d'une pull request, fait échouer la CI.
 - Goldens : le travail `golden-update` de la CI refuse une modification des goldens sans la ligne
   `Golden-Update: <raison>` dans la description de la pull request et sans entrée dans `CHANGELOG.md`, et refait la
   preuve de neutralité d'un changement de l'enregistreur seul.

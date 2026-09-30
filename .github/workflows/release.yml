@@ -3,7 +3,7 @@
 # Separation of duties:
 #   preflight          no npm: the tag is on main and equals package.json's version; CHANGELOG section (dated for a
 #                      real release); the page built with the zero-dependency build, its sha256 in the release notes;
-#                      privacy scan of the files and the whole history
+#                      privacy scan of the files and the whole history of the tag
 #   ci                 the whole CI (reused, strict: the browser and desktop jobs block too), on the tagged commit; it
 #                      ends before any shipped file is built, so no lint or test tool runs while they exist
 #   web                Linux: page, deterministic browser zip, SBOM; their sha256 are job outputs
@@ -74,7 +74,7 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "publish=$publish" >> "$GITHUB_OUTPUT"
           echo "page_sha256=$page" >> "$GITHUB_OUTPUT"
-      - name: Privacy scan of the files and the whole history
+      - name: Privacy scan of the files and the whole history of the tag
         env:
           PUBLISH_DENYLIST: ${{ secrets.PUBLISH_DENYLIST }}
           PUBLISH: ${{ steps.gate.outputs.publish }}

@@ -130,6 +130,14 @@ test('ci.yml: ci-ok aggregates every job and is the single check to require', ()
   assert.match(j['ci-ok'], /ADVISORY: \$\{\{ inputs\.strict == true && 'none' \|\| 'browser desktop' \}\}/);
 });
 
+test('maintenance.yml: the weekly privacy scan covers every branch and tag, with the private denylist', () => {
+  const j = jobs(read('maintenance.yml'));
+  assert.match(j.privacy, /fetch-depth: 0/);
+  assert.match(j.privacy, /node scripts\/privacy-scan\.mjs --tracked --history --all-refs --strict --require-denylist/);
+  assert.match(j.privacy, /PUBLISH_DENYLIST: \$\{\{ secrets\.PUBLISH_DENYLIST \}\}/);
+  assert.ok(!/npm ci/.test(j.privacy), 'no npm next to the denylist');
+});
+
 test('release.yml: preflight gates, verification before publishing, publish writes only a draft', () => {
   const text = read('release.yml');
   const j = jobs(text);

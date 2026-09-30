@@ -119,6 +119,12 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   empreinte de la page dans les notes de version.
 - Travail `golden-update` : une modification des goldens exige la ligne `Golden-Update: <raison>` dans la description
   de la pull request et une entrée dans ce journal ; un changement de l'enregistreur seul est reprouvé neutre.
+- Scanner de confidentialité, historique : seulement ce que `HEAD` atteint (dans une pull request, le commit de fusion
+  d'essai de GitHub, pas les autres branches que la CI récupère), ou les révisions et étiquettes envoyées (`--rev`,
+  crochet `pre-push`, qui ne vérifie rien pour un envoi fait seulement de suppressions) ; `--all-refs` pour tout, chaque
+  semaine dans `maintenance.yml`. Les robots Dependabot et GitHub Actions sont admis sous leur nom et leur adresse
+  « noreply » exacts, et les messages de commit peuvent citer l'adresse « noreply » de GitHub (aussi comme texte d'un
+  lien Markdown) et la signature de Dependabot ; toute autre adresse reste refusée.
 - Outils sans dépendance : zip déterministe, sommes SHA-256, notes de version, SBOM CycloneDX, contrôle des scripts
   d'installation, réglages GitHub en code (`scripts/github-settings.mjs`), vérifications de l'application et des
   fichiers livrés. Le scanner de confidentialité analyse aussi les fichiers livrés (`--shipped`).

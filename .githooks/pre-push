@@ -1,6 +1,19 @@
 #!/bin/sh
 # Release-grade privacy gate before every push (everything pushed to the repository is public at once): the files git
-# would publish, every blob and commit of the history, and the commit identities, with the private denylist required
-# (.publish-denylist, never committed) and no worklist waiver (--strict). A push therefore stays impossible until the
-# scrub steps have emptied privacy-worklist.json and the history holds no pre-scrub blob.
-exec node scripts/privacy-scan.mjs --tracked --history --require-denylist --strict
+# would publish, then every blob, commit message and identity of the history of each revision being pushed, and each
+# annotated tag being pushed (git gives them on standard input), with the private denylist required (.publish-denylist,
+# never committed) and no worklist waiver (--strict). A push that only deletes refs publishes nothing and is not
+# scanned. A push therefore stays impossible until the scrub steps have emptied privacy-worklist.json and the pushed
+# history holds no pre-scrub blob.
+revs=""
+while read -r _ local_sha _ _; do
+  case "$local_sha" in
+    *[!0]*) revs="$revs --rev $local_sha" ;;
+  esac
+done
+if [ -z "$revs" ]; then
+  echo "pre-push: only deletions, nothing published, nothing to scan"
+  exit 0
+fi
+# shellcheck disable=SC2086 # one word per revision id
+exec node scripts/privacy-scan.mjs --tracked --history --require-denylist --strict $revs

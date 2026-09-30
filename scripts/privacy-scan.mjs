@@ -4,9 +4,16 @@
 //   node scripts/privacy-scan.mjs [--tracked]    the files git would publish (tracked, plus untracked files not ignored)
 //   node scripts/privacy-scan.mjs --staged       the staged content a commit would record (type changes included), and
 //                                                the commit identity
-//   node scripts/privacy-scan.mjs --history      every path and blob of every commit reachable from any ref (a blob is
+//   node scripts/privacy-scan.mjs --history      every path and blob of every commit reachable from HEAD (a blob is
 //                                                checked under each path it ever had), every commit message and identity,
-//                                                every annotated tag (tagger and message)
+//                                                every annotated tag on one of those commits (tagger and message). In a
+//                                                pull request run HEAD is GitHub's test merge commit: the base branch's
+//                                                history and the pull request's commits, not other branches.
+//     --rev <rev>                                the history reachable from <rev> instead of HEAD (repeatable; the
+//                                                pre-push hook passes every revision being pushed); an annotated tag
+//                                                is then scanned when it is itself given (a pushed tag), not because
+//                                                it points into that history (a local tag that is not pushed)
+//     --all-refs                                 the history reachable from every ref (local and remote branches, tags)
 //   node scripts/privacy-scan.mjs --dir <path>   every file under a folder (a staging tree before git init)
 //   node scripts/privacy-scan.mjs --dir <path> --shipped
 //                                                the text files of a release (browser zip, app.asar, resources): every
@@ -33,10 +40,15 @@
 // counts; a count above the listed one fails, and so does an unlisted soft finding. Game-invented names the naming step
 // replaced are forbidden terms, listed in the policy as sha256 hashes of the lower-cased word (forbiddenTermHashes) so
 // that the policy does not spell them out.
-// Commit identities: every author, committer and tagger address must match commitEmailPattern (GitHub noreply). The
-// only exception is a committer listed in committerIdentitiesAllowed: GitHub's own web-flow identity (name "GitHub",
-// address noreply at github.com), which commits squash merges, web edits and Dependabot updates; it is never accepted
-// as an author or a tagger.
+// Commit identities: every author, committer and tagger address must match commitEmailPattern (GitHub noreply). Two
+// exceptions, both exact: a committer listed in committerIdentitiesAllowed, GitHub's own web-flow identity (name
+// "GitHub", address noreply at github.com), which commits squash merges, web edits and Dependabot updates and is never
+// accepted as an author or a tagger; and the bots of botIdentities (Dependabot, GitHub Actions), each accepted only
+// with its own name and its own noreply address. Any other identity in the bot form ("...[bot]") fails, and so does
+// any other address (a person's own address in GitHub's test merge commit of a pull request, for example).
+// Commit and tag messages: addresses of emailAllowDomains (GitHub noreply) are accepted anywhere, as in files, and the
+// entries of commitMessageEmailsAllowed only in messages (GitHub's noreply address; its support address only on
+// Dependabot's own sign-off line).
 // Every regular expression below is written so that its own source text does not match it.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -278,17 +290,28 @@ function buildRules(policy, denylist, { shipped = false } = {}) {
   return R;
 }
 // E-mail addresses, found from each '@' (a single regex over long hex strings backtracks quadratically): a local part
-// of 1-64 characters right before it and a dotted domain after it. Yields {index, domain}.
-const LOCAL_CHAR = /[A-Za-z0-9._%+-]/;
+// of 1-64 characters right before it and a dotted domain after it. Brackets count as local-part characters so that a
+// bot address such as name[bot]@... is seen whole; a leading '[' is not part of it (Markdown link text such as
+// "[name@host](mailto:...)"). Yields {index, domain, address}.
+const LOCAL_CHAR = /[A-Za-z0-9._%+[\]-]/;
 const DOMAIN = /^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
 function* emails(text) {
   for (let at = text.indexOf('@'); at >= 0; at = text.indexOf('@', at + 1)) {
     let s = at;
     while (s > 0 && at - s < 64 && LOCAL_CHAR.test(text[s - 1])) s--;
+    while (s < at && text[s] === '[') s++;
     if (s === at) continue;
     const m = DOMAIN.exec(text.slice(at + 1, at + 254));
-    if (m) yield { index: s, domain: m[0].toLowerCase() };
+    if (m) yield { index: s, domain: m[0].toLowerCase(), address: text.slice(s, at + 1 + m[0].length).toLowerCase() };
   }
+}
+// The addresses a commit or tag message may name besides emailAllowDomains: [{address: RegExp, line: RegExp|null}]
+// from the policy's commitMessageEmailsAllowed ({email, line} regular expressions; line = the whole line it must be on).
+export function messageEmailRules(policy) {
+  return (policy.commitMessageEmailsAllowed || []).map((x) => ({
+    address: new RegExp(x.email, 'i'),
+    line: x.line ? new RegExp(x.line) : null,
+  }));
 }
 
 const isText = (b) => {
@@ -311,8 +334,15 @@ function lineIndex(txt) {
   };
 }
 
+// The whole line of text that holds position i (without its line break).
+function lineAround(t, i) {
+  const end = t.indexOf('\n', i);
+  return t.slice(t.lastIndexOf('\n', i - 1) + 1, end < 0 ? t.length : end).replace(/\r$/, '');
+}
+
 // ---------- scanning ----------
-export function scanContent({ file, buf, policy, rules, findings, emailDomains }) {
+// messageEmails: for a commit or tag message only, the addresses of messageEmailRules(policy) it may name.
+export function scanContent({ file, buf, policy, rules, findings, emailDomains, messageEmails = [] }) {
   let text;
   if (!isText(buf)) {
     const allowed = (policy.binaryAllowed || []).find((b) => b.path === file);
@@ -353,9 +383,12 @@ export function scanContent({ file, buf, policy, rules, findings, emailDomains }
       }
     }
     const emailRule = { id: 'email-address', level: 'hard' };
-    for (const { index, domain } of emails(t)) {
+    for (const { index, domain, address } of emails(t)) {
       if (/\.(png|jpe?g|webp|svg|gif|js|mjs|cjs|css|json)$/.test(domain)) continue;
-      if (!domains.some((d) => domain === d || domain.endsWith('.' + d))) where(emailRule, lineAt(index));
+      if (domains.some((d) => domain === d || domain.endsWith('.' + d))) continue;
+      if (messageEmails.some((r) => r.address.test(address) && (!r.line || r.line.test(lineAround(t, index)))))
+        continue;
+      where(emailRule, lineAt(index));
     }
   };
   pass(text, false);
@@ -413,12 +446,63 @@ function walkDir(dir, rel = '', out = []) {
   return out;
 }
 
+// Bot identities (GitHub's "name[bot]" accounts): accepted only as listed in botIdentities, name and address exact.
+export const isBotIdentity = (name, email) =>
+  /\[bot\]/i.test(String(name || '')) || /\[bot\]@/i.test(String(email || ''));
+export const botAllowed = (policy, name, email) =>
+  (policy.botIdentities || []).some(
+    (b) => b.name === name && b.email.toLowerCase() === String(email || '').toLowerCase(),
+  );
+
+// The history a --history scan covers: what is reachable from HEAD (default), from the --rev values, or from every ref
+// (--all-refs). Returns the git arguments that name it (object ids or --all, never a user's text), the tips, and
+// whether the annotated tags that point into it belong to it (HEAD: the tags a clone of the repository holds; --rev:
+// only the tags given, which are what a push publishes).
+export function historyScope(root, { revs = [], allRefs = false } = {}) {
+  const run = (args) => spawnSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 30 });
+  if (allRefs) {
+    const any = git(root, ['for-each-ref', '--format=%(objectname)']).toString('utf8').trim() !== '';
+    return {
+      label: 'every ref',
+      all: true,
+      commits: any ? ['--all'] : [],
+      objects: any ? ['--all'] : [],
+      tips: new Set(),
+      tagsInHistory: true,
+    };
+  }
+  const ids = [];
+  const commits = [];
+  for (const rev of revs.length ? revs : ['HEAD']) {
+    if (!rev || rev.startsWith('-')) throw new SafeError('--rev takes a revision name or id, not an option');
+    const r = run(['rev-parse', '--verify', '--quiet', rev]);
+    if (r.status !== 0) {
+      if (!revs.length)
+        return { label: 'HEAD', all: false, commits: [], objects: [], tips: new Set(), tagsInHistory: true }; // no commit yet
+      throw new SafeError('a --rev value is not a revision of this repository (the value is not shown)');
+    }
+    const id = r.stdout.trim();
+    ids.push(id);
+    const c = run(['rev-parse', '--verify', '--quiet', id + '^{commit}']);
+    if (c.status === 0) commits.push(c.stdout.trim());
+  }
+  return {
+    label: revs.length ? revs.length + ' revision(s)' : 'HEAD',
+    all: false,
+    commits: [...new Set(commits)],
+    objects: [...new Set(ids)],
+    tips: new Set(ids),
+    tagsInHistory: !revs.length,
+  };
+}
+
 export function runScan(argv) {
   const has = (k) => argv.includes(k);
   const val = (k) => {
     const i = argv.indexOf(k);
     return i >= 0 ? argv[i + 1] : null;
   };
+  const vals = (k) => argv.flatMap((a, i) => (a === k && i + 1 < argv.length ? [argv[i + 1]] : []));
   const mode = has('--dir') ? 'dir' : has('--staged') ? 'staged' : 'tracked';
   const root = mode === 'dir' ? path.resolve(val('--dir')) : REPO;
   const shipped = has('--shipped');
@@ -442,16 +526,24 @@ export function runScan(argv) {
     checkPath({ file, size: buf.length, policy, denylist, findings, shipped });
     scanContent({ file, buf, policy, rules, findings, emailDomains });
   };
+  const messageEmails = messageEmailRules(policy);
   // committer: true for the committer of a commit already in the history, the only role GitHub's own identity may hold.
   const identity = (label, name, email, { committer = false } = {}) => {
-    const github =
-      committer &&
-      (policy.committerIdentitiesAllowed || []).some(
-        (x) => x.name === name && new RegExp(x.emailPattern, 'i').test(String(email || '')),
-      );
-    if (!github && !new RegExp(policy.commitEmailPattern || '$^', 'i').test(email || ''))
-      findings.push({ rule: 'identity-email-not-noreply', level: 'hard', file: label, line: 0 });
-    if (denylist.some((re) => re.test(name || '') || re.test(email || '')))
+    const address = String(email || '');
+    if (isBotIdentity(name, address)) {
+      // A bot: only a listed one, under its own name and its own noreply address.
+      if (!botAllowed(policy, name, address))
+        findings.push({ rule: 'identity-bot-not-listed', level: 'hard', file: label, line: 0 });
+    } else {
+      const github =
+        committer &&
+        (policy.committerIdentitiesAllowed || []).some(
+          (x) => x.name === name && new RegExp(x.emailPattern, 'i').test(address),
+        );
+      if (!github && !new RegExp(policy.commitEmailPattern || '$^', 'i').test(address))
+        findings.push({ rule: 'identity-email-not-noreply', level: 'hard', file: label, line: 0 });
+    }
+    if (denylist.some((re) => re.test(name || '') || re.test(address)))
       findings.push({ rule: 'identity-private-term', level: 'hard', file: label, line: 0 });
   };
   if (mode === 'dir') {
@@ -484,14 +576,16 @@ export function runScan(argv) {
     }
   }
   if (has('--history') && mode !== 'dir') {
-    // Every (path, blob) pair of every tree reachable from any ref: a blob is checked under each path it ever had (the
-    // same content at a forbidden path, or at a path that names a private term, is not excused by an earlier allowed
-    // path). Blobs reachable otherwise (a tag on a blob or a tree) come from rev-list with their first path.
+    // The scope: HEAD, the --rev values or every ref (historyScope). Other branches are not this history: a pull request
+    // run fetches every branch of the repository, but only HEAD (its test merge commit) is what the merge would publish.
+    const scope = historyScope(root, { revs: vals('--rev'), allRefs: has('--all-refs') });
+    const logOf = (format) =>
+      scope.commits.length ? git(root, ['log', format, ...scope.commits, '--']).toString('utf8') : '';
+    // Every (path, blob) pair of every tree in the scope: a blob is checked under each path it ever had (the same
+    // content at a forbidden path, or at a path that names a private term, is not excused by an earlier allowed path).
+    // Blobs reachable otherwise (a tag on a blob or a tree) come from rev-list with their first path.
     const pairs = new Map();
-    const refs = git(root, ['for-each-ref', '--format=%(objectname)']).toString('utf8').trim();
-    const trees = new Set(
-      refs ? git(root, ['log', '--all', '--format=%T']).toString('utf8').split('\n').filter(Boolean) : [],
-    );
+    const trees = new Set(logOf('--format=%T').split('\n').filter(Boolean));
     for (const tree of trees)
       for (const entry of zsplit(git(root, ['ls-tree', '-r', '-z', '--full-tree', tree]))) {
         const tab = entry.indexOf('\t');
@@ -504,8 +598,11 @@ export function runScan(argv) {
         if (type === 'blob') pairs.set(file + '\0' + oid, { file, oid });
       }
     const seenBlobs = new Set([...pairs.values()].map((p) => p.oid));
-    const lines = refs
-      ? git(root, ['rev-list', '--all', '--objects']).toString('utf8').split('\n').filter(Boolean)
+    const lines = scope.objects.length
+      ? git(root, ['rev-list', '--objects', ...scope.objects, '--'])
+          .toString('utf8')
+          .split('\n')
+          .filter(Boolean)
       : [];
     const firstPath = new Map();
     for (const l of lines) {
@@ -534,8 +631,7 @@ export function runScan(argv) {
     }
     for (const f of hist) findings.push({ ...f, file: 'history:' + f.file });
     const hardRules = rules.filter((r) => r.level === 'hard');
-    const log = (refs ? git(root, ['log', '--all', '--format=%H%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x1e']) : '')
-      .toString('utf8')
+    const log = logOf('--format=%H%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x1e')
       .split('\x1e')
       .filter((s) => s.trim());
     for (const rec of log) {
@@ -550,15 +646,30 @@ export function runScan(argv) {
         rules: hardRules,
         findings,
         emailDomains,
+        messageEmails,
       });
     }
-    // Annotated tags: the tagger identity and the tag message.
-    const tags = git(root, ['for-each-ref', 'refs/tags', '--format=%(objecttype) %(objectname)'])
+    // Annotated tags: every one (--all-refs), those on a commit of HEAD's history (default), and those given as a --rev
+    // (a pushed tag): the tagger identity and the tag message.
+    const reachable =
+      scope.all || !scope.tagsInHistory
+        ? null
+        : new Set(
+            scope.commits.length
+              ? git(root, ['rev-list', ...scope.commits, '--'])
+                  .toString('utf8')
+                  .split('\n')
+                  .filter(Boolean)
+              : [],
+          );
+    const tags = git(root, ['for-each-ref', 'refs/tags', '--format=%(objecttype) %(objectname) %(*objectname)'])
       .toString('utf8')
       .split('\n')
-      .filter((l) => l.startsWith('tag '));
-    for (const t of tags) {
-      const oid = t.slice(4).trim();
+      .filter((l) => l.startsWith('tag '))
+      .map((l) => l.split(' '))
+      .filter(([, oid, target]) => scope.all || scope.tips.has(oid) || (reachable && reachable.has(target)))
+      .map(([, oid]) => oid);
+    for (const oid of tags) {
       const obj = git(root, ['cat-file', 'tag', oid]).toString('utf8');
       const cut = obj.indexOf('\n\n');
       const head = cut < 0 ? obj : obj.slice(0, cut);
@@ -572,10 +683,11 @@ export function runScan(argv) {
         rules: hardRules,
         findings,
         emailDomains,
+        messageEmails,
       });
     }
     notes.push(
-      `history: ${pairs.size} path and blob pair(s) (${oids.length} blob(s)), ${log.length} commit(s), ${tags.length} annotated tag(s)`,
+      `history (${scope.label}): ${pairs.size} path and blob pair(s) (${oids.length} blob(s)), ${log.length} commit(s), ${tags.length} annotated tag(s)`,
     );
   }
   // Repository-level rules.

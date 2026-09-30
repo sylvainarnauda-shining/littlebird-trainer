@@ -111,6 +111,16 @@
   "commitEmailPattern": "@users\\.noreply\\.github\\.com$",
   "_committerIdentitiesAllowed": "Committer identities accepted besides the noreply pattern, as committer only (never as author or tagger): GitHub itself, which commits squash merges, web edits, Dependabot updates and the test merge of a pull request.",
   "committerIdentitiesAllowed": [{ "name": "GitHub", "emailPattern": "^noreply@github\\.com$" }],
+  "_botIdentities": "Bot accounts accepted as author, committer or tagger, each only under its exact name and its own GitHub noreply address (account id + name): Dependabot and GitHub Actions. Any other identity in the bot form (name[bot]) fails the scan (identity-bot-not-listed); a person's identity must still match commitEmailPattern.",
+  "botIdentities": [
+    { "name": "dependabot[bot]", "email": "49699333+dependabot[bot]@users.noreply.github.com" },
+    { "name": "github-actions[bot]", "email": "41898282+github-actions[bot]@users.noreply.github.com" }
+  ],
+  "_commitMessageEmailsAllowed": "Addresses a commit or tag message may name besides emailAllowDomains, as regular expressions on the address and, when given, on the whole line: GitHub's noreply address (trailers such as Co-authored-by), and GitHub's support address only on Dependabot's own sign-off line. Files never get these allowances.",
+  "commitMessageEmailsAllowed": [
+    { "email": "^noreply@github\\.com$" },
+    { "email": "^support@github\\.com$", "line": "^Signed-off-by: dependabot\\[bot\\] <support@github\\.com>$" }
+  ],
   "nominativeAllowed": [
     "src/app.js",
     "src/index.template.html",

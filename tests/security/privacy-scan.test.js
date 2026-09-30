@@ -364,6 +364,238 @@ test('history: GitHub may commit (never author or tag); annotated tags; a blob i
   }
 });
 
+// A temporary repository with the scanner, the policy and (optionally) the pre-push hook, committing as a noreply
+// identity unless told otherwise. git(args, env) runs git there; scan(args) runs the scanner copy there.
+function scratchRepo({ hook = false } = {}) {
+  const base = tmp();
+  const NOREPLY = '1+tester' + '@users.noreply.github.com';
+  const ME = {
+    GIT_AUTHOR_NAME: 'tester',
+    GIT_AUTHOR_EMAIL: NOREPLY,
+    GIT_COMMITTER_NAME: 'tester',
+    GIT_COMMITTER_EMAIL: NOREPLY,
+  };
+  const PATH = path.dirname(process.execPath) + path.delimiter + process.env.PATH;
+  const env = (extra) => ({ ...process.env, ...ME, PATH, PUBLISH_DENYLIST: DENIED, ...extra });
+  const git = (args, extra = {}, cwd = base) => {
+    const r = spawnSync('git', args, { cwd, encoding: 'utf8', env: env(extra) });
+    return { code: r.status, out: (r.stdout + r.stderr).trim() };
+  };
+  const ok = (args, extra) => {
+    const r = git(args, extra);
+    assert.equal(r.code, 0, 'git ' + args.join(' ') + ': ' + r.out);
+    return r.out;
+  };
+  ok(['init', '-q', '-b', 'main']);
+  for (const [k, v] of [
+    ['commit.gpgsign', 'false'],
+    ['tag.gpgsign', 'false'],
+    ['core.autocrlf', 'false'],
+    ['core.hooksPath', hook ? '.githooks' : 'no-hooks'],
+  ])
+    ok(['config', k, v]);
+  const allowedPaths = ['src/**', 'scripts/**', '.githooks/*', 'publish-policy.json'];
+  fs.writeFileSync(
+    path.join(base, 'publish-policy.json'),
+    JSON.stringify({ ...policy, allowedPaths, vendorChecksums: {}, requiredFiles: [] }),
+  );
+  fs.mkdirSync(path.join(base, 'src'));
+  fs.mkdirSync(path.join(base, 'scripts'));
+  fs.copyFileSync(SCANNER, path.join(base, 'scripts', 'privacy-scan.mjs'));
+  if (hook) {
+    fs.mkdirSync(path.join(base, '.githooks'));
+    fs.copyFileSync(path.join(ROOT, '.githooks', 'pre-push'), path.join(base, '.githooks', 'pre-push'));
+    fs.chmodSync(path.join(base, '.githooks', 'pre-push'), 0o755);
+  }
+  fs.writeFileSync(path.join(base, 'src', 'a.js'), 'console.log(1);\n');
+  ok(['add', '-A']);
+  ok(['commit', '-q', '-m', 'base']);
+  const commit = (file, text, message, extra) => {
+    fs.writeFileSync(path.join(base, 'src', file), text);
+    ok(['add', '-A']);
+    ok(['commit', '-q', '-m', message], extra);
+  };
+  const scan = (args) => {
+    const r = spawnSync(process.execPath, [path.join(base, 'scripts', 'privacy-scan.mjs'), ...args], {
+      cwd: base,
+      encoding: 'utf8',
+      env: env({}),
+    });
+    return { code: r.status, out: r.stdout + r.stderr };
+  };
+  return { base, git, ok, commit, scan, env, cleanup: () => fs.rmSync(base, { recursive: true, force: true }) };
+}
+
+test('history scope: what HEAD reaches (a pull request test merge included), or the revisions given; not other branches', () => {
+  const R = scratchRepo();
+  try {
+    // A side branch whose history holds a secret (added, then removed), a private term in a message and a tag.
+    R.ok(['checkout', '-q', '-b', 'side']);
+    R.commit('leak.js', '// ' + LEAKS['secret-token'] + '\n', 'add');
+    R.ok(['rm', '-q', 'src/leak.js']);
+    R.ok(['commit', '-q', '-m', 'about ' + DENIED]);
+    R.ok(['tag', '-a', 'side-tag', '-m', 'tagged ' + DENIED]);
+    R.ok(['checkout', '-q', 'main']);
+    let r = R.scan(['--tracked', '--history']);
+    assert.equal(r.code, 0, 'another branch is not the history of HEAD: ' + r.out);
+    assert.match(r.out, /history \(HEAD\): .* 1 commit\(s\), 0 annotated tag\(s\)/);
+    // With --rev, an annotated tag is scanned when it is itself given (a pushed tag), not because it points into the
+    // history of a given branch (a local tag that the push does not publish).
+    for (const [args, tagged] of [
+      [['--rev', 'side'], false],
+      [['--rev', 'main', '--rev', 'side-tag'], true],
+      [['--all-refs'], true],
+    ]) {
+      r = R.scan(['--tracked', '--history', ...args]);
+      assert.equal(r.code, 1, args.join(' '));
+      assert.match(r.out, /ERROR secret-token\s+history:src\/leak\.js:1/, args.join(' '));
+      assert.match(r.out, /ERROR private-term\s+commit:[0-9a-f]{12} \(message\)/, args.join(' '));
+      assert.equal(/ERROR private-term\s+tag:[0-9a-f]{12} \(message\)/.test(r.out), tagged, args.join(' '));
+      assert.match(r.out, new RegExp(`, ${tagged ? 1 : 0} annotated tag\\(s\\)`), args.join(' '));
+    }
+    // GitHub's test merge commit of a pull request from that branch: HEAD reaches the branch's commits, and the
+    // annotated tags that point into them (a clone holds them).
+    R.ok(['checkout', '-q', '-b', 'pull-merge', 'main']);
+    R.ok(['merge', '-q', '--no-ff', '-m', 'Merge side into main', 'side']);
+    r = R.scan(['--tracked', '--history']);
+    assert.equal(r.code, 1);
+    assert.match(r.out, /ERROR secret-token\s+history:src\/leak\.js:1/);
+    assert.match(r.out, /ERROR private-term\s+tag:[0-9a-f]{12} \(message\)/);
+    assert.ok(!r.out.includes(DENIED) && !r.out.includes(LEAKS['secret-token']), 'nothing printed');
+    // A --rev value is a revision, never an option; an unknown one stops the scan without printing it.
+    r = R.scan(['--tracked', '--history', '--rev', '--all']);
+    assert.equal(r.code, 2);
+    assert.match(r.out, /--rev takes a revision/);
+    r = R.scan(['--tracked', '--history', '--rev', 'no-such-' + DENIED]);
+    assert.equal(r.code, 2);
+    assert.ok(!r.out.includes(DENIED), 'the value is not printed');
+  } finally {
+    R.cleanup();
+  }
+});
+
+test('commit messages: GitHub noreply addresses and Dependabot sign-off accepted; any other address refused', () => {
+  const R = scratchRepo();
+  const at = (local, domain) => local + '@' + domain;
+  try {
+    const accepted = [
+      'Bump electron\n\nSigned-off-by: dependabot[bot] <' + at('support', 'github.com') + '>',
+      'Bump x\n\nSigned-off-by: dependabot[bot] <' + at('49699333+dependabot[bot]', 'users.noreply.github.com') + '>',
+      'Edit\n\nCo-authored-by: GitHub <' + at('noreply', 'github.com') + '>',
+      'Web flow: ' + at('noreply', 'github.com') + ' commits the squash merges',
+      // Markdown link text: the bracket before the address is not part of it.
+      'See [' + at('noreply', 'github.com') + '](mailto:' + at('noreply', 'github.com') + ')',
+    ];
+    accepted.forEach((m, i) => R.commit('m' + i + '.js', '//\n', m));
+    let r = R.scan(['--tracked', '--history']);
+    assert.equal(r.code, 0, r.out);
+    // Refused: GitHub's support address outside Dependabot's sign-off, another sign-off, a private address.
+    const refused = [
+      'Ask ' + at('support', 'github.com') + ' about it',
+      'Fix\n\nSigned-off-by: someone <' + at('support', 'github.com') + '>',
+      'Fix\n\nSigned-off-by: someone <' + at('someone', 'mailhost.io') + '>',
+    ];
+    for (const m of refused) {
+      R.commit('r.js', m.length + '\n', m);
+      r = R.scan(['--tracked', '--history']);
+      assert.equal(r.code, 1, m);
+      assert.match(r.out, /ERROR email-address\s+commit:[0-9a-f]{12} \(message\):\d/, m);
+      assert.ok(!r.out.includes('mailhost') && !r.out.includes('support@'), 'nothing printed');
+      R.ok(['reset', '-q', '--hard', 'HEAD^']);
+    }
+    // Files never get the message allowances.
+    const dir = path.join(R.base, 'tree');
+    fs.mkdirSync(dir);
+    fs.writeFileSync(path.join(dir, 'a.txt'), 'x\n' + at('noreply', 'github.com') + '\n');
+    r = R.scan(['--dir', dir, '--policy', path.join(R.base, 'publish-policy.json')]);
+    assert.equal(r.code, 1);
+    assert.match(r.out, /ERROR email-address\s+a\.txt:2/);
+  } finally {
+    R.cleanup();
+  }
+});
+
+test('identities: Dependabot and GitHub Actions only with their own noreply address; other bots and personal addresses refused', () => {
+  const R = scratchRepo();
+  const at = (local, domain) => local + '@' + domain;
+  const WEB = { GIT_COMMITTER_NAME: 'GitHub', GIT_COMMITTER_EMAIL: at('noreply', 'github.com') };
+  const as = (name, email) => ({ GIT_AUTHOR_NAME: name, GIT_AUTHOR_EMAIL: email });
+  try {
+    // A Dependabot update merged by GitHub, and a commit of a GitHub Actions workflow.
+    R.commit('d.js', '//\n', 'Bump', {
+      ...as('dependabot[bot]', at('49699333+dependabot[bot]', 'users.noreply.github.com')),
+      ...WEB,
+    });
+    const actions = at('41898282+github-actions[bot]', 'users.noreply.github.com');
+    R.commit('g.js', '//\n', 'Generated', {
+      ...as('github-actions[bot]', actions),
+      GIT_COMMITTER_NAME: 'github-actions[bot]',
+      GIT_COMMITTER_EMAIL: actions,
+    });
+    let r = R.scan(['--tracked', '--history']);
+    assert.equal(r.code, 0, r.out);
+    const refused = [
+      // A bot name with another address, another bot, a bot address under another name.
+      [as('dependabot[bot]', at('1+tester', 'users.noreply.github.com')), 'identity-bot-not-listed'],
+      [as('renovate[bot]', at('29139614+renovate[bot]', 'users.noreply.github.com')), 'identity-bot-not-listed'],
+      [as('tester', at('49699333+dependabot[bot]', 'users.noreply.github.com')), 'identity-bot-not-listed'],
+      // GitHub's test merge commit of a pull request opened by someone whose address is not private.
+      [{ ...as('Some One', at('some.one', 'mailhost.io')), ...WEB }, 'identity-email-not-noreply'],
+    ];
+    for (const [env, rule] of refused) {
+      R.commit('x.js', rule + '\n', 'change', env);
+      r = R.scan(['--tracked', '--history']);
+      assert.equal(r.code, 1, JSON.stringify(env));
+      assert.match(r.out, new RegExp(`ERROR ${rule}\\s+commit:[0-9a-f]{12} \\(author\\)`), JSON.stringify(env));
+      assert.ok(!/\(committer\)/.test(r.out), 'the committer is accepted');
+      assert.ok(!r.out.includes('mailhost'), 'nothing printed');
+      R.ok(['reset', '-q', '--hard', 'HEAD^']);
+    }
+  } finally {
+    R.cleanup();
+  }
+});
+
+test('pre-push hook: the revisions being pushed are scanned, not only HEAD', () => {
+  const R = scratchRepo({ hook: true });
+  const remoteBase = tmp();
+  const remote = path.join(remoteBase, 'remote.git');
+  try {
+    R.ok(['init', '-q', '--bare', remote]);
+    R.ok(['remote', 'add', 'origin', remote]);
+    let r = R.git(['push', '-q', 'origin', 'main']);
+    assert.equal(r.code, 0, 'a clean main is pushed: ' + r.out);
+    R.ok(['checkout', '-q', '-b', 'side']);
+    R.commit('leak.js', '// ' + LEAKS['secret-token'] + '\n', 'add');
+    R.ok(['rm', '-q', 'src/leak.js']);
+    R.ok(['commit', '-q', '-m', 'remove']);
+    R.ok(['checkout', '-q', 'main']);
+    r = R.git(['push', '-q', 'origin', 'side']);
+    assert.notEqual(r.code, 0, 'the side branch is refused while HEAD (main) is clean');
+    assert.match(r.out, /ERROR secret-token\s+history:src\/leak\.js:1/);
+    assert.equal(R.git(['ls-remote', '--heads', 'origin', 'side']).out, '', 'nothing was pushed');
+    // A local annotated tag that is not pushed (a private tagger, a private term) does not block a push of the branch
+    // it points into, nor the deletion of a branch; pushing the tag itself is refused.
+    const someone = { GIT_COMMITTER_NAME: 'someone', GIT_COMMITTER_EMAIL: 'someone' + '@' + 'mailhost.io' };
+    R.ok(['tag', '-a', 'local-tag', '-m', 'about ' + DENIED, 'main'], someone);
+    R.ok(['branch', 'clean', 'main']);
+    r = R.git(['push', '-q', 'origin', 'clean']);
+    assert.equal(r.code, 0, 'a clean branch is pushed; the local tag is not part of the push: ' + r.out);
+    r = R.git(['push', '-q', 'origin', ':refs/heads/clean']);
+    assert.equal(r.code, 0, 'a deletion publishes nothing: ' + r.out);
+    assert.equal(R.git(['ls-remote', '--heads', 'origin', 'clean']).out, '', 'the branch was deleted');
+    r = R.git(['push', '-q', 'origin', 'local-tag']);
+    assert.notEqual(r.code, 0, 'the tag itself is refused');
+    assert.match(r.out, /ERROR identity-email-not-noreply\s+tag:[0-9a-f]{12} \(tagger\)/);
+    assert.match(r.out, /ERROR private-term\s+tag:[0-9a-f]{12} \(message\)/);
+    assert.equal(R.git(['ls-remote', '--tags', 'origin']).out, '', 'no tag was pushed');
+    assert.ok(!r.out.includes(DENIED) && !r.out.includes('mailhost'), 'nothing printed');
+  } finally {
+    R.cleanup();
+    fs.rmSync(remoteBase, { recursive: true, force: true });
+  }
+});
+
 test('the repository itself: no error on the files git would publish (known soft findings waived by the worklist)', () => {
   const r = spawnSync(process.execPath, [SCANNER, '--tracked'], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(r.status, 0, r.stdout + r.stderr);

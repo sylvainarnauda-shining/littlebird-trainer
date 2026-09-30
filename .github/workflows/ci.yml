@@ -1,6 +1,8 @@
 # CI: every pull request and push to main; reused by the release workflow (workflow_call).
 # The one required status check of the main ruleset is "ci-ok", which depends on every job below:
-#   privacy  tracked files, whole history, commit identities (no npm in that job; private denylist when present)
+#   privacy  tracked files, the history HEAD reaches (a pull request's test merge commit: the base branch and the
+#            proposed commits, not the other branches), commit identities (no npm in that job; private denylist when
+#            present)
 #   deps     lockfile install without scripts, registry signatures, install-script allowlist, audit, dependency review
 #   lint     ESLint and Prettier; build/icon.svg equals the icon design
 #   test     build, exact page policy, every Node suite (goldens G2a-G2g, fidelity, unit, integration, security,
@@ -55,7 +57,7 @@ jobs:
           package-manager-cache: false
       # No npm install here: the scanner uses Node built-ins only, so the private denylist never meets third-party code.
       # Pull requests from forks get no secret and run the public rules only. Matched text is never printed.
-      - name: Tracked files, whole history, commit identities
+      - name: Tracked files, history of HEAD, commit identities
         env:
           PUBLISH_DENYLIST: ${{ secrets.PUBLISH_DENYLIST }}
         run: |

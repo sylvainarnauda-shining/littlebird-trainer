@@ -3,7 +3,9 @@
 #            newer release of its line has been public for more than 30 days (7 days if it fixes a bug exploited in the
 #            wild: read the Electron release notes)
 #   audit    advisories (high and critical) and registry signatures of the locked dependency tree
-#   privacy  tracked files and whole history against the private denylist (no npm in that job)
+#   privacy  tracked files and the history of every branch and tag of the repository (--all-refs: the checkout fetches
+#            them all) against the current private denylist, so that a term added to it later is also looked for on
+#            the branches that are not main (no npm in that job). CI runs scan only what they publish: HEAD's history.
 name: Maintenance
 
 on:
@@ -63,7 +65,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
-      - name: Files and whole history, private denylist required
+      - name: Files and history of every branch and tag, private denylist required
         env:
           PUBLISH_DENYLIST: ${{ secrets.PUBLISH_DENYLIST }}
-        run: node scripts/privacy-scan.mjs --tracked --history --strict --require-denylist
+        run: node scripts/privacy-scan.mjs --tracked --history --all-refs --strict --require-denylist
