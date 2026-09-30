@@ -31,7 +31,9 @@ export function releaseNotes({ tag, dryRun = false, pkg, changelog, notes = null
   const version = dryRun ? pkg.version : /^v(\d+\.\d+\.\d+)$/.exec(tag || '')?.[1];
   if (!version) throw new Error(`tag "${tag}" is not vX.Y.Z`);
   if (version !== pkg.version) throw new Error(`tag ${tag} does not match package.json version ${pkg.version}`);
-  const esc = version.replace(/\./g, '\\.');
+  // The version is matched literally: every character a regular expression reads specially is escaped (a dry run
+  // takes package.json's version as it is).
+  const esc = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const start = changelog.search(new RegExp(`^## \\[${esc}\\]`, 'm'));
   if (start < 0) throw new Error(`CHANGELOG.md has no "## [${version}]" section`);
   const next = changelog.slice(start + 1).search(/^## \[/m);

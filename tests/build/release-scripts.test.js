@@ -107,6 +107,17 @@ test('release gate: tag = version, a changelog section, dated for a real release
   assert.match(dry, /^# LittleBird Trainer 1\.2\.3$/m);
   assert.match(dry, /^- Un changement\./m);
   assert.ok(!dry.includes('Avant.'), 'only this version');
+  // A dry run takes package.json's version as it is: its section heading is found literally, a character that a
+  // regular expression reads specially included.
+  const odd = { version: '1.2.3+1' };
+  assert.throws(
+    () => releaseNotes({ tag: '--dry-run', dryRun: true, pkg: odd, changelog: '## [1.2.331]\n\n- Autre.\n', notes }),
+    /no "## \[1\.2\.3\+1\]" section/,
+  );
+  const both = '## [1.2.331]\n\n- Autre.\n\n## [1.2.3+1] — non publiée\n\n- Le bon.\n';
+  const oddNotes = releaseNotes({ tag: '--dry-run', dryRun: true, pkg: odd, changelog: both, notes });
+  assert.match(oddNotes, /^- Le bon\.$/m);
+  assert.ok(!oddNotes.includes('Autre.'), 'not the section of another version');
   const out = releaseNotes({ tag: 'v1.2.3', pkg, changelog: dated, notes, pageSha256: page });
   assert.match(out, /LittleBird-Trainer-1\.2\.3-navigateur\.zip/);
   assert.match(
