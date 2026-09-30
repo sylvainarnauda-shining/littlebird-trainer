@@ -6,8 +6,9 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
-const { FIXTURES, GOLDEN, RECORDER } = require('../helpers/paths');
+const { FIXTURES, GOLDEN, RECORDER, SRC, TEMPLATE } = require('../helpers/paths');
 
 const J = (f) => JSON.parse(fs.readFileSync(path.join(GOLDEN, f), 'utf8'));
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
@@ -58,6 +59,31 @@ test('recorder provenance: tools/golden is the recorder named by the goldens', (
   const golden = J('meta.json').recorderManifest;
   assert.deepEqual(Object.keys(now).sort(), Object.keys(golden).sort());
   for (const k of Object.keys(golden)) assert.equal(now[k].sha256_lf, golden[k].sha256_lf, k);
+});
+
+test('recorder: the template scripts are found as HTML finds them; a form the build does not write stops it', () => {
+  const { loadRuntime } = require(path.join(RECORDER, 'harness.cjs'));
+  assert.equal(loadRuntime({ src: SRC, template: TEMPLATE }).scripts.inline.length, 1, 'the inline error handler');
+  const template = fs.readFileSync(TEMPLATE, 'utf8');
+  const app = '<script src="app.js"></script>';
+  const variants = {
+    'an upper-case inline script': template.replace('<script>', '<SCRIPT>'),
+    'an inline script with an attribute': template.replace('<script>', '<script type="module">'),
+    'an upper-case external script': template.replace(app, '<SCRIPT src="app.js"></SCRIPT>'),
+    'an end tag with a space': template.replace(app, '<script src="app.js"></script >'),
+    'an external script with another attribute': template.replace(app, '<script src="app.js" defer></script>'),
+  };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lb-harness-'));
+  try {
+    for (const [name, text] of Object.entries(variants)) {
+      assert.notEqual(text, template, name + ': the variant changes the template');
+      const file = path.join(dir, 'index.template.html');
+      fs.writeFileSync(file, text);
+      assert.throws(() => loadRuntime({ src: SRC, template: file }), /in a form the recorder does not read/, name);
+    }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('sessions: every required coverage counter above zero and the exercise ratios met (G2b)', () => {

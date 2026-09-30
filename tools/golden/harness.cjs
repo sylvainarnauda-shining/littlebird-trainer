@@ -51,6 +51,21 @@ const lcg = seed => { let s = (seed >>> 0) || 1; return () => (s = (Math.imul(s,
 const sha = b => crypto.createHash('sha256').update(b).digest('hex');
 const lf = b => Buffer.from(b.toString('latin1').replace(/\r\n?/g, '\n'), 'latin1');
 const flush = () => new Promise(r => setImmediate(r));
+// The template's <script> elements, found as HTML finds them (start and end tags in any letter case, with attributes,
+// an end tag with whitespace or "/"), then each one required in one of the two forms the build reads: an external
+// <script src="file"></script> (the file is inlined there) or an inline <script>code</script>. Any other form stops the
+// recording instead of being skipped, so the page never runs a script the recorder does not.
+const SCRIPT_ELEMENT = /<script(?=[\t\n\f\r />])([^>]*)>([\s\S]*?)<\/script(?=[\t\n\f\r />])[^>]*>/gi;
+function templateScripts(html) {
+  const tags = [], inline = [];
+  for (const [element, attrs, body] of html.matchAll(SCRIPT_ELEMENT)) {
+    const exact = element === '<script' + attrs + '>' + body + '</script>', src = /^ src="([^"]+)"$/.exec(attrs);
+    if (exact && attrs === '') inline.push(body);
+    else if (exact && src && body === '') tags.push(src[1]);
+    else throw Error('the template holds a <script> in a form the recorder does not read: ' + JSON.stringify(element.slice(0, 60)));
+  }
+  return { tags, inline };
+}
 
 // Runtime sources: a directory holding core/pow.js, the ten runtime files and vendor/three.min.js, and the page template
 // (whose script tags must be in the harness's order).
@@ -62,9 +77,8 @@ function loadRuntime({ src, template }) {
   }
   const tb = fs.readFileSync(template), html = tb.toString('utf8');
   manifest['index.template.html'] = { sha256: sha(tb), sha256_lf: sha(lf(tb)) };
-  const tags = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]), order = ['vendor/three.min.js', ...CORE, ...ORDER];
+  const { tags, inline } = templateScripts(html), order = ['vendor/three.min.js', ...CORE, ...ORDER];
   if (tags.join() !== order.join()) throw Error('the template\'s script tags are not ' + order.join(', ') + ': ' + tags.join(', '));
-  const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
   const scripts = { three: new vm.Script(threeSource(files['vendor/three.min.js']), { filename: 'three.min.js' }), core: CORE.map(f => new vm.Script(files[f], { filename: f })),
     game: ORDER.map(f => new vm.Script(files[f], { filename: f })), inline: inline.map((c, i) => new vm.Script(c, { filename: 'inline-' + i + '.js' })) };
   return { files, html, manifest, scripts, src, template };
