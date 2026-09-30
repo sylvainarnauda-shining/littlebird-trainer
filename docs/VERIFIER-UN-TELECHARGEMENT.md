@@ -9,9 +9,13 @@ plus complète.
 Chaque version publie `SHA256SUMS.txt`, une ligne par fichier. Comparez avec l'empreinte du fichier téléchargé :
 
 - Windows (PowerShell) : `Get-FileHash -Algorithm SHA256 .\LittleBird-Trainer-Setup-X.Y.Z.exe`
-- macOS ou Linux : `shasum -a 256 <fichier>` ou, dans le dossier des fichiers, `sha256sum --check SHA256SUMS.txt`
+- macOS : `shasum -a 256 <fichier>`
+- Linux : `sha256sum <fichier>`, ou, dans le dossier où `SHA256SUMS.txt` est téléchargé à côté de vos fichiers,
+  `sha256sum --check --ignore-missing SHA256SUMS.txt` (sans `--ignore-missing`, chaque fichier de la liste que vous
+  n'avez pas téléchargé compte comme une erreur)
 
-Les deux valeurs doivent être identiques, caractère pour caractère.
+Les deux valeurs doivent être identiques, caractère pour caractère, aux majuscules près (PowerShell écrit l'empreinte
+en majuscules, `SHA256SUMS.txt` en minuscules).
 
 ## 2. La provenance (attestation)
 

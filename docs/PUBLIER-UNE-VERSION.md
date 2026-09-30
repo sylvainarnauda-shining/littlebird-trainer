@@ -42,7 +42,11 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
 2. Sur le PC du mainteneur, avec sa carte graphique :
    - `npm run verify` puis `npm run test:browser` (tous les tests, y compris ceux marqués `@gpu`, que la CI ne lance
      pas faute de carte graphique : vol libre, modes, cartes, loi de la souris, cadence des images, politique de
-     sécurité sur chaque écran) ;
+     sécurité sur chaque écran), sur le dernier commit de la branche, et sa trace dans la description de la pull
+     request : `Browser-GPU: <N> passed, tree <empreinte>`, avec la dernière ligne de Playwright et l'empreinte de
+     l'arbre testé (`git rev-parse HEAD^{tree}`). La fusion par écrasement garde cet arbre tant que `main` n'a pas
+     bougé : avant l'étiquette, `git rev-parse <commit fusionné>^{tree}` doit redonner la même empreinte, sinon on
+     relance `npm run test:browser` sur le commit fusionné ;
    - `npm run test:perf` (seuils d'images par seconde imposés avec `LB_PERF=1`) ;
    - `npm run dist`, puis `npm run desktop:check` (fusibles, contenu de `app.asar`, fichiers d'Electron officiels,
      auto-test de l'application empaquetée) et `npm run release:check` (zip portable, installation et
@@ -53,7 +57,9 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
    - avec les **réglages initiaux** : la sensation de la souris (sensibilités par défaut choisies, voir
      [`REGLAGES.md`](REGLAGES.md)) ; dans Chrome, Ctrl gauche + W pendant une session doit afficher la demande de
      confirmation du navigateur (et « Annuler » garder la session).
-3. Pull request, `ci-ok` vert, fusion dans `main`.
+3. Branche `ci/...` d'essai si les travaux consultatifs (`browser`, `desktop`) doivent être vus verts avant la pull
+   request, puis pull request, `ci-ok` vert, fusion dans `main`. Tant que `browser` et `desktop` sont consultatifs
+   dans `ci-ok`, lire leur résultat : le workflow de publication les rend bloquants, et un échec là arrête la version.
 4. Essai à blanc : Actions › **Release** › **Run workflow** construit et vérifie tout sans rien publier (fichiers
    gardés 3 jours).
 5. Étiquette sur le commit fusionné : `git switch main`, `git pull`, `git tag vX.Y.Z`, `git push origin vX.Y.Z`.
