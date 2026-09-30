@@ -43,11 +43,13 @@ contre l'archive publiée et son empreinte (`scripts/check-electron-runtime.mjs`
 
 **Auto-test** (`--lb-self-test=<nonce>`, `desktop/self-test.cjs`, lancé par `scripts/desktop-smoke.mjs`) : sur les
 fichiers livrés, la page se charge et dessine, la capture de la souris est simulée (vérifié avant de cliquer sur
-Démarrer), le calcul du vol est celui de la référence (porte G5, voir [`FIDELITE.md`](FIDELITE.md)), une session vole,
-l'export du profil fonctionne ; et la page n'a ni Node.js ni crochet de test, le réseau, les fenêtres surgissantes, la
-navigation, un script injecté, `eval` et un téléchargement autre que l'export sont refusés. Pendant l'auto-test, la
-fenêtre ne peut pas prendre le focus, laisse passer la souris, et toutes les permissions sont refusées ; le profil est
-un dossier temporaire. Une copie dont `app.asar` a été modifiée d'un octet ne démarre pas.
+Démarrer), le calcul du vol est celui de la référence (porte G5, voir [`FIDELITE.md`](FIDELITE.md)), une session vole
+(2 s simulées sur au moins 20 images, quelle que soit la vitesse de la machine), l'export du profil fonctionne ; et la
+page n'a ni Node.js ni crochet de test, le réseau, les fenêtres surgissantes, la navigation (la tentative est vue par
+l'application, puis refusée), un script injecté, `eval` et un téléchargement autre que l'export sont refusés ; chaque
+refus est jugé sur sa preuve, pas après un délai fixe. Pendant l'auto-test, la fenêtre ne peut pas prendre le focus,
+laisse passer la souris, et toutes les permissions sont refusées ; le profil est un dossier temporaire. Une copie dont
+`app.asar` a été modifiée d'un octet ne démarre pas.
 
 **Installateur** : NSIS en un clic, pour l'utilisateur courant, sans élévation ; aucune mise à jour automatique ;
 exécutables non signés (voir [`INSTALLATION.md`](INSTALLATION.md)).
