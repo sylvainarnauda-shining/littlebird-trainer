@@ -133,6 +133,9 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   plus échouer la CI (avertissement, et `--prune` pour le retirer de la liste) ; un paquet nouveau ou une version
   nouvelle qui déclare un script d'installation échoue toujours jusqu'à sa relecture, et la version revue reste listée
   jusque-là.
+- Contrôle des scripts d'installation, identité d'un paquet : son vrai nom (celui d'un alias compris) et sa version ; il
+  doit venir de l'archive du registre npm pour ce nom et cette version, sinon (autre hôte, git, dossier local) la CI
+  échoue.
 - Outils sans dépendance : zip déterministe, sommes SHA-256, notes de version, SBOM CycloneDX, contrôle des scripts
   d'installation, réglages GitHub en code (`scripts/github-settings.mjs`), vérifications de l'application et des
   fichiers livrés. Le scanner de confidentialité analyse aussi les fichiers livrés (`--shipped`).

@@ -5,6 +5,11 @@
 // gate makes a new one visible in review, because it would run on a machine without that setting. Zero dependencies.
 //  - a package with an install script that is not listed fails: a NEW one (no version of it is listed) or a CHANGED one
 //    (another version is listed; the new version is reviewed and listed like a new package);
+//  - a package is its real name (the lockfile entry's "name" when npm records one: an alias installed under another
+//    folder name) at its version, and it must come from the npm registry's own tarball for that name and version,
+//    which the registry never republishes (npm ci checks the lockfile's integrity against it); a package with an
+//    install script from anywhere else (another host, git, a local folder) fails as SOURCE, since its name@version
+//    cannot identify what was reviewed;
 //  - a listed entry that is no longer in the lockfile (a dependency update removed it) is no risk: a warning names it
 //    and says how to prune it; `--prune` removes such entries from publish-policy.json and never adds one. A listed
 //    version whose package is in the lockfile at an unreviewed version stays listed (the CHANGED failure names it) until
@@ -14,13 +19,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-export function installScripts(lock) {
+// The tarball the npm registry serves for name@version (a scoped name keeps its scope in the path, not in the file).
+export const registryTarball = (name, version) =>
+  `https://registry.npmjs.org/${name}/-/${name.slice(name.lastIndexOf('/') + 1)}-${version}.tgz`;
+
+// The packages of the lockfile that declare an install script: [{key, id: name@version, registry}], registry false
+// when the entry is not the npm registry's own tarball for that name and version.
+export function installScriptPackages(lock) {
   if (!lock.packages || lock.lockfileVersion < 2) throw new Error('lockfileVersion 2 or 3 required');
-  const found = new Set();
+  const out = [];
   for (const [key, entry] of Object.entries(lock.packages))
-    if (key && entry.hasInstallScript) found.add(`${key.replace(/^.*node_modules\//, '')}@${entry.version}`);
-  return [...found].sort();
+    if (key && entry.hasInstallScript) {
+      const name = entry.name || key.replace(/^.*node_modules\//, '');
+      out.push({
+        key,
+        id: `${name}@${entry.version}`,
+        registry: !entry.link && entry.resolved === registryTarball(name, entry.version),
+      });
+    }
+  return out.sort((a, b) => (a.key < b.key ? -1 : 1));
 }
+export const installScripts = (lock) => [...new Set(installScriptPackages(lock).map((p) => p.id))].sort();
 
 // The package name of a name@version entry (a scoped name keeps its leading @).
 export const packageName = (id) => id.slice(0, id.lastIndexOf('@') > 0 ? id.lastIndexOf('@') : id.length);
@@ -68,10 +87,17 @@ function main() {
   const argv = process.argv.slice(2);
   const prune = argv.includes('--prune');
   const [lockPath = 'package-lock.json', policyPath = 'publish-policy.json'] = argv.filter((a) => a !== '--prune');
-  const found = installScripts(JSON.parse(fs.readFileSync(lockPath, 'utf8')));
+  const packages = installScriptPackages(JSON.parse(fs.readFileSync(lockPath, 'utf8')));
+  const found = [...new Set(packages.map((p) => p.id))].sort();
   const policyText = fs.readFileSync(policyPath, 'utf8');
   const reviewed = JSON.parse(policyText).installScriptsReviewed || [];
   const v = installScriptVerdict(found, reviewed);
+  const foreign = packages.filter((p) => !p.registry);
+  for (const p of foreign)
+    console.error(
+      `FAIL SOURCE install script from outside the npm registry's own tarball of ${p.id} ` +
+        `(its name@version cannot identify what was reviewed): ${p.key}`,
+    );
   for (const p of v.added)
     console.error(`FAIL NEW install script, review it then add it to installScriptsReviewed: ${p}`);
   for (const c of v.changed)
@@ -91,8 +117,9 @@ function main() {
     }
   console.log(
     `check-install-scripts: ${found.length} package(s) declare install scripts (none runs: ignore-scripts=true); ` +
-      `${v.added.length + v.changed.length} not reviewed, ${prune ? 0 : v.gone.length} stale entr${v.gone.length === 1 && !prune ? 'y' : 'ies'} in the reviewed list`,
+      `${v.added.length + v.changed.length} not reviewed, ${foreign.length} not from the registry, ` +
+      `${prune ? 0 : v.gone.length} stale entr${v.gone.length === 1 && !prune ? 'y' : 'ies'} in the reviewed list`,
   );
-  process.exit(v.ok ? 0 : 1);
+  process.exit(v.ok && !foreign.length ? 0 : 1);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main();

@@ -1,8 +1,9 @@
 'use strict';
 // The install-script gate (scripts/check-install-scripts.mjs, CI job deps): a package of the lockfile with an install
-// script fails until its name@version is reviewed (a new package, or a new version of a reviewed one); a reviewed entry
-// that a dependency update removed from the lockfile only warns and says how to prune it; --prune removes such entries
-// and nothing else, keeping every other byte of publish-policy.json.
+// script fails until its name@version is reviewed (a new package, or a new version of a reviewed one), the name being
+// the package's own (an alias's real name) and the source the npm registry's tarball of that name@version; a reviewed
+// entry that a dependency update removed from the lockfile only warns and says how to prune it; --prune removes such
+// entries and nothing else, keeping every other byte of publish-policy.json.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -14,14 +15,18 @@ const { ROOT } = require('../helpers/paths');
 
 const SCRIPT = path.join(ROOT, 'scripts', 'check-install-scripts.mjs');
 const load = () => import(pathToFileURL(SCRIPT).href);
+// The registry tarball URL npm records (written out here, independently of the script's own function).
+const tarball = (name, version) =>
+  'https://registry.npmjs.org/' + name + '/-/' + name.split('/').pop() + '-' + version + '.tgz';
 const lockWith = (...ids) => ({
   lockfileVersion: 3,
   packages: Object.fromEntries([
     ['', { name: 'x' }],
-    ['node_modules/plain', { version: '1.0.0' }],
+    ['node_modules/plain', { version: '1.0.0', resolved: tarball('plain', '1.0.0') }],
     ...ids.map((id) => {
       const at = id.lastIndexOf('@');
-      return ['node_modules/' + id.slice(0, at), { version: id.slice(at + 1), hasInstallScript: true }];
+      const [name, version] = [id.slice(0, at), id.slice(at + 1)];
+      return ['node_modules/' + name, { version, resolved: tarball(name, version), hasInstallScript: true }];
     }),
   ]),
 });
@@ -70,13 +75,84 @@ test('verdict: reviewed passes; a new package or a new version fails; a removed 
   assert.deepEqual([w.ok, w.gone], [true, ['fsevents@2.3.2']]);
 });
 
+test('identity: the real name of an alias, and only the registry tarball of that name@version', async () => {
+  const { installScriptPackages, registryTarball } = await load();
+  assert.equal(registryTarball('@scope/tool', '1.2.3'), 'https://registry.npmjs.org/@scope/tool/-/tool-1.2.3.tgz');
+  assert.equal(registryTarball('fsevents', '2.3.2'), tarball('fsevents', '2.3.2'));
+  const entry = (extra) => ({ version: '2.3.2', hasInstallScript: true, ...extra });
+  const lock = {
+    lockfileVersion: 3,
+    packages: {
+      '': {},
+      'node_modules/fse': entry({ name: 'fsevents', resolved: tarball('fsevents', '2.3.2') }),
+      'node_modules/fsevents': entry({ name: 'evil-pkg', resolved: tarball('evil-pkg', '2.3.2') }),
+      'node_modules/a/node_modules/fsevents': entry({ resolved: 'https://evil.example.net/fsevents-2.3.2.tgz' }),
+      'node_modules/b/node_modules/fsevents': entry({ resolved: tarball('evil-pkg', '2.3.2') }),
+      'node_modules/c/node_modules/fsevents': entry({ resolved: 'git+ssh://git@example.com/x/fsevents.git#abc' }),
+      'node_modules/d/node_modules/fsevents': entry({}),
+      'node_modules/e/node_modules/fsevents': entry({ link: true, resolved: 'packages/fsevents' }),
+    },
+  };
+  assert.deepEqual(
+    installScriptPackages(lock).map((p) => [p.key, p.id, p.registry]),
+    [
+      ['node_modules/a/node_modules/fsevents', 'fsevents@2.3.2', false],
+      ['node_modules/b/node_modules/fsevents', 'fsevents@2.3.2', false],
+      ['node_modules/c/node_modules/fsevents', 'fsevents@2.3.2', false],
+      ['node_modules/d/node_modules/fsevents', 'fsevents@2.3.2', false],
+      ['node_modules/e/node_modules/fsevents', 'fsevents@2.3.2', false],
+      ['node_modules/fse', 'fsevents@2.3.2', true],
+      ['node_modules/fsevents', 'evil-pkg@2.3.2', true],
+    ],
+  );
+});
+
+test('an alias to another package, or a reviewed name@version from another source, fails', () => {
+  const reviewed = ['electron-winstaller@5.4.0', 'fsevents@2.3.2'];
+  const base = lockWith('electron-winstaller@5.4.0');
+  const withEntry = (key, extra) => ({
+    ...base,
+    packages: { ...base.packages, [key]: { version: '2.3.2', hasInstallScript: true, ...extra } },
+  });
+  // An alias of a reviewed package, from the registry: accepted under its real name.
+  withFiles(
+    withEntry('node_modules/fse', { name: 'fsevents', resolved: tarball('fsevents', '2.3.2') }),
+    reviewed,
+    (f) => {
+      const r = f.run();
+      assert.equal(r.code, 0, r.out);
+    },
+  );
+  // Another package installed under a reviewed package's folder name.
+  withFiles(
+    withEntry('node_modules/fsevents', { name: 'evil-pkg', resolved: tarball('evil-pkg', '2.3.2') }),
+    reviewed,
+    (f) => {
+      const r = f.run();
+      assert.equal(r.code, 1);
+      assert.match(r.out, /FAIL NEW install script, review it then add it to installScriptsReviewed: evil-pkg@2\.3\.2/);
+    },
+  );
+  // The reviewed name and version, from another host or from another package's registry tarball.
+  for (const resolved of ['https://evil.example.net/fsevents-2.3.2.tgz', tarball('evil-pkg', '2.3.2')])
+    withFiles(withEntry('node_modules/fsevents', { resolved }), reviewed, (f) => {
+      const r = f.run();
+      assert.equal(r.code, 1, resolved);
+      assert.match(
+        r.out,
+        /FAIL SOURCE install script from outside the npm registry's own tarball of fsevents@2\.3\.2 .*: node_modules\/fsevents/,
+      );
+      assert.match(r.out, /0 not reviewed, 1 not from the registry/);
+    });
+});
+
 test('a dependency update that removes a reviewed package: exit 0 with a warning that says how to prune', () => {
   withFiles(lockWith('electron-winstaller@5.4.0'), ['electron-winstaller@5.4.0', 'fsevents@2.3.2'], ({ run }) => {
     const r = run();
     assert.equal(r.code, 0, r.out);
     assert.match(r.out, /WARN listed in installScriptsReviewed but no longer in the lockfile .*fsevents@2\.3\.2/);
     assert.match(r.out, /node scripts\/check-install-scripts\.mjs --prune/);
-    assert.match(r.out, /0 not reviewed, 1 stale entry/);
+    assert.match(r.out, /0 not reviewed, 0 not from the registry, 1 stale entry/);
   });
 });
 
