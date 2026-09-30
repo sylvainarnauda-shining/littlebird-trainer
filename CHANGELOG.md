@@ -79,6 +79,22 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   - three.js dans l'enregistreur : empreintes des 18 modèles 3D, des scènes et du cockpit de chaque carte et profil de
     démarrage, des scènes de départ et de fin des sessions (couleurs converties par three.js) ;
   - inchangés : vol, parité (G5), son, HUD, réglages, interface, API de test.
+- **Version complète dans le menu et onglet « À propos »** (demande du 30/09 : que la personne qui télécharge ou suit
+  le projet voie si elle a la dernière version). Le menu affiche le numéro complet (`v0.9.0` au lieu de `v0.9`), et un
+  quatrième onglet, **À propos**, redonne le nom et la version, dit comment savoir si c'est la dernière (« Compare avec
+  la dernière version sur la page des versions du dépôt ; le jeu ne vérifie rien tout seul et n'envoie rien. »), montre
+  l'adresse de la page Releases en texte et en lien (nouvel onglet, sans `opener` ni référent), la licence MIT, la
+  mention « projet non officiel » et où se trouvent les avis des composants tiers. La version n'est écrite qu'une fois,
+  dans `package.json` : la construction la reporte dans la page (aucune copie dans les sources ; construction refusée
+  pour un modèle sans emplacement de version ou une version qui n'est pas X.Y.Z, `verify:build` refuse une page qui en
+  affiche une autre). Aucun code réseau ni vérification de mise à jour : le jeu ne contacte rien. Dans l'application
+  Windows, le lien s'ouvre dans le navigateur par défaut par la règle qui existait déjà (l'adresse exacte de la page
+  Releases, et elle seule, jamais pendant l'auto-test), sans préchargement ni IPC. Le raccourci garde son nom,
+  **LittleBird Trainer**, sans numéro. Seul le golden de l'interface (`ui`) change : un bouton de plus dans
+  l'inventaire (l'onglet `about`, au rang 4), le rang de chaque commande et bouton qui le suit décalé d'un, et
+  l'empreinte des textes ; les configurations de session et les valeurs par défaut n'y changent pas, et les autres
+  goldens (vol, parité, sessions, monde, son, HUD, réglages, modèles, modules, API de test) sont identiques octet pour
+  octet.
 
 ### Application Windows
 

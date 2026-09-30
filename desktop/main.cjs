@@ -137,11 +137,11 @@ async function start() {
   win.loadURL(`${policy.ORIGIN}/index.html`);
 }
 
-// Every web contents: no pop-up (the releases page alone goes to the default browser), no navigation away from the
-// app, no <webview>, no WebRTC traffic outside a proxy (none is configured: the page has no WebRTC code, and this
-// keeps a peer connection from bypassing the request filter). The page asks the browser to confirm closing during a
-// session (a guard against Ctrl+W in a browser tab); the app has no such shortcut, and closing its window is always a
-// deliberate choice, so the app closes without asking.
+// Every web contents: no pop-up (the releases page alone, the link of the page's "À propos" tab, goes to the default
+// browser, and never during a self-test), no navigation away from the app, no <webview>, no WebRTC traffic outside a
+// proxy (none is configured: the page has no WebRTC code, and this keeps a peer connection from bypassing the request
+// filter). The page asks the browser to confirm closing during a session (a guard against Ctrl+W in a browser tab); the
+// app has no such shortcut, and closing its window is always a deliberate choice, so the app closes without asking.
 function guard(contents) {
   contents.setWebRTCIPHandlingPolicy('disable_non_proxied_udp');
   contents.on('will-prevent-unload', (event) => event.preventDefault());

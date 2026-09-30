@@ -3,6 +3,12 @@
 import crypto from 'node:crypto';
 
 export const CHARSET = '<meta charset="utf-8">';
+// The version the page shows (menu header and "À propos" tab) is package.json's, its single source of truth: the
+// template holds this placeholder where the version goes, and the build writes the version there (scripts/build.mjs).
+// Only a plain release version (X.Y.Z, with an optional pre-release tag such as 1.0.0-rc.1) is accepted, so that
+// nothing but digits, letters, dots and hyphens can reach the markup.
+export const VERSION_TOKEN = '{{version}}';
+export const VERSION_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/;
 // Everything the page does not need is closed; the inline blocks are allowed by hash only (no 'unsafe-inline').
 export const CSP_CLOSED = [
   "img-src 'none'",
@@ -69,7 +75,16 @@ export function markupProblems(html) {
   }
   if (/javascript:/i.test(markup)) problems.push('javascript: URL');
   if (/https?:\/\//i.test(markup)) problems.push('absolute URL in the markup');
+  if (markup.includes(VERSION_TOKEN)) problems.push('version placeholder left in the markup');
   return problems;
+}
+
+// The versions a built page shows: in the menu header (#appVersion, "v" and the version) and in the "À propos" tab
+// (#aboutVersion); null where the element is missing or not in that form.
+export function shownVersions(html) {
+  const menu = /\bid="appVersion"[^>]*>v([^<]*)</.exec(html);
+  const about = /\bid="aboutVersion"[^>]*>([^<]*)</.exec(html);
+  return { menu: menu ? menu[1] : null, about: about ? about[1] : null };
 }
 
 export function apiCounts(text) {

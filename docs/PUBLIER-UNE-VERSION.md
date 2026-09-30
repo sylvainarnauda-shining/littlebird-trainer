@@ -31,7 +31,8 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
 
 ## À chaque version
 
-1. Sur une branche : la version dans `package.json` (`npm version X.Y.Z --no-git-tag-version`) et, dans
+1. Sur une branche : la version dans `package.json` (`npm version X.Y.Z --no-git-tag-version`), seul endroit où elle
+   est écrite (la construction la reporte dans le menu du jeu et son onglet « À propos »), et, dans
    `CHANGELOG.md`, la section `## [X.Y.Z] — AAAA-MM-JJ` datée du jour de l'étiquette (le workflow refuse une section
    non datée). Tout ce qui change dans les sensations de vol y est écrit. Puis les **notes de version** en français,
    `docs/notes-de-version/<version>.md` (modèle : [notes de la 0.9.0](notes-de-version/0.9.0.md)), écrites pour les
@@ -73,7 +74,8 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
    `SHA256SUMS.txt`, les attestations et un **brouillon** de version (marqué préversion pour une version 0.x), avec
    les notes de version suivies de la section du journal.
 7. Relire le brouillon (fichiers, notes), télécharger l'installateur, vérifier son empreinte et son attestation
-   ([`VERIFIER-UN-TELECHARGEMENT.md`](VERIFIER-UN-TELECHARGEMENT.md)), l'installer, voler, puis **Publish release**.
+   ([`VERIFIER-UN-TELECHARGEMENT.md`](VERIFIER-UN-TELECHARGEMENT.md)), l'installer, vérifier que le menu affiche
+   `vX.Y.Z` (en haut à droite et dans l'onglet « À propos »), voler, puis **Publish release**.
 
 Une version publiée est immuable : en cas d'erreur, ne jamais réutiliser l'étiquette ; corriger et publier `X.Y.Z+1`.
 Un brouillon, lui, peut être supprimé (avec son étiquette) avant publication.

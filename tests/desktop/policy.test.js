@@ -1,7 +1,8 @@
 'use strict';
 // The desktop shell's security rules (desktop/policy.cjs), without Electron: one origin, one page, no network, two
 // permissions (none during a self-test), JSON exports only, a fail-closed page policy, refused debugging switches, the
-// window settings (sandbox, context isolation, no Node in the page, no DevTools when packaged).
+// window settings (sandbox, context isolation, no Node in the page, no DevTools when packaged), and one external
+// address (the releases page of the À propos tab), handed to the default browser by exact match, never in a self-test.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -122,13 +123,57 @@ test('the releases page is the only external link, and it is this repository', (
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   const repo = pkg.repository.url.replace(/^git\+/, '').replace(/\.git$/, '');
   assert.equal(p.RELEASES_URL, repo + '/releases');
+  const parsed = new URL(p.RELEASES_URL);
+  assert.deepEqual(
+    [parsed.protocol, parsed.host, parsed.search, parsed.hash, parsed.href],
+    ['https:', 'github.com', '', '', p.RELEASES_URL],
+  );
   assert.equal(p.externalAllowed(p.RELEASES_URL), true);
+  // Exactly that https address: no other page of the site, no query, fragment, credentials, port, scheme or case.
   for (const u of [
     p.RELEASES_URL + '/../../evil',
     p.RELEASES_URL + '/',
+    p.RELEASES_URL + '/latest',
+    p.RELEASES_URL + '/tag/v0.9.0',
+    p.RELEASES_URL + '/download/v0.9.0/LittleBird-Trainer-Setup-0.9.0.exe',
+    p.RELEASES_URL + '?q=1',
+    p.RELEASES_URL + '#x',
+    p.RELEASES_URL + '\n',
+    ' ' + p.RELEASES_URL,
+    p.RELEASES_URL.replace('https:', 'http:'),
+    p.RELEASES_URL.replace('https://', 'https://user@'),
+    p.RELEASES_URL.replace('github.com', 'github.com:443'),
+    p.RELEASES_URL.replace('github.com', 'GITHUB.COM'),
+    p.RELEASES_URL.replace('/releases', '/Releases'),
+    p.RELEASES_URL.replace('github.com', 'github.com.evil.example'),
     'https://github.com/evil/littlebird-trainer/releases',
+    'https://github.com/sylvainarnauda-shining/littlebird-trainer',
+    'file:///C:/Windows/System32/calc.exe',
+    'app://littlebird/index.html',
+    'javascript:alert(1)',
+    '',
+    null,
+    undefined,
+    42,
+    new URL(p.RELEASES_URL),
+    { toString: () => p.RELEASES_URL },
   ])
-    assert.equal(p.externalAllowed(u), false, u);
+    assert.equal(p.externalAllowed(u), false, String(u));
+});
+
+test('the releases link goes to the default browser by its exact address only, and never during a self-test', () => {
+  const main = fs
+    .readFileSync(path.join(ROOT, 'desktop', 'main.cjs'), 'utf8')
+    .replace(/^\s*\/\/.*$/gm, '')
+    .replace(/\s\/\/ .*$/gm, '');
+  // The window-open handler (links with target=_blank, window.open): the shell's constant, not the page's string, is
+  // what reaches the default browser, and only when the page asked for exactly it; no window is ever created.
+  assert.match(
+    main,
+    /contents\.setWindowOpenHandler\(\(\{ url \}\) => \{\s*if \(!selfTest && policy\.externalAllowed\(url\)\) shell\.openExternal\(policy\.RELEASES_URL\);\s*return \{ action: 'deny' \};\s*\}\);/,
+  );
+  assert.equal(main.match(/openExternal\(/g).length, 1, 'one call to shell.openExternal');
+  assert.equal(main.match(/action: '(allow|deny)'/g).join(), "action: 'deny'", 'never a new window');
 });
 
 test('page policy: taken from the page, fails closed, header-only directive added', () => {

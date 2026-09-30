@@ -1598,7 +1598,7 @@
       document.querySelectorAll('.opt[data-for]').forEach(el=>el.hidden=!el.dataset.for.split(' ').includes(mode));
       document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===cfg.scenario));
     }
-    function selectTab(tab){menuTab=tab;document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.id===tab));$('pageTitle').textContent={modes:'MODES DE JEU',controls:'COMMANDES',settings:'RÉGLAGES'}[tab];renderBindings();}
+    function selectTab(tab){menuTab=tab;document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.id===tab));$('pageTitle').textContent={modes:'MODES DE JEU',controls:'COMMANDES',settings:'RÉGLAGES',about:'À PROPOS'}[tab];renderBindings();}
     function renderBindings(){
       $('bindings').replaceChildren();for(const [action,label] of Object.entries(labels)){const div=document.createElement('div');div.className='binding';const span=document.createElement('span');span.textContent=label;const button=document.createElement('button');button.textContent=names[bindings[action]]||bindings[action].replace('Key','').replace('Unbound','Non assigné');button.onclick=()=>{capturing=action;renderBindings();toast('Appuie sur une touche ou un bouton de souris. Échap annule.');};if(capturing===action){button.textContent='En attente…';button.classList.add('listening');}div.append(span,button);$('bindings').append(div);}
     }
@@ -1620,6 +1620,13 @@
       if(el.id==='mouseLaw'){P.resetInput(mouse);toast(cfg.mouseLaw==='rate'?'Souris : loi mesurée sur les enregistrements de référence (vitesse du geste → vitesse de rotation).':'Souris : manche virtuel de la v12 (déviation gardée en mémoire, retour lent au neutre).');}
       syncUI();save();});});
     document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{capturing=null;selectTab(b.dataset.tab);sfx.play('ui');});
+    // À propos: the releases page, shown as text and as a link that opens in a new tab without opener or referrer. The
+    // page never contacts it. In the Windows app the shell hands this exact address, and no other, to the default
+    // browser (desktop/policy.cjs RELEASES_URL, the same string: tests/unit/about.test.js). The markup may hold no
+    // address (scripts/page-policy.mjs), so it is set here. The version shown there and in the menu header is written
+    // into the markup by the build (package.json).
+    const RELEASES_URL='https://github.com/sylvainarnauda-shining/littlebird-trainer/releases';
+    if($('releasesLink')){$('releasesLink').href=RELEASES_URL;$('releasesLink').textContent=RELEASES_URL;}
     document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{if(b.disabled)return;selectMode(b.dataset.mode);markExerciseDirty();save();sfx.play('ui');});
     document.querySelectorAll('[data-scenario]').forEach(b=>b.onclick=()=>{cfg.scenario=b.dataset.scenario;cfg.rangeType=b.dataset.scenario;selectMode('range');markExerciseDirty();save();});
     $('start').onclick=start;$('retry').onclick=start;$('resume').onclick=resume;$('menuButton').onclick=pause;$('resultSettings').onclick=()=>openMenu('modes');

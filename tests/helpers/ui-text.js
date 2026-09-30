@@ -8,6 +8,14 @@ module.exports = {
   keyHints: ['REGARD LIBRE', 'CHANGER DE VUE', 'MONTÉE COLLECTIVE', 'DESCENTE COLLECTIVE', 'LARGUER LES LEURRES'],
   // Map card of the reference valley (counts of its towers, villages and fields).
   valleySummary: /3 tours · 1 village · 5 champs/,
+  // "À propos" tab: its tab and page title, how to tell whether this is the latest version (the maintainer's wording),
+  // the licence, the unofficial-project line and the third-party notices it points to.
+  aboutTab: 'À PROPOS',
+  aboutHowToCheck:
+    'Compare avec la dernière version sur la page des versions du dépôt ; le jeu ne vérifie rien tout seul et n’envoie rien.',
+  aboutLicence: /licence MIT \(fichier LICENSE\.txt/,
+  aboutUnofficial: /Projet non officiel\b.*ni affilié, ni approuvé, ni soutenu/,
+  aboutNotices: /THIRD_PARTY_NOTICES\.txt.*THIRD_PARTY_NOTICES\.md/,
   // Results screen.
   assaultEndTitle: /camps/,
   resultStructures: /Structures détruites/,

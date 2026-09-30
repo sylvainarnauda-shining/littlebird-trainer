@@ -40,7 +40,9 @@ Seule la dernière version publiée (onglet **Releases**) et la branche principa
 - Elle affiche la même page, depuis sa propre origine `app://littlebird`, dans une fenêtre sans Node.js (bac à sable,
   isolation du contexte, aucun script de préchargement, aucune communication avec le processus principal).
 - Toute requête réseau de la page est annulée ; la navigation vers l'extérieur, les nouvelles fenêtres et les
-  `<webview>` sont refusées ; seules deux permissions existent (verrouillage du pointeur, plein écran).
+  `<webview>` sont refusées ; seules deux permissions existent (verrouillage du pointeur, plein écran). Une seule
+  adresse peut être ouverte, dans le navigateur par défaut et sur un clic : la page Releases du dépôt, lien de l'onglet
+  « À propos » (comparaison exacte de l'adresse).
 - Aucune mise à jour automatique, aucun rapport de plantage, aucune télémétrie.
 - Les fusibles d'Electron empêchent d'utiliser l'exécutable comme interpréteur Node.js et refusent un `app.asar`
   modifié ; une application empaquetée lancée avec un commutateur de débogage (`--remote-debugging-port`, `--inspect`,

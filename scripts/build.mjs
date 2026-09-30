@@ -4,10 +4,14 @@
 // meta tag that allows exactly the page's own inline blocks by their sha256 (13 scripts, 1 stylesheet) and nothing
 // else: no network, no eval, no external resource (scripts/page-policy.mjs). The policy is also written beside the page
 // (csp.txt), and scripts/verify-build.mjs checks the result before anything is written.
+// The version the page shows is package.json's: the template's {{version}} placeholders (menu header, "À propos" tab)
+// are replaced with it in the markup, before the scripts are inlined (they stay byte for byte their source files). No
+// source file holds a copy of the version (tests/build/version.test.js).
 //   node scripts/build.mjs [--src <dir>] [--out <file>]
 // Refusals: an app.js without the automation pointer-lock shim (the lock is emulated inside the page whenever
 // navigator.webdriver is true, otherwise a headless test would capture the machine's real mouse); a three.js that is
-// not the pinned file; any external reference, inline event handler, javascript: URL or style attribute.
+// not the pinned file; any external reference, inline event handler, javascript: URL or style attribute; a template
+// without the version placeholder; a package.json version that is not X.Y.Z (with an optional pre-release tag).
 // The shim's statements must be code: when the pinned development dependency acorn is installed (npm ci), they are
 // looked for outside comments and string literals, so a copy left in a comment does not pass; without it (the release
 // preflight builds with Node alone) the text check remains.
@@ -16,7 +20,15 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { CHARSET, cspMeta, cspPolicy, inlineBlocks, markupProblems } from './page-policy.mjs';
+import {
+  CHARSET,
+  VERSION_PATTERN,
+  VERSION_TOKEN,
+  cspMeta,
+  cspPolicy,
+  inlineBlocks,
+  markupProblems,
+} from './page-policy.mjs';
 import { verifyPage } from './verify-build.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,6 +61,17 @@ export function pinnedThree() {
   return policy.vendorChecksums['src/vendor/three.min.js'];
 }
 
+// The project's version (package.json), the only place it is written; refused unless X.Y.Z (optional pre-release tag).
+export function packageVersion(root = ROOT) {
+  const { version } = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  checkVersion(version);
+  return version;
+}
+function checkVersion(version) {
+  if (typeof version !== 'string' || !VERSION_PATTERN.test(version))
+    throw Error(`the version ${JSON.stringify(version)} is not X.Y.Z (package.json): refusing to build`);
+}
+
 // true when every shim marker occurs as code (not wholly inside one comment or one string or template token), false
 // otherwise; null when acorn is not installed.
 export function shimInCode(app) {
@@ -74,7 +97,9 @@ export function shimInCode(app) {
   });
 }
 
-export function buildPage(srcDir = path.join(ROOT, 'src')) {
+// options.version: the version to show (default: package.json's); tests pass another one to prove it is injected.
+export function buildPage(srcDir = path.join(ROOT, 'src'), { version = packageVersion() } = {}) {
+  checkVersion(version);
   const app = read(srcDir, 'app.js');
   const refuse = () => {
     throw Error(
@@ -91,6 +116,9 @@ export function buildPage(srcDir = path.join(ROOT, 'src')) {
   const link = '<link rel="stylesheet" href="style.css">';
   if (!html.includes(link)) throw Error('Missing stylesheet placeholder');
   if (html.split(CHARSET).length !== 2) throw Error('The template needs exactly one ' + CHARSET);
+  // The version, in the markup only: the scripts are inlined afterwards, unchanged.
+  if (!html.includes(VERSION_TOKEN)) throw Error('The template shows no version (' + VERSION_TOKEN + ')');
+  html = html.split(VERSION_TOKEN).join(version);
   html = html.replace(link, () => '<style>' + read(srcDir, 'style.css') + '</style>');
   for (const file of SCRIPTS) {
     const tag = '<script src="' + file + '"></script>';
@@ -105,8 +133,9 @@ export function buildPage(srcDir = path.join(ROOT, 'src')) {
 
 // The page and its policy, verified (fail closed).
 export function build(srcDir = path.join(ROOT, 'src')) {
-  const html = buildPage(srcDir);
-  const report = verifyPage(html, { threeSha256: pinnedThree(), srcDir, scripts: SCRIPTS });
+  const version = packageVersion();
+  const html = buildPage(srcDir, { version });
+  const report = verifyPage(html, { threeSha256: pinnedThree(), srcDir, scripts: SCRIPTS, version });
   if (!report.ok) throw Error('verify-build failed: ' + report.problems.join('; '));
   return { html, csp: report.csp };
 }
@@ -123,7 +152,8 @@ function main() {
   fs.writeFileSync(out, html);
   fs.writeFileSync(path.join(path.dirname(out), 'csp.txt'), csp + '\n');
   console.log(
-    `Built ${path.relative(ROOT, out).replace(/\\/g, '/')}: ${Buffer.byteLength(html)} bytes, sha256 ${hex(html)}. ` +
+    `Built ${path.relative(ROOT, out).replace(/\\/g, '/')} (version ${packageVersion()}): ` +
+      `${Buffer.byteLength(html)} bytes, sha256 ${hex(html)}. ` +
       'CSP: 13 script hashes, 1 style hash, everything else closed; no external request.',
   );
 }

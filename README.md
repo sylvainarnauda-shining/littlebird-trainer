@@ -40,6 +40,13 @@ sont pas signés : Windows affiche d'abord un avertissement SmartScreen (**Infor
 quand même**). Chaque fichier a son empreinte SHA-256 et une attestation de provenance
 ([`docs/VERIFIER-UN-TELECHARGEMENT.md`](docs/VERIFIER-UN-TELECHARGEMENT.md)).
 
+**Quelle version avez-vous ?** Le numéro complet (par exemple `v0.9.0`) est affiché en haut à droite du menu du jeu,
+et dans son onglet **À propos**, avec l'adresse de la page **Releases**. Le jeu ne vérifie pas lui-même s'il en existe
+une plus récente (il n'a aucun code réseau et n'envoie rien) : comparez ce numéro avec la dernière version de la page
+**Releases**, ou suivez le dépôt sur GitHub (**Watch › Custom › Releases**) pour être prévenu de chaque nouvelle
+version. Les fichiers téléchargés portent le numéro dans leur nom ; le raccourci, lui, s'appelle toujours
+**LittleBird Trainer**.
+
 Depuis les sources, avec Node.js 24 : `npm ci` puis `npm run build` (la page `dist/web/index.html`) ou `npm run dist`
 (l'installateur et le zip portable, sous Windows). Les tests demandent la version exacte de `.nvmrc` (24.19.0), avec
 laquelle les goldens ont été enregistrés : voir [`CONTRIBUTING.md`](CONTRIBUTING.md).
@@ -130,6 +137,9 @@ recordings of WARDOGS matches, so that players can train the game's feel without
   single-page `index.html` for Chrome or Edge; every file has a SHA-256 sum and a build-provenance attestation. From
   source: Node.js 24, `npm ci`, `npm run build` (page) or `npm run dist` (Windows app); the tests need the exact
   version in `.nvmrc` (24.19.0), which the bit-exact goldens were recorded with.
+- **Which version**: the full version number (e.g. `v0.9.0`) shows in the top right of the game's menu and in its
+  **À propos** (About) tab, with the address of the releases page to compare against; the game checks nothing by
+  itself (no network code). Watch the repository's releases to hear of new ones.
 - **Default keys**: the game's helicopter defaults (collective Left Shift / Left Ctrl, cyclic W/S and A/D, yaw Q/E,
   fire left click, flares V, camera C, free look Left Alt) plus B (resupply on the helipad), R (restart) and X
   (re-centre the virtual stick); all rebindable. In a browser, Ctrl+W (collective down while pitching down) closes the
