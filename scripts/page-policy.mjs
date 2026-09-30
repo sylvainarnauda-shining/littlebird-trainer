@@ -94,8 +94,14 @@ export function markupProblems(html) {
     problems.push('markup that is not a tag (a comment, <!…>, <?…> or a bare "<")');
   if (TEXT_ELEMENT.test(markup)) problems.push('markup inside an element HTML reads as text');
   if (blockInForeignContent(markup)) problems.push('an inline block inside SVG or MathML');
-  if (/<\/(script|style)(?=[\t\n\f\r />])/i.test(markup.replace(/<(script|style)(?=[\t\n\f\r />])[^>]*><\/\1>/gi, '')))
-    problems.push('an end tag that closes no inline block');
+  // Empty block pairs are removed until none is left (one pass could rebuild a pair from pieces around another), then
+  // any end tag left closes no block.
+  let unpaired = markup;
+  for (let previous = ''; unpaired !== previous;) {
+    previous = unpaired;
+    unpaired = unpaired.replace(/<(script|style)(?=[\t\n\f\r />])[^>]*><\/\1>/gi, '');
+  }
+  if (/<\/(script|style)(?=[\t\n\f\r />])/i.test(unpaired)) problems.push('an end tag that closes no inline block');
   if ([...html.matchAll(SCRIPT_BLOCK)].some((m) => m[1].includes('<!--'))) problems.push('"<!--" in an inline script');
   for (const [t] of markup.matchAll(/<[a-zA-Z][^>]*>/g)) {
     const head = t.slice(0, 60);
