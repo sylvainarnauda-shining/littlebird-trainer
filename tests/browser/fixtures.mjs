@@ -102,6 +102,8 @@ export const test = base.extend({
 export { expect };
 
 // How long a page may take to boot: with software WebGL on a busy CI runner a boot took more than 3 minutes (30/09).
+// Boot waits poll on a timer, not on animation frames: on 30/09 a CI page had its menu up and Start enabled while its
+// frames had stalled under software WebGL, and a frame-polled wait never saw it.
 export const BOOT_TIMEOUT = process.env.CI ? 360_000 : 180_000;
 
 // Opens the trainer and waits for its menu. Options: profile (object stored before the first load), hash ('#carte=...'),
@@ -117,7 +119,7 @@ export async function openTrainer(page, { profile = null, hash = '', manualClock
   await page.waitForFunction(
     () => window.__app && window.trainerDiagnostics && !document.getElementById('start').disabled,
     null,
-    { timeout: BOOT_TIMEOUT },
+    { timeout: BOOT_TIMEOUT, polling: 500 },
   );
   await assertEmulatedPointerLock(page);
 }

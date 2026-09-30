@@ -55,12 +55,14 @@ test('a generated map from its address: name, three towers, a forest and a villa
   await Promise.all([page.waitForEvent('load'), page.locator('#mapNew').click()]);
   await page.waitForFunction(() => window.__app && !document.getElementById('start').disabled, null, {
     timeout: BOOT_TIMEOUT,
+    polling: 500,
   });
   const next = (await diag(page)).map;
   expect(next.generated && next.id !== before, 'a new generated map: ' + next.id).toBe(true);
   await Promise.all([page.waitForEvent('load'), page.locator('#mapVideo').click()]);
   await page.waitForFunction(() => window.__app && !document.getElementById('start').disabled, null, {
     timeout: BOOT_TIMEOUT,
+    polling: 500,
   });
   expect((await diag(page)).map.id, 'back to the reference valley').toBe('vallee');
 });
