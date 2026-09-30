@@ -170,9 +170,10 @@ test('the releases link goes to the default browser by its exact address only, a
   // what reaches the default browser, and only when the page asked for exactly it; no window is ever created.
   assert.match(
     main,
-    /contents\.setWindowOpenHandler\(\(\{ url \}\) => \{\s*if \(!selfTest && policy\.externalAllowed\(url\)\) shell\.openExternal\(policy\.RELEASES_URL\);\s*return \{ action: 'deny' \};\s*\}\);/,
+    /contents\.setWindowOpenHandler\(\(\{ url \}\) => \{\s*if \(!selfTest && policy\.externalAllowed\(url\) && Date\.now\(\) - lastExternal > EXTERNAL_INTERVAL_MS\) \{\s*lastExternal = Date\.now\(\);\s*shell\.openExternal\(policy\.RELEASES_URL\)\.catch\(\(\) => \{\}\);\s*\}\s*return \{ action: 'deny' \};\s*\}\);/,
   );
   assert.equal(main.match(/openExternal\(/g).length, 1, 'one call to shell.openExternal');
+  assert.match(main, /const EXTERNAL_INTERVAL_MS = 1500;/, 'at most one browser tab per 1.5 s');
   assert.equal(main.match(/action: '(allow|deny)'/g).join(), "action: 'deny'", 'never a new window');
 });
 

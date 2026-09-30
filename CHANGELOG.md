@@ -82,7 +82,7 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 - **Version complète dans le menu et onglet « À propos »** (demande du 30/09 : que la personne qui télécharge ou suit
   le projet voie si elle a la dernière version). Le menu affiche le numéro complet (`v0.9.0` au lieu de `v0.9`), et un
   quatrième onglet, **À propos**, redonne le nom et la version, dit comment savoir si c'est la dernière (« Compare avec
-  la dernière version sur la page des versions du dépôt ; le jeu ne vérifie rien tout seul et n'envoie rien. »), montre
+  la dernière version sur la page des versions du dépôt ; l'entraîneur ne vérifie rien tout seul et n'envoie rien. »), montre
   l'adresse de la page Releases en texte et en lien (nouvel onglet, sans `opener` ni référent), la licence MIT, la
   mention « projet non officiel » et où se trouvent les avis des composants tiers. La version n'est écrite qu'une fois,
   dans `package.json` : la construction la reporte dans la page (aucune copie dans les sources ; construction refusée

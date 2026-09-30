@@ -12,7 +12,7 @@ module.exports = {
   // the licence, the unofficial-project line and the third-party notices it points to.
   aboutTab: 'À PROPOS',
   aboutHowToCheck:
-    'Compare avec la dernière version sur la page des versions du dépôt ; le jeu ne vérifie rien tout seul et n’envoie rien.',
+    'Compare avec la dernière version sur la page des versions du dépôt ; l’entraîneur ne vérifie rien tout seul et n’envoie rien.',
   aboutLicence: /licence MIT \(fichier LICENSE\.txt/,
   aboutUnofficial: /Projet non officiel\b.*ni affilié, ni approuvé, ni soutenu/,
   aboutNotices: /THIRD_PARTY_NOTICES\.txt.*THIRD_PARTY_NOTICES\.md/,
