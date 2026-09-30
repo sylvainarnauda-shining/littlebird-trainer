@@ -8,6 +8,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const { ROOT } = require('../helpers/paths');
 
 const DIR = path.join(ROOT, '.github', 'workflows');
@@ -101,7 +102,7 @@ test('one SHA per action tag across the workflows (Dependabot bumps them togethe
   assert.ok(seen.size >= 8, 'pinned actions: ' + seen.size);
 });
 
-test('ci.yml: ci-ok aggregates every job and is the single check to require', () => {
+test('ci.yml: ci-ok aggregates every job and is the single check to require', async () => {
   const text = read('ci.yml');
   const j = jobs(text);
   const needs = /needs: \[([^\]]+)\]/
@@ -124,10 +125,31 @@ test('ci.yml: ci-ok aggregates every job and is the single check to require', ()
   assert.match(j['golden-update'], /node scripts\/check-golden-trailer\.mjs --prove/);
   assert.match(j['golden-update'], /fetch-depth: 0/);
   assert.match(j['golden-update'], /PR_BODY: \$\{\{ github\.event\.pull_request\.body \}\}/);
+  assert.match(j['golden-update'], /PUSH_REF: \$\{\{ github\.ref \}\}/);
   assert.ok(!/npm ci/.test(j['golden-update']));
+  // Triggers: pull requests to main; pushes to main and to ci/** branches (a maintainer's test of a branch); the
+  // manual run and the release's call. Nothing else (no pull_request_target, no workflow_run: checked above).
+  const on = text.slice(text.indexOf('\non:\n') + 1, text.indexOf('\npermissions:'));
+  assert.match(on, /^ {2}pull_request:\n {4}branches: \[main\]$/m);
+  assert.match(on, /^ {2}push:\n {4}branches: \[main, 'ci\/\*\*'\]$/m);
+  assert.deepEqual(
+    [...on.matchAll(/^ {2}([a-z_]+):/gm)].map((m) => m[1]),
+    ['pull_request', 'push', 'workflow_dispatch', 'workflow_call'],
+  );
   // Advisory jobs only outside the release (strict: true there).
   assert.match(text, /workflow_call:\n {4}inputs:\n {6}strict:/);
   assert.match(j['ci-ok'], /ADVISORY: \$\{\{ inputs\.strict == true && 'none' \|\| 'browser desktop' \}\}/);
+  // The aggregate is "ci-ok" everywhere but on a ci/** push, whose run (the branch tip, not its test merge) must never
+  // stand for a pull request's required check on the same commit.
+  const name = /^ {4}name: (.*)$/m.exec(j['ci-ok'])[1];
+  assert.equal(
+    name,
+    "${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/ci/')) && 'ci-ok (ci branch)' || 'ci-ok' }}",
+  );
+  const { REQUIRED_CHECK } = await import(pathToFileURL(path.join(ROOT, 'scripts', 'github-settings.mjs')).href);
+  assert.equal(REQUIRED_CHECK, 'ci-ok');
+  for (const [job, body] of Object.entries(j))
+    if (job !== 'ci-ok') assert.ok(!new RegExp(`^ {4}name: ${REQUIRED_CHECK}\\b`, 'm').test(body), job);
 });
 
 test('maintenance.yml: the weekly privacy scan covers every branch and tag, with the private denylist', () => {

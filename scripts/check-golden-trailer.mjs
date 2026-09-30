@@ -9,8 +9,13 @@
 //    committed runtime is recorded with the changed recorder and every fixture must come out byte for byte
 //    (`node scripts/golden.mjs prove`).
 // Events (environment, set by the workflow): EVENT=pull_request compares the test merge commit with its first parent
-// and reads PR_BODY; EVENT=push compares PUSH_BEFORE with HEAD and reads PUSH_MESSAGE; any other event (a release run,
-// a manual run, a new tag) has no change to judge and passes.
+// and reads PR_BODY; EVENT=push to a ci/** branch (PUSH_REF, the maintainer's test of a branch before its pull request)
+// compares HEAD with its merge base with origin/main and reads every commit message of the branch, so that the branch
+// gets the verdict its pull request will get (the Golden-Update line then goes in a commit message, and again in the
+// pull request description); any other EVENT=push compares PUSH_BEFORE with HEAD and reads every commit message of
+// that range (a squash merge's message is the pull request description; a fast-forward of several commits may carry
+// the line in any of them); any other event (a release run, a manual run, a new tag, a new branch) has no change to
+// judge and passes.
 //   node scripts/check-golden-trailer.mjs [--prove] [--base <rev> --head <rev> --body <text>]
 import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -26,9 +31,17 @@ const TRAILER = /^Golden-Update:[ \t]*(\S.{9,})$/m;
 // meta.json fields that name what was recorded (the recorder's and the runtime's file hashes), not recorded data.
 const META_PROVENANCE = ['recorderManifest', 'srcManifest'];
 
+// Where the Golden-Update line is read, for the failure message: the pull request description, the commit messages of
+// a ci/** branch, or the messages of the commits pushed to main (a squash merge copies the description into its own).
+const TRAILER_SOURCE = {
+  description: ['the pull request description', ''],
+  commits: ['a commit message of the ci/** branch', '; repeat it in the pull request description'],
+  pushed: ['a message of the pushed commits', ''],
+};
+
 // The verdict for one change. changed: the changed paths; meta: {before, after} texts of the goldens' meta.json (null
-// when absent); body: the pull request description or the commit message.
-export function goldenVerdict({ changed, meta = { before: null, after: null }, body = '' }) {
+// when absent); body: the text the trailer is read in; source: what that text is (a key of TRAILER_SOURCE).
+export function goldenVerdict({ changed, meta = { before: null, after: null }, body = '', source = 'description' }) {
   const problems = [];
   const golden = changed.filter((f) => f.startsWith(GOLDEN));
   const recorder = changed.filter((f) => f.startsWith(RECORDER));
@@ -41,10 +54,12 @@ export function goldenVerdict({ changed, meta = { before: null, after: null }, b
   const metaData = golden.includes(GOLDEN + 'meta.json') && strip(meta.before) !== strip(meta.after);
   const data = golden.some((f) => f !== GOLDEN + 'meta.json' && f !== GOLDEN + 'MANIFEST.json') || Boolean(metaData);
   if (data) {
-    if (!TRAILER.test(body || ''))
+    if (!TRAILER.test(body || '')) {
+      const [where, then] = TRAILER_SOURCE[source] || TRAILER_SOURCE.description;
       problems.push(
-        'the goldens changed: the pull request description needs a line "Golden-Update: <reason>" (at least 10 characters)',
+        `the goldens changed: ${where} needs a line "Golden-Update: <reason>" (at least 10 characters)${then}`,
       );
+    }
     if (!changed.includes('CHANGELOG.md')) problems.push('the goldens changed: CHANGELOG.md must declare the change');
   }
   return {
@@ -54,6 +69,19 @@ export function goldenVerdict({ changed, meta = { before: null, after: null }, b
     prove: recorder.length > 0 && !data,
     problems,
   };
+}
+
+// What an event judges, from the workflow's environment: {base, head, body, source} (base 'merge-base' = the merge base
+// of HEAD with origin/main; body null = the commit messages of base..head; source: see TRAILER_SOURCE), or null when
+// there is nothing to judge.
+export function rangeFor(env) {
+  const event = env.EVENT || '';
+  if (event === 'pull_request') return { base: 'HEAD^1', head: 'HEAD', body: env.PR_BODY || '', source: 'description' };
+  if (event === 'push' && /^refs\/heads\/ci\/./.test(env.PUSH_REF || ''))
+    return { base: 'merge-base', head: 'HEAD', body: null, source: 'commits' };
+  if (event === 'push' && env.PUSH_BEFORE && !/^0+$/.test(env.PUSH_BEFORE))
+    return { base: env.PUSH_BEFORE, head: 'HEAD', body: null, source: 'pushed' };
+  return null;
 }
 
 function git(args) {
@@ -91,20 +119,19 @@ function main() {
   let base = opt('--base');
   let head = opt('--head');
   let body = opt('--body');
-  const event = process.env.EVENT || '';
+  let source = 'description';
   if (!base) {
-    if (event === 'pull_request') {
-      base = 'HEAD^1';
-      head = 'HEAD';
-      body = process.env.PR_BODY || '';
-    } else if (event === 'push' && process.env.PUSH_BEFORE && !/^0+$/.test(process.env.PUSH_BEFORE)) {
-      base = process.env.PUSH_BEFORE;
-      head = 'HEAD';
-      body = process.env.PUSH_MESSAGE || '';
-    } else {
-      console.log(`golden-update: nothing to judge (event ${event || 'none'})`);
+    const range = rangeFor(process.env);
+    if (!range) {
+      console.log(`golden-update: nothing to judge (event ${process.env.EVENT || 'none'})`);
       return;
     }
+    ({ base, head, body, source } = range);
+    if (base === 'merge-base') {
+      base = git(['merge-base', 'HEAD', 'origin/main']).trim();
+      console.log(`golden-update: ci/** branch judged against main (merge base ${base.slice(0, 12)})`);
+    }
+    if (body === null) body = git(['log', '--format=%B%n', `${base}..${head}`]);
   }
   head = head || 'HEAD';
   const changed = git(['diff', '--name-only', '--no-renames', base, head]).split('\n').filter(Boolean);
@@ -112,6 +139,7 @@ function main() {
     changed,
     meta: { before: show(base, GOLDEN + 'meta.json'), after: show(head, GOLDEN + 'meta.json') },
     body,
+    source,
   });
   for (const p of v.problems) console.error('FAIL ' + p);
   if (!v.ok) process.exit(1);

@@ -129,6 +129,10 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   suffisait qu'il se termine par le domaine « noreply ») et le nom ne doit contenir aucune adresse
   (`identity-name-email`) ; un domaine admis ne couvre plus que les hôtes placés juste sous lui, pas un autre domaine
   écrit devant lui.
+- `ci.yml` tourne aussi sur les branches `ci/**` poussées par un mainteneur, pour éprouver une branche sous Linux et
+  sous Windows avant sa pull request ; `golden-update` la juge alors contre `main`, la ligne `Golden-Update:` étant lue
+  dans ses messages de commit (un envoi sur `main` est jugé de même sur tous les commits envoyés), et son résultat
+  d'ensemble s'y appelle `ci-ok (ci branch)`, pour ne jamais tenir lieu de la vérification requise d'une pull request.
 - Contrôle des scripts d'installation : un paquet revu qu'une mise à jour retire du fichier de verrouillage ne fait
   plus échouer la CI (avertissement, et `--prune` pour le retirer de la liste) ; un paquet nouveau ou une version
   nouvelle qui déclare un script d'installation échoue toujours jusqu'à sa relecture, et la version revue reste listée

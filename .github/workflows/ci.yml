@@ -1,5 +1,8 @@
-# CI: every pull request and push to main; reused by the release workflow (workflow_call).
-# The one required status check of the main ruleset is "ci-ok", which depends on every job below:
+# CI: every pull request and push to main, and every push to a ci/** branch (the maintainer's test of a branch before
+# its pull request: the same jobs, with the same read-only token and no other secret than the optional denylist; only
+# people with write access can push a branch here); reused by the release workflow (workflow_call).
+# The one required status check of the main ruleset is "ci-ok", which depends on every job below (on a ci/** push the
+# same job is named "ci-ok (ci branch)", so that it can never satisfy the required check of a pull request):
 #   privacy  tracked files, the history HEAD reaches (a pull request's test merge commit: the base branch and the
 #            proposed commits, not the other branches), commit identities (no npm in that job; private denylist when
 #            present)
@@ -14,7 +17,9 @@
 #            pointer lock, G5 parity, negative probes), refused switches, tampered app.asar refused
 #   golden-update  a change of the goldens says why ("Golden-Update: <reason>" in the pull request description, which
 #            becomes the squash commit message, and a CHANGELOG.md entry); a change of the recorder alone is proven
-#            neutral (scripts/check-golden-trailer.mjs; no npm)
+#            neutral (scripts/check-golden-trailer.mjs; no npm). A ci/** branch is judged against main as its pull
+#            request will be, with its commit messages as the description; a push to main, on the messages of every
+#            pushed commit.
 # browser and desktop are advisory in ci-ok until they have passed ten consecutive runs with a measured duration; the
 # release workflow calls this workflow with strict: true, where every job blocks.
 # Security: every action is GitHub-owned and pinned to a full commit SHA; the token is read-only; no credentials are
@@ -25,7 +30,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, 'ci/**']
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -234,12 +239,15 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           PR_BODY: ${{ github.event.pull_request.body }}
+          PUSH_REF: ${{ github.ref }}
           PUSH_BEFORE: ${{ github.event.before }}
-          PUSH_MESSAGE: ${{ github.event.head_commit.message }}
         run: node scripts/check-golden-trailer.mjs --prove
 
+  # On a ci/** push the aggregate check has another name: that run tests the branch tip, not its test merge with main,
+  # and reads the Golden-Update line from commit messages, so its result must never stand for the required check
+  # "ci-ok" of a pull request whose head is the same commit.
   ci-ok:
-    name: ci-ok
+    name: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/ci/')) && 'ci-ok (ci branch)' || 'ci-ok' }}
     if: always()
     needs: [privacy, deps, lint, test, repro, browser, desktop, golden-update]
     runs-on: ubuntu-24.04

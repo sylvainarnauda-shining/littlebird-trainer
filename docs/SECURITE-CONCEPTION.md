@@ -71,8 +71,8 @@ exécutables non signés (voir [`INSTALLATION.md`](INSTALLATION.md)).
   lui, pas un autre domaine écrit devant lui. Une adresse volontairement déguisée (« nom [at] domaine ») n'est pas
   cherchée : le scanner vise les fuites accidentelles.
 - Goldens : le travail `golden-update` de la CI refuse une modification des goldens sans la ligne
-  `Golden-Update: <raison>` dans la description de la pull request et sans entrée dans `CHANGELOG.md`, et refait la
-  preuve de neutralité d'un changement de l'enregistreur seul.
+  `Golden-Update: <raison>` dans la description de la pull request (dans les messages de commit pour une branche
+  `ci/**`) et sans entrée dans `CHANGELOG.md`, et refait la preuve de neutralité d'un changement de l'enregistreur seul.
 - Dépendances à versions exactes, `npm ci`, aucun script d'installation exécuté (`.npmrc`), liste revue des paquets qui
   en déclarent (`scripts/check-install-scripts.mjs`, `nom@version`) : un nouveau paquet ou une nouvelle version fait
   échouer la CI jusqu'à sa relecture ; une entrée qu'une mise à jour a retirée du fichier de verrouillage est seulement
@@ -82,7 +82,8 @@ exécutables non signés (voir [`INSTALLATION.md`](INSTALLATION.md)).
   registre vérifiées, audit.
 - Workflows : jeton en lecture seule par défaut, seulement des actions de GitHub épinglées par empreinte de commit,
   aucun identifiant conservé, aucun cache, pas de `pull_request_target`, aucune expression dans un script
-  (`tests/build/workflows.test.js`, et `actionlint`). Une seule vérification requise, `ci-ok`.
+  (`tests/build/workflows.test.js`, et `actionlint`). Une seule vérification requise, `ci-ok` ; sur une branche
+  `ci/**`, le même travail s'appelle `ci-ok (ci branch)` et ne peut donc pas en tenir lieu pour une pull request.
 - Publication : seul un administrateur pousse une étiquette `v*` ; toute la CI (sans travail consultatif) se termine
   avant que les fichiers livrés soient construits, donc aucun outil de lint ou de test ne tourne à côté d'eux ; le
   travail qui produit les fichiers n'a aucun secret et aucun cache, et donne leurs empreintes SHA-256 par ses sorties ;

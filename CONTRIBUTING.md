@@ -152,4 +152,13 @@ la ligne.
 3. Une pull request qui dit ce qui change, pourquoi, et comment c'est prouvé (avec la ligne `Golden-Update:` si les
    goldens changent). Elle est fusionnée par écrasement quand la vérification `ci-ok` est verte.
 
+Les mainteneurs peuvent faire tourner toute la CI sur une branche avant d'ouvrir sa pull request, par exemple pour
+voir les goldens sous Linux et sous Windows : ils la poussent sous le nom `ci/<sujet>`
+(`git push origin <branche>:ci/<sujet>`). Les mêmes travaux tournent, avec le même jeton en lecture seule ; le travail
+`golden-update` juge la branche contre `main`, comme sa future pull request, en lisant la ligne `Golden-Update:` dans
+ses messages de commit (répétez-la ensuite dans la description de la pull request). Le résultat d'ensemble de ce
+passage s'appelle `ci-ok (ci branch)` : il teste la branche seule, pas sa fusion avec `main`, et ne peut donc jamais
+tenir lieu de la vérification `ci-ok` de la pull request. Supprimez la branche `ci/…` une fois la pull request
+ouverte.
+
 Pour une faille de sécurité, suivez `SECURITY.md` (signalement privé), pas un ticket public.
