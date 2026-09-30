@@ -213,6 +213,14 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   et la reproductibilité.
 - La page simule la capture de la souris quand elle est pilotée par un outil d'automatisation ; la construction refuse
   un `app.js` sans cette simulation.
+- Alertes CodeQL corrigées avant la première version. La vérification de la page, ses tests et l'enregistreur des
+  goldens lisent les blocs `<script>` et `<style>` sous toutes leurs formes (toute casse, attributs, balise de fin
+  suivie d'un espace ou d'une barre oblique), et la vérification refuse le balisage autour duquel le HTML les
+  délimiterait autrement (commentaire, guillemet laissé ouvert dans une balise, bloc dans un titre ou dans du SVG…) :
+  `verify-build` refuse une page où un bloc a été ajouté ou caché, même sans la comparer à une reconstruction. Le
+  rapport de l'auto-test de l'application est un fichier nouveau, jamais écrit à travers un fichier ou un lien
+  existant, dans un dossier temporaire de l'utilisateur qui ne peut pas être un lien. Les notes de version cherchent
+  la version dans ce journal telle quelle. La page livrée et les données des goldens ne changent pas.
 
 ### Tests et outils
 
