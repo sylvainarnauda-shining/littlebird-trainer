@@ -8,11 +8,20 @@
 // Scope and time: `npm run test:browser` runs every spec (about 2 minutes on a GPU); `npm run test:browser:ci` leaves out
 // the tests tagged @gpu, which render too many frames for software WebGL (tests/browser/fixtures.mjs, Scope). With
 // software WebGL a page takes about a minute to boot (measured with WARP and 4 CPUs: 1.2 to 2.4 minutes per test), so
-// CI allows 8 minutes per test and a whole run LB_BROWSER_BUDGET_MIN minutes (35 by default), after which Playwright
-// stops and fails the run: the CI job ends in a bounded time (ci.yml splits it into two shards).
+// CI allows LB_BROWSER_TEST_MIN minutes per test (8 by default) and a whole run LB_BROWSER_BUDGET_MIN minutes (35 by
+// default), after which Playwright stops and fails the run: the CI job ends in a bounded time (ci.yml splits it into two
+// shards). The nightly SwiftShader job, slower, sets both (nightly.yml). A value that is not a number of minutes above
+// zero stops the run: a typo must not remove a bound.
 import { defineConfig } from '@playwright/test';
 
 const ci = !!process.env.CI;
+const minutes = (name, fallback) => {
+  const raw = process.env[name];
+  if (raw === undefined || raw === '') return fallback;
+  const n = Number(raw);
+  if (!(Number.isFinite(n) && n > 0)) throw new Error(`${name} must be a number of minutes above zero, not "${raw}"`);
+  return n;
+};
 const gl = process.env.LB_GL || (ci ? (process.platform === 'win32' ? 'warp' : 'swiftshader') : 'gpu');
 const GL_ARGS = {
   gpu: ['--enable-gpu', '--ignore-gpu-blocklist'],
@@ -25,7 +34,8 @@ const channel =
     : ci
       ? undefined
       : 'chrome';
-const budgetMinutes = Number(process.env.LB_BROWSER_BUDGET_MIN || 35);
+const budgetMinutes = minutes('LB_BROWSER_BUDGET_MIN', 35);
+const testMinutes = minutes('LB_BROWSER_TEST_MIN', 8);
 
 export default defineConfig({
   testDir: 'tests/browser',
@@ -34,7 +44,7 @@ export default defineConfig({
   // One worker everywhere; in CI, test by test instead of file by file, so that --shard splits the tests evenly.
   fullyParallel: ci,
   retries: 0, // flakes are fixed, never retried
-  timeout: ci ? 480_000 : 240_000,
+  timeout: ci ? testMinutes * 60_000 : 240_000,
   globalTimeout: ci ? budgetMinutes * 60_000 : 0,
   expect: { timeout: 15_000 },
   outputDir: 'test-results/browser',

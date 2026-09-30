@@ -55,7 +55,8 @@ rend des centaines à des milliers d'images finit par l'étiquette `@gpu` : il p
 graphique, des heures en rendu logiciel (mesuré avec WARP : environ 0,9 s par image en 1600 × 900 sur un processeur de
 bureau à 12 fils, et environ une minute pour démarrer une page avec 4 processeurs ; SwiftShader est cinq fois plus
 lent). La CI n'a pas de carte graphique : son travail `browser` lance `npm run test:browser:ci` (sans les tests
-`@gpu`), en deux parties, avec au plus 8 minutes par test et 35 par partie (`LB_BROWSER_BUDGET_MIN`).
+`@gpu`), en deux parties, avec au plus 8 minutes par test et 35 par partie (`LB_BROWSER_TEST_MIN`,
+`LB_BROWSER_BUDGET_MIN` ; le travail de nuit sous Linux, avec SwiftShader : 20 et 60).
 `npm run test:browser` lance tout ; il est exigé sur une carte graphique avant chaque version. Un nouveau test qui rend
 plus d'une centaine d'images prend l'étiquette `@gpu`.
 
