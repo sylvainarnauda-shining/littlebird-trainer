@@ -101,6 +101,9 @@ export const test = base.extend({
 });
 export { expect };
 
+// How long a page may take to boot: with software WebGL on a busy CI runner a boot took more than 3 minutes (30/09).
+export const BOOT_TIMEOUT = process.env.CI ? 360_000 : 180_000;
+
 // Opens the trainer and waits for its menu. Options: profile (object stored before the first load), hash ('#carte=...'),
 // manualClock (frames driven by the test), seed. Asserts the automation pointer-lock emulation before returning.
 export async function openTrainer(page, { profile = null, hash = '', manualClock = false, seed = SEED } = {}) {
@@ -114,7 +117,7 @@ export async function openTrainer(page, { profile = null, hash = '', manualClock
   await page.waitForFunction(
     () => window.__app && window.trainerDiagnostics && !document.getElementById('start').disabled,
     null,
-    { timeout: 180_000 },
+    { timeout: BOOT_TIMEOUT },
   );
   await assertEmulatedPointerLock(page);
 }

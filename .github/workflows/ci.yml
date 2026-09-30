@@ -167,7 +167,7 @@ jobs:
   # Software WebGL (WARP) boots the page in about a minute and renders about one frame per second: the specs tagged
   # @gpu (hundreds to thousands of frames each) run only on a machine with a graphics card (npm run test:browser before
   # every release, docs/PUBLIER-UNE-VERSION.md); this job runs the others in two shards of about 4 tests, each bounded
-  # by Playwright (8 minutes per test, 35 minutes per run, playwright.config.mjs) and by the job timeout.
+  # by Playwright (15 minutes per test, 50 minutes per run, playwright.config.mjs) and by the job timeout.
   browser:
     name: browser (${{ matrix.shard }}/2)
     needs: test
@@ -176,7 +176,7 @@ jobs:
       matrix:
         shard: [1, 2]
     runs-on: windows-2025
-    timeout-minutes: 45
+    timeout-minutes: 60
     permissions:
       contents: read
     env:

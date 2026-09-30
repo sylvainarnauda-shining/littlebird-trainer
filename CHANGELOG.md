@@ -141,8 +141,8 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   (marqués `@gpu` : vol libre, modes, cartes, loi de la souris, cadence des images, politique de sécurité sur chaque
   écran) ne pouvaient pas finir, et le travail `browser` dépassait son délai. La CI lance désormais les autres
   (`npm run test:browser:ci` : page et politique de sécurité, WebGL2, capture simulée, parité G5, profils enregistrés,
-  export et import, garde de fermeture), en deux parties d'environ quatre tests, avec 8 minutes au plus par test et
-  35 par partie ; le travail de nuit sous Linux (SwiftShader, mesuré : 10 minutes pour les huit tests avec 4
+  export et import, garde de fermeture), en deux parties d'environ quatre tests, avec 15 minutes au plus par test et
+  50 par partie ; le travail de nuit sous Linux (SwiftShader, mesuré : 10 minutes pour les huit tests avec 4
   processeurs, 5 pour le plus long) a 20 minutes par test et 60 en tout. Chaque test vérifie en plus qu'aucune règle de
   la politique de sécurité n'a été enfreinte. Tous les tests, marqués ou non, restent lancés par `npm run test:browser`
   sur une carte graphique avant chaque version (`docs/PUBLIER-UNE-VERSION.md`).
