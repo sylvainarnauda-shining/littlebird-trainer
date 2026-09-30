@@ -189,7 +189,7 @@ test('playwright.config.mjs: per-test and per-run bounds in CI, from the environ
     assert.equal(r.status, 0, r.stderr);
     return JSON.parse(r.stdout.trim().split('\n').pop());
   };
-  assert.deepEqual(ok({}), [8 * 60_000, 35 * 60_000], 'the CI defaults');
+  assert.deepEqual(ok({}), [15 * 60_000, 50 * 60_000], 'the CI defaults');
   assert.deepEqual(ok({ LB_BROWSER_TEST_MIN: '30', LB_BROWSER_BUDGET_MIN: '110' }), [30 * 60_000, 110 * 60_000]);
   for (const [name, bad] of [
     ['LB_BROWSER_TEST_MIN', '8m'],
@@ -210,8 +210,8 @@ test('every CI job running the browser specs sets bounds that end before its own
       if (!/npm run test:browser:ci/.test(body)) continue;
       const env = (k, d) => Number((new RegExp(`^\\s+${k}: (\\d+)$`, 'm').exec(body) || [])[1] || d);
       const job = Number(/^\s{4}timeout-minutes: (\d+)$/m.exec(body)[1]);
-      const perTest = env('LB_BROWSER_TEST_MIN', 8);
-      const budget = env('LB_BROWSER_BUDGET_MIN', 35);
+      const perTest = env('LB_BROWSER_TEST_MIN', 15);
+      const budget = env('LB_BROWSER_BUDGET_MIN', 50);
       assert.ok(perTest <= budget, `${f} ${name}: a test (${perTest} min) fits in the run (${budget} min)`);
       // npm ci, the browser download and the build before the run: 10 minutes at least.
       assert.ok(budget + 10 <= job, `${f} ${name}: run budget ${budget} min + 10 within the job's ${job} min`);

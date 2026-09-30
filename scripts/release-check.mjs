@@ -43,12 +43,15 @@ function versionInfo(exe) {
   return JSON.parse(j);
 }
 // The uninstall entries of this product for the current user: [{key, UninstallString, DisplayVersion, Publisher}].
+// On a fresh profile (a new CI runner) the per-user Uninstall key does not exist yet: that is an empty list, not an
+// error (a silenced Get-ChildItem error still made powershell.exe exit 1, with an empty stderr).
 function uninstallEntries() {
   const j = ps(
-    "Get-ChildItem 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall' -ErrorAction SilentlyContinue | " +
-      `ForEach-Object { $p = Get-ItemProperty $_.PSPath; if ($p.DisplayName -like '${PRODUCT}*') { ` +
-      '[pscustomobject]@{key=$_.PSChildName;UninstallString=$p.UninstallString;DisplayVersion=$p.DisplayVersion;Publisher=$p.Publisher} } } | ' +
-      'ConvertTo-Json -Compress',
+    "$k = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall'; $out = @(); " +
+      'if (Test-Path -LiteralPath $k) { foreach ($c in Get-ChildItem -LiteralPath $k) { ' +
+      `$p = Get-ItemProperty -LiteralPath $c.PSPath; if ($p.DisplayName -like '${PRODUCT}*') { ` +
+      '$out += [pscustomobject]@{key=$c.PSChildName;UninstallString=$p.UninstallString;DisplayVersion=$p.DisplayVersion;Publisher=$p.Publisher} } } }; ' +
+      'if ($out.Count) { ConvertTo-Json -InputObject $out -Compress }',
   );
   if (!j) return [];
   const v = JSON.parse(j);

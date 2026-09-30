@@ -8,7 +8,8 @@
 // Scope and time: `npm run test:browser` runs every spec (about 2 minutes on a GPU); `npm run test:browser:ci` leaves out
 // the tests tagged @gpu, which render too many frames for software WebGL (tests/browser/fixtures.mjs, Scope). With
 // software WebGL a page takes about a minute to boot (measured with WARP and 4 CPUs: 1.2 to 2.4 minutes per test), so
-// CI allows LB_BROWSER_TEST_MIN minutes per test (8 by default) and a whole run LB_BROWSER_BUDGET_MIN minutes (35 by
+// CI allows LB_BROWSER_TEST_MIN minutes per test (15 by default: the map test boots three pages, and a boot took more
+// than 3 minutes on a busy windows-2025 runner on 30/09) and a whole run LB_BROWSER_BUDGET_MIN minutes (50 by
 // default), after which Playwright stops and fails the run: the CI job ends in a bounded time (ci.yml splits it into two
 // shards). The nightly SwiftShader job, slower, sets both (nightly.yml). A value that is not a number of minutes above
 // zero stops the run: a typo must not remove a bound.
@@ -34,8 +35,8 @@ const channel =
     : ci
       ? undefined
       : 'chrome';
-const budgetMinutes = minutes('LB_BROWSER_BUDGET_MIN', 35);
-const testMinutes = minutes('LB_BROWSER_TEST_MIN', 8);
+const budgetMinutes = minutes('LB_BROWSER_BUDGET_MIN', 50);
+const testMinutes = minutes('LB_BROWSER_TEST_MIN', 15);
 
 export default defineConfig({
   testDir: 'tests/browser',

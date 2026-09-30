@@ -1,7 +1,7 @@
 // Maps in a real browser (manual clock): the map card of the reference valley and the eight light presets in the menu,
 // a foggy preset flown, a generated map opened from its shared address (#carte=gen-N: name, towers, forest, village,
 // take-off), then the menu buttons that draw a new generated map and come back to the valley (each reloads the page).
-import { test, expect, openTrainer, diag, start, seconds, hold, leave, keyFor } from './fixtures.mjs';
+import { test, expect, openTrainer, diag, start, seconds, hold, leave, keyFor, BOOT_TIMEOUT } from './fixtures.mjs';
 import NAMES from '../helpers/names.js';
 import TEXT from '../helpers/ui-text.js';
 
@@ -54,13 +54,15 @@ test('a generated map from its address: name, three towers, a forest and a villa
   const before = (await diag(page)).map.id;
   await Promise.all([page.waitForEvent('load'), page.locator('#mapNew').click()]);
   await page.waitForFunction(() => window.__app && !document.getElementById('start').disabled, null, {
-    timeout: 180_000,
+    timeout: BOOT_TIMEOUT,
+    polling: 500,
   });
   const next = (await diag(page)).map;
   expect(next.generated && next.id !== before, 'a new generated map: ' + next.id).toBe(true);
   await Promise.all([page.waitForEvent('load'), page.locator('#mapVideo').click()]);
   await page.waitForFunction(() => window.__app && !document.getElementById('start').disabled, null, {
-    timeout: 180_000,
+    timeout: BOOT_TIMEOUT,
+    polling: 500,
   });
   expect((await diag(page)).map.id, 'back to the reference valley').toBe('vallee');
 });
