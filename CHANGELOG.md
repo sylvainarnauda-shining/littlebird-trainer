@@ -128,7 +128,12 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 - Défense en profondeur : politique de sécurité de la page vérifiée sur une liste exacte au démarrage, WebRTC limité
   au mandataire (aucun n'est configuré), commutateurs refusés étendus (commandes lancées devant un processus de
   Chromium, fonctionnalités, journaux, profil ailleurs).
-- Icône propre, dessinée par le code (`scripts/make-icon.mjs`, `build/icon.svg`).
+- **Icône Little Bird** (demande du 30/09) : l'hélicoptère vu de profil, nez à droite (cabine en œuf, grande verrière
+  teintée, poutre de queue fine, empennage en T, patins, rotor), en cyan sur le carré ardoise. C'est notre propre
+  dessin, fait par le code à partir de formes simples (`scripts/make-icon.mjs`, `build/icon.svg`) : aucune image du
+  jeu, photo, logo, texte ni police. Chacune des sept tailles du fichier `.ico` (16 à 256 px) est calculée pour ses
+  pixels : traits d'au moins un pixel, traits horizontaux et verticaux calés sur la grille jusqu'à 48 px, cadre de la
+  verrière toujours visible, et jusqu'à 32 px un empennage simplifié en T.
 - Aucun changement de comportement du vol ni du jeu : la page livrée est octet pour octet celle de la version
   navigateur ; les goldens sont inchangés. Mesure (G5) : le moteur de Chromium (Electron 44.4.5 et 44.5.1, Chrome 154)
   arrondit certaines fonctions mathématiques autrement que Node.js 24 au dernier chiffre binaire ; le vol calculé reste
@@ -195,6 +200,10 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 
 - Identité visuelle propre (R3) : couleurs, arrondis et police définis par des jetons CSS, surfaces ardoise et accent
   cyan, coins arrondis de 6 px, polices du système, logo de l'entraîneur. Le HUD de vol ne change pas.
+- Le logo du menu est le Little Bird de l'icône, d'une seule couleur, la verrière ouverte sur le fond du bandeau
+  (`logoSvg()` de `scripts/make-icon.mjs` ; les tests vérifient que la page contient exactement ce dessin). Aucun
+  golden ne change : seule l'empreinte du modèle de page que les goldens nomment (`meta.json`, `srcManifest`) est mise
+  à jour.
 
 ### Construction et sécurité
 

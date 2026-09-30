@@ -126,9 +126,25 @@ test('the shell loads only Electron, Node built-ins and its own files', () => {
   }
 });
 
-test('the icon is our own drawing and build/icon.svg is its current design', async () => {
-  const { svg, SIZES, makeIcon } = await import(pathToFileURL(path.join(ROOT, 'scripts', 'make-icon.mjs')).href);
+test('the icon is our own drawing, build/icon.svg is its current design, the menu logo is the same drawing', async () => {
+  const { svg, logoSvg, render, SIZES, makeIcon } = await import(
+    pathToFileURL(path.join(ROOT, 'scripts', 'make-icon.mjs')).href
+  );
   assert.equal(read('build/icon.svg').replace(/\r\n/g, '\n'), svg());
+  const logo = /<div class="logo" aria-hidden="true">(<svg[\s\S]*?<\/svg>)<\/div>/.exec(
+    read('src/index.template.html'),
+  );
+  assert.ok(logo, 'the menu header has its logo');
+  assert.equal(logo[1], logoSvg(), 'the menu logo is logoSvg() of scripts/make-icon.mjs');
+  for (const text of [svg(), logoSvg()]) {
+    assert.doesNotMatch(text, /<(image|text|use|script|style|foreignObject)\b|href=|url\((?!#bg\))/, 'shapes only');
+  }
+  // Each size is drawn for its pixels: at 16 px the rotor blade is one crisp row of pure accent colour (#38bdd4), where
+  // a blade off the pixel grid would be two rows of half tones.
+  const px16 = render(16);
+  const accent = (x, y) => [0x38, 0xbd, 0xd4, 255].every((v, c) => px16[(y * 16 + x) * 4 + c] === v);
+  const row = [...Array(16).keys()].filter((x) => accent(x, 3));
+  assert.ok(row.length >= 9, `a crisp rotor row at 16 px (${row.length} px)`);
   const a = makeIcon();
   const b = makeIcon();
   assert.ok(a.ico.equals(b.ico), 'same bytes on every run');
