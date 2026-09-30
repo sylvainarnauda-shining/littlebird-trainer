@@ -8,7 +8,7 @@
 //                           --scratch <dir> [--jobs 4] [--only id,id]
 // Kinds of mutants:
 //   one-ulp numeric constants (physics, missiles, the ground friction of a touchdown, option branches), a default
-//   parameter; random-draw order swaps (bot gun spread; an effect-only draw: structure smoke); number formats of the HUD
+//   parameter; the deterministic pow (an exponent, its result, its use by three.js's realm); random-draw order swaps (bot gun spread; an effect-only draw: structure smoke); number formats of the HUD
 //   (canvas and DOM); a wrong compass letter; the declared R5.7 fix reverted (its difference must stay inside the
 //   declared scope); behaviour-neutral refactors (a comment and blank lines, an unused field, a renamed field mapped by the
 //   alias table of a copied recorder, an added hook member) that must change nothing; a wording step (strict without
@@ -19,7 +19,7 @@ const abs = k => arg(k) && path.resolve(arg(k));
 const src = abs('src'), template = abs('template'), inputs = abs('inputs'), golden = abs('golden'), privateGolden = abs('private-golden'), scratch = abs('scratch');
 const jobs = +arg('jobs', 4), only = arg('only') ? arg('only').split(',') : null;
 const nextUp = x => { const b = new DataView(new ArrayBuffer(8)); b.setFloat64(0, x); b.setBigUint64(0, b.getBigUint64(0) + 1n); return b.getFloat64(0); };
-const RUNTIME = ['world.js', 'physics.js', 'forest.js', 'scenery.js', 'missiles.js', 'audio.js', 'models.js', 'ground.js', 'bot.js', 'app.js', 'vendor/three.min.js'];
+const RUNTIME = ['core/pow.js', 'world.js', 'physics.js', 'forest.js', 'scenery.js', 'missiles.js', 'audio.js', 'models.js', 'ground.js', 'bot.js', 'app.js', 'vendor/three.min.js'];
 const ALLS = 'flight,sessions,world,audio,hud,settings,models,ui,modules,hookapi';
 const AD = ['missiles', 'match', 'missiles-destroy'];   // the air-defence sessions (declared scope of R5.7)
 
@@ -29,11 +29,19 @@ const strictF = (rep, s) => F(rep, s).filter(f => !f.advisory && !(f.wording && 
 const sessionGroups = (rep, pred) => strictF(rep, 'sessions').some(f => f.groups && f.groups.some(pred));
 const MUTANTS = [
   { id: 'physics-G-ulp', edits: [['physics.js', 'const G = 9.81;', () => 'const G = ' + nextUp(9.81) + ';']], suites: 'flight,sessions', expect: { flight: 'DIFF', parity: 'DIFF', sessions: 'DIFF' } },
-  { id: 'physics-weathervane-ulp', edits: [['physics.js', 'const tau=1.1*(55.6/vh)**2;', () => 'const tau=1.1*(' + nextUp(55.6) + '/vh)**2;']], suites: 'flight,sessions', expect: { flight: 'DIFF', sessions: 'DIFF' } },
+  { id: 'physics-weathervane-ulp', edits: [['physics.js', 'const tau=1.1*((55.6/vh)*(55.6/vh));', () => 'const tau=1.1*((' + nextUp(55.6) + '/vh)*(' + nextUp(55.6) + '/vh));']], suites: 'flight,sessions', expect: { flight: 'DIFF', sessions: 'DIFF' } },
   // A default parameter: the flight goldens run explicit settings objects and stay the same; the bots fly the module
   // defaults (sessions) and the defaults snapshot moves (modules).
   { id: 'physics-default-ulp', edits: [['physics.js', 'quadraticDrag:0.0003,', () => 'quadraticDrag:' + nextUp(0.0003) + ',']], suites: 'flight,sessions,modules', expect: { flight: 'SAME', parity: 'SAME', sessions: 'DIFF', modules: 'DIFF' } },
   { id: 'missiles-eject-ulp', edits: [['missiles.js', 'EJECT_SPEED=20', () => 'EJECT_SPEED=' + nextUp(20)]], suites: 'sessions,modules', expect: { sessions: 'DIFF', modules: 'DIFF' } },
+  // The deterministic pow (core/pow.js): an exponent of the terrain moved by one ulp; every result of pow moved by one
+  // ulp (the flight model uses no pow); and only the exponent three.js uses for its sRGB conversion (2.4, which no game
+  // module uses) changed: only the colour-bearing digests move (models, the world's scenes, not its terrain), which
+  // proves that three.js's realm computes with the runtime's pow.js.
+  { id: 'pow-terrain-exponent-ulp', edits: [['world.js', '*pow(slope,1.25);', () => '*pow(slope,' + nextUp(1.25) + ');']], suites: 'world', expect: { world: 'DIFF' } },
+  { id: 'pow-result-ulp', edits: [['core/pow.js', '    return s*z;\n  }', () => '    return s*z*(1+2**-52);\n  }']], suites: 'world,flight', expect: { world: 'DIFF', flight: 'SAME', parity: 'SAME' } },
+  { id: 'pow-three-realm-ulp', edits: [['core/pow.js', '    return s*z;\n  }', () => '    return y===2.4?s*z*(1+2**-52):s*z;\n  }']], suites: 'models,world', expect: { models: 'DIFF', world: 'DIFF' },
+    check: rep => { const w = strictF(rep, 'world'); return w.every(f => /\.scene$/.test(f.path)) || 'the world differs outside its scene digests: ' + JSON.stringify(w.filter(f => !/\.scene$/.test(f.path)).slice(0, 2)); } },
   // Ground friction of a slide on the skids: the factor itself moved by one ulp (moving the literal 3 by one ulp is an
   // equivalent mutant: Math.exp(-3*dt) absorbs it; the first value of the literal that changes the factor is 31 ulps
   // above 3).
@@ -90,8 +98,8 @@ function copyRecorder(to, aliases) {
   fs.writeFileSync(path.join(to, 'probe-aliases.json'), JSON.stringify({ $comment: 'mutation smoke copy', ...aliases }, null, 1) + '\n');
 }
 function prepare(m) {
-  const dir = path.join(scratch, m.id, 'runtime'); fs.rmSync(path.join(scratch, m.id), { recursive: true, force: true }); fs.mkdirSync(path.join(dir, 'vendor'), { recursive: true });
-  for (const f of RUNTIME) fs.copyFileSync(path.join(src, f), path.join(dir, f));
+  const dir = path.join(scratch, m.id, 'runtime'); fs.rmSync(path.join(scratch, m.id), { recursive: true, force: true });
+  for (const f of RUNTIME) { fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true }); fs.copyFileSync(path.join(src, f), path.join(dir, f)); }
   for (const [file, from, to, count = 1] of m.edits) {
     const p = path.join(dir, file), s = fs.readFileSync(p, 'latin1');
     const n = from instanceof RegExp ? (s.match(from) || []).length : s.split(from).length - 1;

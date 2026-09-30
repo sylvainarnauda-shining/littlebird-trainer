@@ -37,7 +37,7 @@ test('the page runs every screen and mode under its CSP: no violation, no consol
     [...document.querySelectorAll('meta[http-equiv="Content-Security-Policy"]')].map((m) => m.content),
   );
   expect(meta).toEqual([policy]);
-  expect(policy).toMatch(/^default-src 'none'; script-src ('sha256-[A-Za-z0-9+/]+=*' ?){12}; style-src 'sha256-/);
+  expect(policy).toMatch(/^default-src 'none'; script-src ('sha256-[A-Za-z0-9+/]+=*' ?){13}; style-src 'sha256-/);
 
   // WebGL2 draws; the menu tabs and panels.
   await seconds(page, 0.2);

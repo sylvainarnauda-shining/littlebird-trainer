@@ -8,7 +8,7 @@
  },
  "models": {
   "own": {
-   "digest": "395cc1bfeb8a0a00080c8356d1907c7b",
+   "digest": "64dfb9c68794925d76bd24f15851d09e",
    "counts": {
     "objects": 28,
     "meshes": 22,
@@ -23,7 +23,7 @@
    "text": "15174d986fedb23f"
   },
   "air-target": {
-   "digest": "32bafcc54f2ae989b131ec0d265fd691",
+   "digest": "8a654953189f7316621f880e2ca77b33",
    "counts": {
     "objects": 25,
     "meshes": 19,
@@ -38,7 +38,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "bot-0-miniguns": {
-   "digest": "2c77b961fe06d1ab197a75c8f10aa073",
+   "digest": "a074f0995169730d832c2a2ec93e2a46",
    "counts": {
     "objects": 28,
     "meshes": 22,
@@ -53,7 +53,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "bot-1-miniguns": {
-   "digest": "b67a40c700436dcb03a001e5eb7a6a7d",
+   "digest": "d3e2744f99b2c11bad45f85ebbf03f87",
    "counts": {
     "objects": 28,
     "meshes": 22,
@@ -68,7 +68,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "bot-2-miniguns": {
-   "digest": "c4b8cfb8ddc3bbf0e219937ee37db0a6",
+   "digest": "68af735ea249d866c74334c34872a51a",
    "counts": {
     "objects": 28,
     "meshes": 22,
@@ -83,7 +83,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "bot-rockets": {
-   "digest": "63a40c0b9416217ab47341e34517453f",
+   "digest": "1e33be72469a3a2c65ce74475a8c1408",
    "counts": {
     "objects": 29,
     "meshes": 23,
@@ -98,7 +98,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "vehicle-truck": {
-   "digest": "5daa11ae3e0c5cd30ed5824f499ef791",
+   "digest": "6cf8595b52074476b6935790f2d5f821",
    "counts": {
     "objects": 8,
     "meshes": 7,
@@ -113,7 +113,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "vehicle-humvee": {
-   "digest": "ce056027aa60377d935f793ec065b4e5",
+   "digest": "888c792a570378fa83a18eb957c97733",
    "counts": {
     "objects": 25,
     "meshes": 23,
@@ -143,7 +143,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "infantry-0": {
-   "digest": "ba5bce8f23cc03a4990390f52ac43941",
+   "digest": "d1fd50045a4fc74fa02928200bea1043",
    "counts": {
     "objects": 13,
     "meshes": 12,
@@ -158,7 +158,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "infantry-1": {
-   "digest": "94c3307f24ec14887c43b2c328e31856",
+   "digest": "1ce54143da77be22cff7fd5862afc118",
    "counts": {
     "objects": 13,
     "meshes": 12,
@@ -173,7 +173,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "infantry-2": {
-   "digest": "d2c4d4ab003e7a67dfe9cf651f247acd",
+   "digest": "0a2eb2c9f77cd60fcea46cda3d47df22",
    "counts": {
     "objects": 13,
     "meshes": 12,
@@ -188,7 +188,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "sam-site": {
-   "digest": "35e74cdedbf69d418922f04254f5fc48",
+   "digest": "444f1487801a09a44fad1ba06097059d",
    "counts": {
     "objects": 15,
     "meshes": 12,
@@ -203,7 +203,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "ciws": {
-   "digest": "dcf3f72ab84ed568a1afbc85b27d24f4",
+   "digest": "37d75d4823dfac136b14a34bc506bada",
    "counts": {
     "objects": 14,
     "meshes": 10,
@@ -218,7 +218,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "cockpit": {
-   "digest": "a643328a34e107f043a35ed281423e95",
+   "digest": "ea5752de3d853e65185d4a2008f1a275",
    "counts": {
     "objects": 52,
     "meshes": 51,
@@ -233,7 +233,7 @@
    "text": "ff13002521df8b3b"
   },
   "structure-0": {
-   "digest": "e1ffb8ba1aada9eb1ed1c6ef46ecb6cc",
+   "digest": "9ebc7042bcde4f95c3314bbad2c6fe4f",
    "counts": {
     "objects": 6,
     "meshes": 4,
@@ -248,7 +248,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "structure-1": {
-   "digest": "316ad3be20bf7fa3a1de778b51a14155",
+   "digest": "e4c69936821109e34bf7f1c42cdf0367",
    "counts": {
     "objects": 6,
     "meshes": 4,
@@ -263,7 +263,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "structure-2": {
-   "digest": "ec2790de7fcc6b98281d81231f6345fb",
+   "digest": "281200e85d82340603ec12afda8f07a2",
    "counts": {
     "objects": 6,
     "meshes": 4,
@@ -293,7 +293,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "structure-4": {
-   "digest": "8f42be63acc02f441cc92f02cffc16b3",
+   "digest": "d484436e7cffacbfce4c2c6f37ed1070",
    "counts": {
     "objects": 9,
     "meshes": 7,

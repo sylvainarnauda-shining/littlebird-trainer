@@ -86,6 +86,23 @@ Chaque constante indique dans le code si elle est **measured** (mesurée), **rea
   reste à moins de 10⁻⁹ m (tolérance choisie) du golden. Le jeu a été mesuré sur des enregistrements vidéo, et les
   ajustements du modèle comme les contrôles de fidélité tournent dans Node.js ; l'entraîneur, lui, a été réglé et
   piloté dans Chrome, et l'application Windows calcule exactement comme Chrome.
+- **Mêmes nombres sous Linux et sous Windows** : la CI rejoue les goldens sous les deux systèmes, avec la même version
+  de Node.js. `Math.pow` (et l'opérateur `**`) y dépend de la bibliothèque C du système : mesuré le 30/09/2026 sur
+  200 000 entrées par fonction, c'est la seule fonction mathématique de Node.js 24.19.0 dont les résultats diffèrent
+  entre Linux et Windows. L'entraîneur calcule donc ses puissances avec sa propre fonction, `src/core/pow.js` : un
+  portage de `e_pow.c` de fdlibm, fait seulement d'additions, de multiplications, de divisions et de racines carrées
+  (arrondies de la même façon partout), avec une correction documentée dans une branche que le jeu n'emprunte pas.
+  Comparée à un calcul exact à 320 bits, son erreur reste inférieure à 1 ulp (unité du dernier chiffre binaire) :
+  au plus 0,82 ulp sur les 225 000 cas de `tests/unit/pow.test.js`, au plus 0,85 ulp mesuré sur 47,6 millions de cas.
+  Elle n'arrondit pas toujours au plus près : sur des entrées quelconques, plages du jeu comprises, environ 90 % de ses
+  résultats sont le nombre le plus proche et les autres son voisin, à un ulp (le `Math.pow` de Windows arrondit au plus
+  près dans environ 99,8 % des cas) ; son résultat est donc celui de Windows dans environ 90 % des cas, à un ulp
+  sinon. Les 16 carrés du jeu s'écrivent comme un produit (`x*x`), qui est le carré arrondi correctement. ESLint
+  refuse `Math.pow` et `**` dans `src/`, ainsi que toute autre écriture de `Math` que `Math.<nom>`, et l'enregistreur
+  des goldens échoue si le jeu appelle `Math.pow`. Dans la page, three.js garde le `Math.pow` et le `**` du navigateur
+  (conversions de couleurs, tailles de textures, courbes, test de portée d'un tir) ; l'enregistreur lui donne la
+  fonction déterministe et calcule ses deux carrés `**2` par un produit, pour que les empreintes des scènes et des tirs
+  soient les mêmes partout.
 
 ## Ce qui n'est pas mesuré
 

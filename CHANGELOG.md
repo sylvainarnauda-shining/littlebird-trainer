@@ -59,6 +59,26 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   s'ajoute au champ réglé (+24° dès 190 km/h, de 85° à 109° au champ des enregistrements) ; avant, il donnait
   seulement 85° et 109°, faux avec le champ par défaut de 90°. Seules les empreintes de ce texte changent dans les
   goldens (interface).
+- **Puissances calculées de la même façon sur toutes les plateformes** (`src/core/pow.js`). `Math.pow` et l'opérateur
+  `**` s'appuient sur la bibliothèque C du système, qui n'arrondit pas de la même façon sous Linux et sous Windows
+  (mesuré sur Node.js 24.19.0 : c'est la seule fonction mathématique dans ce cas) ; avec la même graine, la vallée et
+  les bots différaient donc au dernier chiffre binaire d'une plateforme à l'autre. L'entraîneur calcule maintenant ses
+  13 puissances avec sa propre fonction, un portage de `e_pow.c` de fdlibm (erreur inférieure à 1 ulp, même résultat
+  partout), et ses 16 carrés par un produit (`x*x`, le carré arrondi correctement). Les résultats peuvent changer au
+  dernier bit. Dans le navigateur, three.js garde le `Math.pow` et le `**` du navigateur (couleurs, tailles de
+  textures) ; seul l'enregistreur des goldens lui donne la fonction déterministe et calcule ses deux carrés `**2` par un
+  produit. ESLint refuse désormais `Math.pow` et `**` dans `src/`, et toute autre écriture de `Math` que `Math.<nom>`.
+  Ce qui change dans les goldens, mesuré étape par étape sous Windows (les carrés écrits en produits n'en changent
+  aucun) ; seules des empreintes changent, aucun compte ni aucune structure :
+  - puissances du jeu : monde (hauteurs du terrain des 11 cartes et des 3 profils de démarrage, lignes de vue,
+    obstacles, pylônes et câbles, tables d'une carte générée, scènes et journaux des canevas) ; sessions (scènes de
+    départ et de fin et journaux des canevas des 14 scénarios ; duel : bots à partir du point de contrôle 17, cibles et
+    scène à partir du 58, diagnostics au 61) ; modules (bataille au sol de la vallée, 9 vols de bots, aides de la
+    physique). Écarts : au plus 1,1 × 10⁻¹³ m sur le terrain (2,3 à 2,9 % des points de chaque carte), 3 × 10⁻¹³ m et
+    4 × 10⁻¹⁴ m/s pour les bots, sans aucune décision de tir changée ; l'hélicoptère du joueur ne change pas ;
+  - three.js dans l'enregistreur : empreintes des 18 modèles 3D, des scènes et du cockpit de chaque carte et profil de
+    démarrage, des scènes de départ et de fin des sessions (couleurs converties par three.js) ;
+  - inchangés : vol, parité (G5), son, HUD, réglages, interface, API de test.
 
 ### Application Windows
 
@@ -113,7 +133,7 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 ### Construction et sécurité
 
 - Page autonome construite sans dépendance (`npm run build`) avec une politique de sécurité du contenu à empreintes :
-  seuls les 12 scripts et la feuille de style de la page sont autorisés, tout le reste est fermé (R4).
+  seuls les 13 scripts et la feuille de style de la page sont autorisés, tout le reste est fermé (R4).
   `npm run verify:build` vérifie la politique exacte, les empreintes, l'absence de référence externe, three.js épinglé
   et la reproductibilité.
 - La page simule la capture de la souris quand elle est pilotée par un outil d'automatisation ; la construction refuse

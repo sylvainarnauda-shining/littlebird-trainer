@@ -34,6 +34,7 @@ const P = {
 };
 export const SUITES = ['flight', 'sessions', 'world', 'audio', 'hud', 'settings', 'models', 'ui', 'modules', 'hookapi'];
 export const RUNTIME_FILES = [
+  'core/pow.js',
   'world.js',
   'physics.js',
   'forest.js',
@@ -88,13 +89,13 @@ export const checkArgs = (suites, extra = []) => [
   ...extra,
 ];
 
-// The runtime files as committed at a ref, in the layout the recorder reads (vendor/ and the template beside them),
-// with line endings normalised to LF as the working tree has them (the G0 comparison is on LF-normalised bytes; the
-// R0 import commit still holds models.js with CRLF, which only changes the raw sha256 of meta.json's srcManifest).
+// The runtime files as committed at a ref, in the layout the recorder reads (core/, vendor/ and the template beside
+// them), with line endings normalised to LF as the working tree has them (the G0 comparison is on LF-normalised bytes;
+// the R0 import commit still holds models.js with CRLF, which only changes the raw sha256 of meta.json's srcManifest).
 export function extractBaseline(ref, dir) {
   fs.rmSync(dir, { recursive: true, force: true });
-  fs.mkdirSync(path.join(dir, 'vendor'), { recursive: true });
   for (const f of [...RUNTIME_FILES, 'index.template.html']) {
+    fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true });
     const r = spawnSync('git', ['show', `${ref}:src/${f}`], { cwd: ROOT, maxBuffer: 1 << 28 });
     if (r.status !== 0) throw Error(`git show ${ref}:src/${f} failed: ${String(r.stderr).trim()}`);
     const bytes = f.startsWith('vendor/')

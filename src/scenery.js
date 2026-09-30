@@ -7,6 +7,7 @@
    of about 33 m (recording 1 at 134-146 s), villages, fields, bridges, stone viaduct
    (recording 1 at 110 s), land-use texture for crisp field and yard edges. */
 (function(root){
+  const pow=typeof module!=='undefined'?require('./core/pow.js').pow:root.HeliPow.pow; // same double on every platform
   function buildScenery(T,P,scene,helpers={}){
     const W=helpers.world||(typeof module!=='undefined'?require('./world.js'):root.HeliWorld);
     const quality=helpers.quality||'high',makeCanvas=helpers.canvas||null;
@@ -254,10 +255,10 @@
       // Lumpy flattened stone; smooth normals from the ellipsoid (the geometry is not indexed).
       for(let i=0;i<Pp.count;i++){const x=Pp.getX(i),y=Pp.getY(i),z=Pp.getZ(i),k=.72+.4*(.5+.5*W.noise(x*1.9+3.1,z*1.9-2.3+y*1.3,77)),n=new T.Vector3(x,y*2,z).normalize();Pp.setXYZ(i,x*k,y*k*.5,z*k);Nn.setXYZ(i,n.x,n.y,n.z);}
       const items=[],m=new T.Matrix4(),q=new T.Quaternion(),e=new T.Euler(),sc=new T.Vector3(),p=new T.Vector3(),c=new T.Color(),half=R.bank+3;
-      for(let z=700;z>-3000;z-=2.2){const n=2+(random()<.6?1:0);for(let k=0;k<n;k++){const u=random()*2-1,x=W.riverX(z)+u*half,s=(.25+.8*Math.pow(random(),2.2))*(Math.abs(u)>.55?1.4:1);items.push([x,W.height(x,z)+s*.22,z,s,.5+.22*random()]);}}
+      for(let z=700;z>-3000;z-=2.2){const n=2+(random()<.6?1:0);for(let k=0;k<n;k++){const u=random()*2-1,x=W.riverX(z)+u*half,s=(.25+.8*pow(random(),2.2))*(Math.abs(u)>.55?1.4:1);items.push([x,W.height(x,z)+s*.22,z,s,.5+.22*random()]);}}
       // Natural steep slopes only: not the banks cut around towers, sites, the helipad or houses.
       for(let z=-3000;z<800;z+=17)for(let x=-1700;x<1500;x+=17){const px=x+random()*17,pz=z+random()*17,h=W.height(px,pz),gx=W.height(px+3,pz)-h,gz=W.height(px,pz+3)-h,slope=Math.hypot(gx,gz)/3;
-        if(slope>.55&&random()<.45&&!W.reserved(px,pz)&&W.TOWERS.every(t=>Math.hypot(t.x-px,t.z-pz)>60)&&W.AA_SITES.every(s=>Math.hypot(s.x-px,s.z-pz)>35)){const s=2.5+6*Math.pow(random(),1.6);items.push([px,h-s*.25,pz,s,.42+.18*random()]);}}
+        if(slope>.55&&random()<.45&&!W.reserved(px,pz)&&W.TOWERS.every(t=>Math.hypot(t.x-px,t.z-pz)>60)&&W.AA_SITES.every(s=>Math.hypot(s.x-px,s.z-pz)>35)){const s=2.5+6*pow(random(),1.6);items.push([px,h-s*.25,pz,s,.42+.18*random()]);}}
       const rocks=new T.InstancedMesh(geo,std({color:'#ffffff',map:rockTex,roughness:.94}),items.length);rocks.instanceColor=new T.InstancedBufferAttribute(new Float32Array(items.length*3),3);
       items.forEach(([x,y,z,s,v],i)=>{m.compose(p.set(x,y,z),q.setFromEuler(e.set((random()-.5)*.5,random()*6.28,(random()-.5)*.5)),sc.set(s*(.8+.5*random()),s,s*(.8+.5*random())));rocks.setMatrixAt(i,m);c.setRGB(v*1.1,v*1.06,v);rocks.setColorAt(i,c);});
       rocks.name='rochers';rocks.frustumCulled=false;add(rocks,true,true);

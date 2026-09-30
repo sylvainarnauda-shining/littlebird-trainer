@@ -1,6 +1,6 @@
 'use strict';
 // The built page (scripts/build.mjs): self-contained (no external script or stylesheet), the error handler and the
-// eleven scripts inlined in order and all parseable, each inline body equal to its source file (LF), the automation
+// twelve scripts inlined in order and all parseable, each inline body equal to its source file (LF), the automation
 // pointer-lock shim present (the build refuses an app.js without it), the key page elements present, no network API or
 // dynamic code in the game's own scripts, and the test hooks only read by the page, never defined by it.
 const { test } = require('node:test');
@@ -14,6 +14,7 @@ const { ROOT, SRC } = require('../helpers/paths');
 
 const importBuild = () => import(pathToFileURL(path.join(ROOT, 'scripts', 'build.mjs')).href);
 const GAME = [
+  'core/pow.js',
   'world.js',
   'physics.js',
   'forest.js',
@@ -27,16 +28,17 @@ const GAME = [
 ];
 const lf = (s) => s.replace(/\r\n?/g, '\n');
 
-test('the page is self-contained: 12 inline scripts, all parseable, each equal to its source; styles inlined', async () => {
+test('the page is self-contained: 13 inline scripts, all parseable, each equal to its source; styles inlined', async () => {
   const { buildPage, SCRIPTS } = await importBuild();
   const html = buildPage(SRC);
   assert.ok(!/<script\s+src=|<link[^>]+stylesheet/i.test(html), 'no external script or stylesheet');
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
   assert.equal(
     scripts.length,
-    12,
-    'error handler, three.js, world, physics, forest, scenery, missiles, audio, models, ground, bot, app',
+    13,
+    'error handler, three.js, pow, world, physics, forest, scenery, missiles, audio, models, ground, bot, app',
   );
+  assert.deepEqual(SCRIPTS, ['vendor/three.min.js', ...GAME], 'the deterministic pow right after three.js');
   for (const [i, body] of scripts.entries()) new vm.Script(body, { filename: 'inline-' + i + '.js' });
   SCRIPTS.forEach((f, i) => {
     const expected = '\n' + lf(fs.readFileSync(path.join(SRC, f), 'utf8')).replace(/<\/script/gi, '<\\/script') + '\n';
@@ -60,6 +62,7 @@ test('the build refuses an app.js without the automation pointer-lock shim', asy
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lb-build-'));
   try {
     fs.mkdirSync(path.join(dir, 'vendor'));
+    fs.mkdirSync(path.join(dir, 'core'));
     for (const f of ['index.template.html', 'style.css', 'vendor/three.min.js', ...GAME])
       fs.copyFileSync(path.join(SRC, f), path.join(dir, f));
     const app = fs.readFileSync(path.join(dir, 'app.js'), 'utf8');
@@ -92,6 +95,7 @@ test('the build reads the shim in the code: a copy of its statements left in a c
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lb-build-'));
   try {
     fs.mkdirSync(path.join(dir, 'vendor'));
+    fs.mkdirSync(path.join(dir, 'core'));
     for (const f of ['index.template.html', 'style.css', 'vendor/three.min.js', ...GAME])
       fs.copyFileSync(path.join(SRC, f), path.join(dir, f));
     fs.writeFileSync(path.join(dir, 'app.js'), disabled);

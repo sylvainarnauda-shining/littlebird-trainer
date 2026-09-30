@@ -1,6 +1,6 @@
 'use strict';
 // The page policy of the build (docs/SECURITE-CONCEPTION.md): the exact Content-Security-Policy string with the sha256 of each of the
-// 12 inline scripts and of the stylesheet, placed right after the charset; everything else closed; verify-build
+// 13 inline scripts and of the stylesheet, placed right after the charset; everything else closed; verify-build
 // accepts the page and refuses a tampered one; the build refuses external references, inline handlers, javascript:
 // URLs, style attributes and a three.js that is not the pinned file; two builds are identical.
 const { test } = require('node:test');
@@ -36,12 +36,12 @@ const editFile = (dir, f, from, to) => {
   fs.writeFileSync(p, text.replace(from, to));
 };
 
-test('the exact policy: 12 script hashes and 1 style hash of the page blocks, in order; everything else closed', async () => {
+test('the exact policy: 13 script hashes and 1 style hash of the page blocks, in order; everything else closed', async () => {
   const { buildPage } = await load('build.mjs');
   const html = buildPage(SRC);
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
   const styles = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]);
-  assert.equal(scripts.length, 12);
+  assert.equal(scripts.length, 13);
   assert.equal(styles.length, 1);
   const expected =
     "default-src 'none'; script-src " +

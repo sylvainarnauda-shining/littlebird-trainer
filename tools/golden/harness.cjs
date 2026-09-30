@@ -3,10 +3,18 @@
 // nondeterminism replaced by a seeded or scripted one.
 //  - Realm T: three.min.js alone, in its own vm context, whose Math.random is the seeded stream T (three r160 draws only
 //    for object UUIDs). A render-side refactor that creates more or fewer three.js objects cannot shift the game's stream.
-//  - Realm G: the page (window, document built from the template, the inline error script, then world, physics,
-//    forest, scenery, missiles, audio, models, ground, bot and app.js as <script>s in the template's order), whose
-//    Math.random is the seeded stream G and whose Date is fixed. The game modules see window.THREE = realm T's THREE
-//    with WebGLRenderer replaced by a draw-free renderer.
+//    Its Math.pow is the runtime's own deterministic pow (core/pow.js, evaluated in a realm of its own): the values
+//    three.js computes with Math.pow (colour-space conversions, curve parameters, power-of-two sizes) are then the same
+//    on every platform. three.js's own ** operator does not go through Math.pow (V8 computes it with the C library's
+//    pow): r160 has two ** sites, both squares (Vector3.randomDirection, unused by the game, and the far-plane test of
+//    Mesh.raycast, which the game's hit tests reach); the recorder evaluates them as products (THREE_SQUARES; the bytes
+//    hashed in meta.json srcManifest are the vendored file's own). These are recording rules only: in the page, three.js
+//    keeps the browser's Math.pow and **.
+//  - Realm G: the page (window, document built from the template, the inline error script, then core/pow.js, world,
+//    physics, forest, scenery, missiles, audio, models, ground, bot and app.js as <script>s in the template's order),
+//    whose Math.random is the seeded stream G and whose Date is fixed. The game modules see window.THREE = realm T's
+//    THREE with WebGLRenderer replaced by a draw-free renderer. The game computes powers with HeliPow.pow; its realm's
+//    Math.pow throws, so a call that escaped ESLint's rule fails the recording instead of making it platform-dependent.
 //  - Clock: performance.now() is the harness clock (ms); frames at a fixed rate through the app's __LB_MANUAL_CLOCK__
 //    hook (app.frame(now)); setTimeout callbacks run from the harness clock, in due-time then creation order, before the
 //    frame at or after their due time; promise continuations run between frames.
@@ -22,25 +30,43 @@ const dom = require('./dom.cjs'), { makeEvent, dispatch } = dom;
 const { createAudioClass } = require('./webaudio.cjs');
 
 const ORDER = ['world.js', 'physics.js', 'forest.js', 'scenery.js', 'missiles.js', 'audio.js', 'models.js', 'ground.js', 'bot.js', 'app.js'];
+// Runtime scripts every realm of the game loads before the modules (the page loads them right after three.js).
+const CORE = ['core/pow.js'];
+const POW_GUARD = () => { throw Error('Math.pow called by the game runtime: use HeliPow.pow (src/core/pow.js)'); };
+// The ** sites of three.min.js r160, each a square, and the product the recorder evaluates instead (x*x is the correctly
+// rounded square). Each must occur exactly once, and no other ** may remain outside the licence comment's "/**".
+const THREE_SQUARES = [['Math.sqrt(1-t**2)', 'Math.sqrt(1-t*t)'], ['>(t.far-t.near)**2)', '>(t.far-t.near)*(t.far-t.near))']];
+function threeSource(text) {
+  for (const [from, to] of THREE_SQUARES) {
+    const n = text.split(from).length - 1;
+    if (n !== 1) throw Error('three.min.js: ' + JSON.stringify(from) + ' found ' + n + ' time(s), expected once');
+    text = text.replace(from, () => to);
+  }
+  const left = [...text.matchAll(/\*\*/g)].filter(m => text[m.index - 1] !== '/').length;
+  if (left) throw Error('three.min.js: ' + left + ' ** operator(s) left that the recorder does not evaluate as products');
+  return text;
+}
 const FIXED_EPOCH = Date.UTC(2026, 0, 1, 12, 0, 0);   // chosen: any fixed instant (the app only dates calibration files)
 const lcg = seed => { let s = (seed >>> 0) || 1; return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; };
 const sha = b => crypto.createHash('sha256').update(b).digest('hex');
 const lf = b => Buffer.from(b.toString('latin1').replace(/\r\n?/g, '\n'), 'latin1');
 const flush = () => new Promise(r => setImmediate(r));
 
-// Runtime sources: a directory holding the ten runtime files and vendor/three.min.js, and the page template.
+// Runtime sources: a directory holding core/pow.js, the ten runtime files and vendor/three.min.js, and the page template
+// (whose script tags must be in the harness's order).
 function loadRuntime({ src, template }) {
   const files = {}, manifest = {};
-  for (const f of ['vendor/three.min.js', ...ORDER]) {
+  for (const f of ['vendor/three.min.js', ...CORE, ...ORDER]) {
     const b = fs.readFileSync(path.join(src, f)); files[f] = b.toString('utf8');
     manifest[f] = { sha256: sha(b), sha256_lf: sha(lf(b)) };
   }
   const tb = fs.readFileSync(template), html = tb.toString('utf8');
   manifest['index.template.html'] = { sha256: sha(tb), sha256_lf: sha(lf(tb)) };
-  for (const f of ORDER.concat('vendor/three.min.js')) if (!new RegExp('<script src="' + f.replace('.', '\\.') + '"></script>').test(html)) throw Error('template lacks the script tag of ' + f);
+  const tags = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]), order = ['vendor/three.min.js', ...CORE, ...ORDER];
+  if (tags.join() !== order.join()) throw Error('the template\'s script tags are not ' + order.join(', ') + ': ' + tags.join(', '));
   const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
-  const scripts = { three: new vm.Script(files['vendor/three.min.js'], { filename: 'three.min.js' }), game: ORDER.map(f => new vm.Script(files[f], { filename: f })),
-    inline: inline.map((c, i) => new vm.Script(c, { filename: 'inline-' + i + '.js' })) };
+  const scripts = { three: new vm.Script(threeSource(files['vendor/three.min.js']), { filename: 'three.min.js' }), core: CORE.map(f => new vm.Script(files[f], { filename: f })),
+    game: ORDER.map(f => new vm.Script(files[f], { filename: f })), inline: inline.map((c, i) => new vm.Script(c, { filename: 'inline-' + i + '.js' })) };
   return { files, html, manifest, scripts, src, template };
 }
 
@@ -57,6 +83,11 @@ function makeThree(rt, seedT, counters) {
   ctx.console = quietConsole(log);
   vm.runInContext('var module={exports:{}};var exports=module.exports;', ctx);
   const r = lcg(seedT); vm.runInContext('Math', ctx).random = () => { counters.threeDraws++; return r(); };
+  // Math.pow = the runtime's deterministic pow, from core/pow.js run in a realm of its own (no module object there, so
+  // it defines the page's global HeliPow).
+  const P = vm.createContext(vm.constants.DONT_CONTEXTIFY); for (const s of rt.scripts.core) s.runInContext(P);
+  if (!P.HeliPow || typeof P.HeliPow.pow !== 'function') throw Error('core/pow.js did not define HeliPow.pow');
+  vm.runInContext('Math', ctx).pow = P.HeliPow.pow;
   rt.scripts.three.runInContext(ctx);
   const THREE = vm.runInContext('module.exports', ctx);
   if (!THREE || THREE.REVISION !== '160') throw Error('three.js r160 expected, got ' + (THREE && THREE.REVISION));
@@ -129,9 +160,11 @@ async function createPage(rt, opts = {}) {
   // The HUD records only when the harness gives it a sink (hudSink); textures record into their own hashes.
   { const s = doc.getElementById('hud').getContext('2d').__self; s.sink = null; s.textSink = null; }
   const rG = lcg(o.seedG); vm.runInContext('Math', win).random = () => { counters.gameDraws++; return rG(); };
+  vm.runInContext('Math', win).pow = POW_GUARD;
   vm.runInContext(`(function(){const D=Date,T0=${FIXED_EPOCH};function FixedDate(...a){if(!new.target)return new D(T0).toString();return a.length?new D(...a):new D(T0);}
     FixedDate.prototype=D.prototype;FixedDate.now=()=>T0;FixedDate.parse=D.parse;FixedDate.UTC=D.UTC;globalThis.Date=FixedDate;})();`, win);
   for (const s of rt.scripts.inline) s.runInContext(win);
+  for (const s of rt.scripts.core) s.runInContext(win);
   for (const s of rt.scripts.game) s.runInContext(win);
   if (!page.app) throw Error('boot failed: __LB_EXPOSE__ not called (' + JSON.stringify(page.consoleLog.slice(-3)) + ')');
   page.diag = () => win.trainerDiagnostics();
@@ -162,8 +195,9 @@ async function createPage(rt, opts = {}) {
   await flush();
   return page;
 }
-// A page-less realm with some of the runtime scripts (module goldens): same realm rules (three.js apart with stream T,
-// the scripts with stream G), window = the realm's global, no DOM. storage/hash choose the map as in a browser.
+// A page-less realm with some of the runtime scripts (module goldens): same realm rules (three.js apart with stream T
+// and the deterministic pow, core/pow.js first, then the scripts with stream G and a throwing Math.pow), window = the
+// realm's global, no DOM. storage/hash choose the map as in a browser.
 function makeModuleRealm(rt, { seedG = 1, seedT = 160, files = ORDER.filter(f => f !== 'app.js'), hash = '', storage = {} } = {}) {
   const counters = { gameDraws: 0, threeDraws: 0 };
   const three = makeThree(rt, seedT, counters), g = vm.createContext(vm.constants.DONT_CONTEXTIFY), log = [], store = new Map(Object.entries(storage));
@@ -171,9 +205,11 @@ function makeModuleRealm(rt, { seedG = 1, seedT = 160, files = ORDER.filter(f =>
   g.location = { hash, protocol: 'file:' }; g.localStorage = { getItem: k => store.has(k) ? store.get(k) : null, setItem: (k, v) => store.set(k, String(v)), removeItem: k => store.delete(k) };
   g.performance = { now: () => 0 };
   const r = lcg(seedG); vm.runInContext('Math', g).random = () => { counters.gameDraws++; return r(); };
+  vm.runInContext('Math', g).pow = POW_GUARD;
   vm.runInContext(`(function(){const D=Date,T0=${FIXED_EPOCH};function FixedDate(...a){if(!new.target)return new D(T0).toString();return a.length?new D(...a):new D(T0);}
     FixedDate.prototype=D.prototype;FixedDate.now=()=>T0;FixedDate.parse=D.parse;FixedDate.UTC=D.UTC;globalThis.Date=FixedDate;})();`, g);
+  for (const s of rt.scripts.core) s.runInContext(g);
   for (const f of files) rt.scripts.game[ORDER.indexOf(f)].runInContext(g);
   return { g, THREE: three.THREE, counters, log, W: g.HeliWorld, P: g.HeliPhysics, M: g.HeliMissiles, A: g.HeliAudio, G: g.HeliGround, B: g.HeliBot, F: g.HeliForest, Models: g.HeliModels, buildScenery: g.buildScenery };
 }
-module.exports = { loadRuntime, createPage, makeModuleRealm, lcg, ORDER, GoldenRenderer, flush, FIXED_EPOCH };
+module.exports = { loadRuntime, createPage, makeModuleRealm, lcg, ORDER, CORE, THREE_SQUARES, threeSource, GoldenRenderer, flush, FIXED_EPOCH };

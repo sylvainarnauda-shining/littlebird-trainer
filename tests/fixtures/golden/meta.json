@@ -1,5 +1,5 @@
 {
- "recorder": 2,
+ "recorder": 3,
  "recorderManifest": {
   "canon.cjs": {
    "sha256": "a7aa416291e881d5938379e1dc134fb03769ceed1734a25c5d18220c903e4632",
@@ -18,12 +18,12 @@
    "sha256_lf": "86b34df7decac92e66b7d84ae182cfd43eedc7919aebe67cc483cbb87d5e7c7b"
   },
   "harness.cjs": {
-   "sha256": "2b8d88e0ee95ead0ef9cc8a783b2d7b6744a682b53bc8384fa9fbca8613714cf",
-   "sha256_lf": "2b8d88e0ee95ead0ef9cc8a783b2d7b6744a682b53bc8384fa9fbca8613714cf"
+   "sha256": "4b139e2acb51eb365b786e26c0592466cff22f44cd5e58fec889252d40599d99",
+   "sha256_lf": "4b139e2acb51eb365b786e26c0592466cff22f44cd5e58fec889252d40599d99"
   },
   "mutation-smoke.cjs": {
-   "sha256": "1f83d03dd56d148f6a0527500f1e427f00381e86ca34be292ab7b24251429a32",
-   "sha256_lf": "1f83d03dd56d148f6a0527500f1e427f00381e86ca34be292ab7b24251429a32"
+   "sha256": "8eb37b64a062cd3c59333c5010e177ec461cf505535c92cd1b7acf7062afd1bd",
+   "sha256_lf": "8eb37b64a062cd3c59333c5010e177ec461cf505535c92cd1b7acf7062afd1bd"
   },
   "probe-aliases.json": {
    "sha256": "f1c131989b55281e1ef5a72abb32d02f87a529909155ab0795a24ef1d6b3dff4",
@@ -42,8 +42,8 @@
    "sha256_lf": "98c25f231fa7a386fdc7a43512c13d5c5f749545c6baaad0f8142666ea22225f"
   },
   "record.cjs": {
-   "sha256": "d5d4b873513dc9d94474b9f0593e3ca30e63308f2ea8ccd7535492e616872095",
-   "sha256_lf": "d5d4b873513dc9d94474b9f0593e3ca30e63308f2ea8ccd7535492e616872095"
+   "sha256": "6f812baa6688fd5baa25fafd06056fdb2d08393f873c3dde5c06e447c7009b1d",
+   "sha256_lf": "6f812baa6688fd5baa25fafd06056fdb2d08393f873c3dde5c06e447c7009b1d"
   },
   "runtime-names.cjs": {
    "sha256": "98a525631b698f411e4d40e0eed05eb5a1c738be13d06364579b98d1875cfda8",
@@ -117,33 +117,37 @@
    "sha256": "170c6789f43217c96b3170f4b42fafe135de7f7cd48497a4218f9757ee1d49fa",
    "sha256_lf": "170c6789f43217c96b3170f4b42fafe135de7f7cd48497a4218f9757ee1d49fa"
   },
+  "core/pow.js": {
+   "sha256": "d5b663e49ed38a658dae693414b44430a0a21f55be16c7bc785c51d960304f4c",
+   "sha256_lf": "d5b663e49ed38a658dae693414b44430a0a21f55be16c7bc785c51d960304f4c"
+  },
   "world.js": {
-   "sha256": "034afb89e40c2aa12ec0c76af76c47194b661349762ffc6b83b4400a9163ad18",
-   "sha256_lf": "034afb89e40c2aa12ec0c76af76c47194b661349762ffc6b83b4400a9163ad18"
+   "sha256": "d5277408acbd8965e302df01ecc7b12df26808a46e143ba280bdf9974775be83",
+   "sha256_lf": "d5277408acbd8965e302df01ecc7b12df26808a46e143ba280bdf9974775be83"
   },
   "physics.js": {
-   "sha256": "48a09dfb2128d5c6615c7f617939abc5c6b83ac1185aae64b623664503d65fba",
-   "sha256_lf": "48a09dfb2128d5c6615c7f617939abc5c6b83ac1185aae64b623664503d65fba"
+   "sha256": "6e626faddd08ba2c533f65fcfab6cf4c9ec069de3799bdeb33eea98539a4dc18",
+   "sha256_lf": "6e626faddd08ba2c533f65fcfab6cf4c9ec069de3799bdeb33eea98539a4dc18"
   },
   "forest.js": {
-   "sha256": "f6542ffddda1d39742baf0864b1c554315419d0d0fd5779c6eba4af5700a7f80",
-   "sha256_lf": "f6542ffddda1d39742baf0864b1c554315419d0d0fd5779c6eba4af5700a7f80"
+   "sha256": "8d48696299205cf4226a71bbb19d266c3e179a36336ad433378705b95661281e",
+   "sha256_lf": "8d48696299205cf4226a71bbb19d266c3e179a36336ad433378705b95661281e"
   },
   "scenery.js": {
-   "sha256": "e997feb9e1236d4c07bfdca6b3a8ee8bed02e63102ef7fa19f05c47f5f6246f5",
-   "sha256_lf": "e997feb9e1236d4c07bfdca6b3a8ee8bed02e63102ef7fa19f05c47f5f6246f5"
+   "sha256": "f2d44eb18e818eff7d18316cb109afd15a4ba10278d41cb5f3cd7d5cff522c7d",
+   "sha256_lf": "f2d44eb18e818eff7d18316cb109afd15a4ba10278d41cb5f3cd7d5cff522c7d"
   },
   "missiles.js": {
-   "sha256": "06cfea854fa0479d8b60aebd94ea602d8c93a667bb77591831d9a3ad01d22a05",
-   "sha256_lf": "06cfea854fa0479d8b60aebd94ea602d8c93a667bb77591831d9a3ad01d22a05"
+   "sha256": "65e5f43a689875dec1018d3ab7b366b4bb7de3bd322a258f7325bb04920c4c11",
+   "sha256_lf": "65e5f43a689875dec1018d3ab7b366b4bb7de3bd322a258f7325bb04920c4c11"
   },
   "audio.js": {
-   "sha256": "c46ba13248ca6e663b41cba2215c326db9f3651ee3171f8df02b532b26b86d89",
-   "sha256_lf": "c46ba13248ca6e663b41cba2215c326db9f3651ee3171f8df02b532b26b86d89"
+   "sha256": "1c827c61b0e5ea90a01372ae6c0a9dccc0f313eeb177ed070bc66d5622d815b7",
+   "sha256_lf": "1c827c61b0e5ea90a01372ae6c0a9dccc0f313eeb177ed070bc66d5622d815b7"
   },
   "models.js": {
-   "sha256": "86dddc38f7c5db2683ffb1859966e78556cf793e0378948764ce9224089b0c7d",
-   "sha256_lf": "86dddc38f7c5db2683ffb1859966e78556cf793e0378948764ce9224089b0c7d"
+   "sha256": "99cf2b970ca534b41c30880b013bf42e7a6ab7609bee130d3174814a8f85ebc5",
+   "sha256_lf": "99cf2b970ca534b41c30880b013bf42e7a6ab7609bee130d3174814a8f85ebc5"
   },
   "ground.js": {
    "sha256": "a2f7970714de88892319ffb22e42486789ec8e94ab864ff4381d1e1b4dd6637a",
@@ -158,8 +162,8 @@
    "sha256_lf": "d3b5532147324161cf0668e146527341cd8d775d8067e52b69f15ed61c1bd5c2"
   },
   "index.template.html": {
-   "sha256": "73b4f14e7fff5da31e74e7af5ce819aa334158a27ed55a7e8ded0f976c73ad55",
-   "sha256_lf": "73b4f14e7fff5da31e74e7af5ce819aa334158a27ed55a7e8ded0f976c73ad55"
+   "sha256": "32dec3d49ad497c471996f7181198db72abd34bcb43e158a4f8b1d6d2900814d",
+   "sha256_lf": "32dec3d49ad497c471996f7181198db72abd34bcb43e158a4f8b1d6d2900814d"
   }
  },
  "inputs": [
@@ -193,8 +197,8 @@
   }
  ],
  "realms": {
-  "three": "own vm realm, Math.random = LCG stream T",
-  "game": "page realm, Math.random = LCG stream G (seeds per suite)",
+  "three": "own vm realm, Math.random = LCG stream T, Math.pow = the runtime's deterministic pow (core/pow.js)",
+  "game": "page realm, Math.random = LCG stream G (seeds per suite), Math.pow throws (the runtime uses HeliPow.pow)",
   "clock": "performance.now = harness clock; frames 100 Hz; physics 120 Hz"
  }
 }

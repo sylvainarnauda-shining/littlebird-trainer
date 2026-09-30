@@ -13,6 +13,7 @@
    east is +x. In the browser the map comes from the page address (#carte=...) or from
    the last choice saved by the menu; Node and the tests get "vallee". */
 (function(root){
+  const pow=typeof module!=='undefined'?require('./core/pow.js').pow:root.HeliPow.pow; // same double on every platform
   const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
   const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
   const mix=(a,b,t)=>a+(b-a)*t;
@@ -126,14 +127,14 @@
         KNOLLS.push({x,z,r:rad,h});
       }
     }
-    const knollHeight=(x,z)=>{let h=0;for(const k of KNOLLS){const q=((x-k.x)**2+(z-k.z)**2)/(k.r*k.r);if(q<9)h+=k.h*Math.exp(-q);}return h;};
-    const knollCover=(x,z)=>{let c=0;for(const k of KNOLLS){const q=((x-k.x)**2+(z-k.z)**2)/(k.r*k.r);c=Math.max(c,Math.exp(-q*.8));}return c;};
+    const knollHeight=(x,z)=>{let h=0;for(const k of KNOLLS){const q=((x-k.x)*(x-k.x)+(z-k.z)*(z-k.z))/(k.r*k.r);if(q<9)h+=k.h*Math.exp(-q);}return h;};
+    const knollCover=(x,z)=>{let c=0;for(const k of KNOLLS){const q=((x-k.x)*(x-k.x)+(z-k.z)*(z-k.z))/(k.r*k.r);c=Math.max(c,Math.exp(-q*.8));}return c;};
 
     function rawHeight(x,z){
       const vx=valleyX(z),W=halfWidth(z),d=Math.abs(x-vx),base=floorY(z),side=x<vx?-1:1;
       let h=base+p.floorNoise*fbm(x/300,z/300,3,1+ns);
       const slope=smooth(W-p.slopeIn,W+p.slopeOut,d);
-      if(slope>0)h+=(p.slopeH*(1+.5*p.asym*side)+p.slopeV*fbm(x/900,z/900,3,2+ns))*Math.pow(slope,1.25);
+      if(slope>0)h+=(p.slopeH*(1+.5*p.asym*side)+p.slopeV*fbm(x/900,z/900,3,2+ns))*pow(slope,1.25);
       const rough=smooth(W-p.roughIn,W+p.roughOut,d);
       if(rough>0)h+=p.roughH*fbm(x/260,z/260,4,3+ns)*rough;
       const m=smooth(W+p.mountIn,W+p.mountOut,d);

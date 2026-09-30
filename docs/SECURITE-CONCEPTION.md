@@ -6,7 +6,7 @@ Pour signaler une faille : [`SECURITY.md`](../SECURITY.md).
 ## La page
 
 - Une seule page autonome (`dist/web/index.html`), construite sans dépendance par `scripts/build.mjs`, non minifiée.
-- Politique de sécurité du contenu (CSP) à empreintes : seuls ses 12 scripts et sa feuille de style, identifiés par
+- Politique de sécurité du contenu (CSP) à empreintes : seuls ses 13 scripts et sa feuille de style, identifiés par
   leur SHA-256, sont autorisés ; réseau, images, polices, médias, workers, cadres, objets, formulaires et `<base>` sont
   fermés. `scripts/verify-build.mjs` vérifie la chaîne exacte ; la construction est reproductible.
 - Aucun code réseau, aucun `eval`. Les fichiers importés (profil, réglages du jeu) sont vérifiés valeur par valeur.

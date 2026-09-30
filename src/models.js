@@ -5,6 +5,7 @@
    with two M134 miniguns. Also vehicles, soldiers (instanced, animated),
    destructible structures and air-defence teams. */
 (function(root){
+  const pow=typeof module!=='undefined'?require('./core/pow.js').pow:root.HeliPow.pow; // same double on every platform
   function create(T){
     const std=(color,o={})=>new T.MeshStandardMaterial({color,roughness:.8,metalness:.1,...o});
     function mesh(g,m,parent,x=0,y=0,z=0){const o=new T.Mesh(g,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
@@ -41,7 +42,7 @@
     const SX=.7,SY=.97,CY=.12+DY;
     // v13 rear dome: behind z 0.2 the pod is shortened (tip 1.84 -> 1.10) and its axis drops 0.2 m, so that the exhaust
     // measured at (0, -0.26 B = -0.07, 0.80 +- 0.32) (BA; nozzle seen in two rear views) comes out of its lower rear.
-    const warp=v=>{if(v.z>.2){const u=Math.min(1,(v.z-.2)/1.64);v.y-=.2*Math.pow(u,1.6);v.z=.2+(v.z-.2)*(1-.45*u);}return v;};
+    const warp=v=>{if(v.z>.2){const u=Math.min(1,(v.z-.2)/1.64);v.y-=.2*pow(u,1.6);v.z=.2+(v.z-.2)*(1-.45*u);}return v;};
     function lathe(z0,z1,phiStart,phiLength,segments,scale=1){
       const pts=[];for(let i=0;i<PROFILE.length;i++){const [r,z]=PROFILE[i];if(z<z0-1e-6||z>z1+1e-6)continue;pts.push(new T.Vector2(r*scale,z));}
       // Close the range exactly at z0/z1 by interpolation.
@@ -60,7 +61,7 @@
     function loft(keys,radial=24,sub=6){
       const cr=(a,b,c,d,t)=>.5*(2*b+(c-a)*t+(2*a-5*b+4*c-d)*t*t+(3*b-a-3*c+d)*t*t*t),rings=[],pos=[],uv=[],idx=[],n=radial;
       for(let i=0;i<keys.length-1;i++)for(let k=0;k<(i===keys.length-2?sub+1:sub);k++){const a=keys[Math.max(0,i-1)],b=keys[i],c=keys[i+1],d=keys[Math.min(keys.length-1,i+2)];rings.push(b.map((_,j)=>cr(a[j],b[j],c[j],d[j],k/sub)));}
-      for(const [z,cy,w,h,e] of rings)for(let j=0;j<=n;j++){const t=j/n*Math.PI*2-Math.PI/2,c=Math.cos(t),s=Math.sin(t),q=2/e;pos.push(Math.sign(c)*Math.pow(Math.abs(c),q)*w/2,cy+Math.sign(s)*Math.pow(Math.abs(s),q)*h/2,z);uv.push(j/n,z/2);}
+      for(const [z,cy,w,h,e] of rings)for(let j=0;j<=n;j++){const t=j/n*Math.PI*2-Math.PI/2,c=Math.cos(t),s=Math.sin(t),q=2/e;pos.push(Math.sign(c)*pow(Math.abs(c),q)*w/2,cy+Math.sign(s)*pow(Math.abs(s),q)*h/2,z);uv.push(j/n,z/2);}
       for(let i=0;i<rings.length-1;i++)for(let j=0;j<n;j++){const a=i*(n+1)+j,b=a+n+1;idx.push(a,a+1,b,b,a+1,b+1);}
       for(const [i,flip] of [[0,true],[rings.length-1,false]]){const [z,cy]=rings[i],c=pos.length/3;pos.push(0,cy,z);uv.push(.5,z/2);for(let j=0;j<n;j++){const a=i*(n+1)+j;if(flip)idx.push(c,a+1,a);else idx.push(c,a,a+1);}}
       const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g;
@@ -69,7 +70,7 @@
     function loftTop(keys,z0,z1,a,off,n=8,sub=8){
       const cr=(p,b,c,d,t)=>.5*(2*b+(c-p)*t+(2*p-5*b+4*c-d)*t*t+(3*b-p-3*c+d)*t*t*t),rings=[],pos=[],idx=[];
       for(let i=0;i<keys.length-1;i++)for(let k=0;k<=sub;k++){const r=keys[i].map((_,j)=>cr(keys[Math.max(0,i-1)][j],keys[i][j],keys[i+1][j],keys[Math.min(keys.length-1,i+2)][j],k/sub));if(r[0]>=z0&&r[0]<=z1&&!(rings.length&&r[0]<=rings[rings.length-1][0]+1e-6))rings.push(r);}
-      for(const [z,cy,w,h,e] of rings)for(let j=0;j<=n;j++){const t=Math.PI/2-a(z)+2*a(z)*j/n,c=Math.cos(t),s=Math.sin(t),q=2/e;pos.push(Math.sign(c)*Math.pow(Math.abs(c),q)*(w/2+off),cy+Math.sign(s)*Math.pow(Math.abs(s),q)*(h/2+off),z);}
+      for(const [z,cy,w,h,e] of rings)for(let j=0;j<=n;j++){const t=Math.PI/2-a(z)+2*a(z)*j/n,c=Math.cos(t),s=Math.sin(t),q=2/e;pos.push(Math.sign(c)*pow(Math.abs(c),q)*(w/2+off),cy+Math.sign(s)*pow(Math.abs(s),q)*(h/2+off),z);}
       for(let i=0;i<rings.length-1;i++)for(let j=0;j<n;j++){const p=i*(n+1)+j,b=p+n+1;idx.push(p,p+1,b,b,p+1,b+1);}
       const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();return g;
     }

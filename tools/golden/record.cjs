@@ -13,7 +13,8 @@
 // and in the DOM, display names, labels, notices) may differ; everything else stays strict.
 // Private sidecars (never published): the calibration tools' controls and hook members. Written with --private-out,
 // compared with --private-check; without them they are dropped.
-// Runtime directory: the ten runtime files and vendor/three.min.js (the repository's src/, or a baseline copy).
+// Runtime directory: core/pow.js, the ten runtime files and vendor/three.min.js (the repository's src/, or a baseline
+// copy).
 process.env.TZ = 'UTC';
 // Guard: nothing may draw from the recorder's own Math.random (the game's streams live in their realms). A leak, such
 // as passing the host's Math.random into a module, would make recordings differ from run to run.
@@ -23,7 +24,8 @@ const { loadRuntime, createPage } = require('./harness.cjs');
 const { stableStringify } = require('./canon.cjs');
 const { compareSuite } = require('./compare.cjs');
 
-const RECORDER_VERSION = 2;
+// 3: three.js's realm computes with the runtime's deterministic pow; the game's realm has no Math.pow.
+const RECORDER_VERSION = 3;
 const ALL = ['flight', 'sessions', 'world', 'audio', 'hud', 'settings', 'models', 'ui', 'modules', 'hookapi'];
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const { recorderManifest } = require('./provenance.cjs');
@@ -76,7 +78,7 @@ async function main() {
   }
   const recorder = recorderManifest();
   const meta = { recorder: RECORDER_VERSION, recorderManifest: recorder, node: process.version, suites: Object.keys(results), srcManifest: rt.manifest, inputs: inputsManifest.files.map(f => ({ file: f.file, sha256: f.sha256 })),
-    realms: { three: 'own vm realm, Math.random = LCG stream T', game: 'page realm, Math.random = LCG stream G (seeds per suite)', clock: 'performance.now = harness clock; frames 100 Hz; physics 120 Hz' } };
+    realms: { three: 'own vm realm, Math.random = LCG stream T, Math.pow = the runtime\'s deterministic pow (core/pow.js)', game: 'page realm, Math.random = LCG stream G (seeds per suite), Math.pow throws (the runtime uses HeliPow.pow)', clock: 'performance.now = harness clock; frames 100 Hz; physics 120 Hz' } };
   const writeDir = (dir, files, withMeta) => {
     fs.mkdirSync(dir, { recursive: true });
     for (const [name, r] of Object.entries(files)) fs.writeFileSync(path.join(dir, name + '.json'), stableStringify(r));

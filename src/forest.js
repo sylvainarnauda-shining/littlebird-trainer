@@ -14,6 +14,7 @@
    Collisions: compact 16 m grid plugged into the ObstacleField as a layer of
    kind 'arbre' (trunk and crown boxes per tree). */
 (function(root){
+  const pow=typeof module!=='undefined'?require('./core/pow.js').pow:root.HeliPow.pow; // same double on every platform
   // Muted foliage: on the recordings greens read #464c3b-#606e50 and autumn tones
   // #56462a-#735d34 on screen (saturation ~0.25 and ~0.45), docs/analyse/foret-dca.md.
   const SPECIES=[
@@ -45,7 +46,7 @@
       // Autumn broadleaf also covers the lower slopes (recording 1 at 200 s).
       const pBroad=(.65-.3*slope)*(1-.6*high),pSpruce=.08+.12*slope+.3*high,u=rnd(),k=u<pBroad?2:u<pBroad+pSpruce?1:0,sp=SPECIES[k];
       if(n>=cap)grow();
-      X[n]=px;Y[n]=s[0];Z[n]=pz;H[n]=sp.h[0]+(sp.h[1]-sp.h[0])*Math.pow(rnd(),.8);WD[n]=sp.w[0]+(sp.w[1]-sp.w[0])*rnd();RO[n]=rnd()*6.2832;S[n]=k;C[n]=Math.floor(rnd()*sp.colors.length);J[n]=.88+.24*rnd();n++;
+      X[n]=px;Y[n]=s[0];Z[n]=pz;H[n]=sp.h[0]+(sp.h[1]-sp.h[0])*pow(rnd(),.8);WD[n]=sp.w[0]+(sp.w[1]-sp.w[0])*rnd();RO[n]=rnd()*6.2832;S[n]=k;C[n]=Math.floor(rnd()*sp.colors.length);J[n]=.88+.24*rnd();n++;
     }
 
     // ---- Sort by 100 m cell and species (contiguous ranges for the near lists) ----
@@ -120,7 +121,7 @@
     function spruce(whorls,per,seg){
       const b=Builder(),centre=V3(0,.5,0);b.stem(V3(0,0,0),V3(0,.98,0),.02,.004,seg,...SPRUCE_BARK);
       for(let k=0;k<whorls;k++){
-        const f=k/(whorls-1),y=.14+.8*f,R=.25*Math.pow(1-f*.95,1.05)+.02;
+        const f=k/(whorls-1),y=.14+.8*f,R=.25*pow(1-f*.95,1.05)+.02;
         for(let j=0;j<per;j++){
           const a=j*6.2832/per+k*.9+rg()*.4,out=horiz(a),droop=-.25-.25*rg(),along=out.clone().setY(droop).normalize(),s=Math.max(.07,R*1.15);
           const side=new T.Vector3().crossVectors(UP,along).normalize().applyAxisAngle(along,(rg()-.5)*.5);
@@ -170,7 +171,7 @@
       // Broadleaf: cluster of small leaves on twigs, denser in the middle (tile at 0,512).
       g.save();g.translate(0,H);g.strokeStyle='rgba(90,80,70,1)';g.lineWidth=3;
       for(let k=0;k<6;k++){g.beginPath();g.moveTo(H*.5,H*.98);g.quadraticCurveTo(H*(.3+.4*r()),H*.6,H*(.15+.7*r()),H*(.12+.5*r()));g.stroke();}
-      for(let k=0;k<1100;k++){const a=r()*6.2832,d=Math.pow(r(),.6)*H*.44,x=H*.5+Math.cos(a)*d,y=H*.48+Math.sin(a)*d*.95;
+      for(let k=0;k<1100;k++){const a=r()*6.2832,d=pow(r(),.6)*H*.44,x=H*.5+Math.cos(a)*d,y=H*.48+Math.sin(a)*d*.95;
         g.save();g.translate(x,y);g.rotate(r()*6.2832);g.fillStyle=shade(.52+.36*r(),1,r());g.beginPath();g.ellipse(0,0,H*(.026+.016*r()),H*(.013+.008*r()),0,0,6.2832);g.fill();g.restore();}
       g.restore();
       // Bark: long fissures and plates (tile at 512,512), opaque.
@@ -232,7 +233,7 @@
       const pal=['#5d6844','#66703f','#4f5a3a','#7a6d44','#6e5a3a','#58603d'].map(h=>new T.Color(h));
       for(let z=-3100;z<1000;z+=10)for(let x=-1900;x<1700;x+=10){
         const px=x+rnd()*10,pz=z+rnd()*10;if(W.reserved(px,pz))continue;const s=sample(px,pz),d=s[1];
-        if(rnd()>.09+.5*d*(1-d)*4*.45)continue;list.push([px,s[0]-.15,pz,1.2+2.3*Math.pow(rnd(),1.5),rnd()*6.28,Math.floor(rnd()*pal.length),.85+.3*rnd()]);
+        if(rnd()>.09+.5*d*(1-d)*4*.45)continue;list.push([px,s[0]-.15,pz,1.2+2.3*pow(rnd(),1.5),rnd()*6.28,Math.floor(rnd()*pal.length),.85+.3*rnd()]);
       }
       const inst=new T.InstancedMesh(geo,nearMat,list.length);inst.instanceColor=new T.InstancedBufferAttribute(new Float32Array(list.length*3),3);
       list.forEach(([x,y,z,s,r,k,j],i)=>{m.compose(p.set(x,y,z),q.setFromAxisAngle(UP,r),sc.set(s*1.15,s*.8,s*1.15));inst.setMatrixAt(i,m);c.copy(pal[k]).multiplyScalar(j);inst.setColorAt(i,c);});
@@ -256,10 +257,10 @@
       let lx=1e9,lz=1e9;
       function update(camera){
         const cp=camera.position,h0=sample(cp.x,cp.z)[0];if(cp.y-h0>90){inst.visible=false;lx=1e9;return;}inst.visible=true;
-        if((cp.x-lx)**2+(cp.z-lz)**2<49)return;lx=cp.x;lz=cp.z;let n=0;
+        if((cp.x-lx)*(cp.x-lx)+(cp.z-lz)*(cp.z-lz)<49)return;lx=cp.x;lz=cp.z;let n=0;
         for(let iz=Math.floor((cp.z-R)/STEP);iz<=Math.floor((cp.z+R)/STEP);iz++)for(let ix=Math.floor((cp.x-R)/STEP);ix<=Math.floor((cp.x+R)/STEP);ix++){
           let hsh=(Math.imul(ix,73856093)^Math.imul(iz,19349663))>>>0;const hr=()=>{hsh=(Math.imul(hsh,1664525)+1013904223)>>>0;return hsh/4294967296;};
-          const x=(ix+hr())*STEP,z=(iz+hr())*STEP;if((x-cp.x)**2+(z-cp.z)**2>R*R)continue;
+          const x=(ix+hr())*STEP,z=(iz+hr())*STEP;if((x-cp.x)*(x-cp.x)+(z-cp.z)*(z-cp.z)>R*R)continue;
           const s=sample(x,z),d=s[1];if(hr()>.75-.55*d||n>=cap)continue;if(W.reserved(x,z))continue;
           const k=.55+.75*hr();m.compose(p.set(x,s[0]-.05,z),q.setFromAxisAngle(UP,hr()*6.28),sc.set(k*1.3,k*(.7+.5*hr()),k*1.3));inst.setMatrixAt(n,m);
           col.copy(base[Math.floor(hr()*base.length)]).multiplyScalar(.85+.3*hr());inst.setColorAt(n,col);n++;
@@ -289,7 +290,7 @@
       for(let l=0;l<2;l++)for(let s=0;s<3;s++){const m=near[l][s],c=cnt[l][s];m.count=c;shown[l][s]=c;if(!c)continue;
         for(const [attr,size] of [[m.instanceMatrix,16],[m.instanceColor,3]]){if(attr.addUpdateRange){attr.clearUpdateRanges();attr.addUpdateRange(0,c*size);}attr.needsUpdate=true;}}
     }
-    function update(camera){const p=camera.position;if((p.x-lastX)**2+(p.z-lastZ)**2>625||Math.abs(p.y-lastY)>40)rebuild(p.x,p.y,p.z);if(grass)grass.update(camera);}
+    function update(camera){const p=camera.position;if((p.x-lastX)*(p.x-lastX)+(p.z-lastZ)*(p.z-lastZ)>625||Math.abs(p.y-lastY)>40)rebuild(p.x,p.y,p.z);if(grass)grass.update(camera);}
 
     // ---- Collisions: 16 m grid, trunk and crown boxes per tree ----
     const CS=16,CGX=Math.ceil((X1-X0)/CS),CGZ=Math.ceil((Z1-Z0)/CS),NCELL=CGX*CGZ,MAXR=6;
@@ -337,7 +338,7 @@
     // Trees per hectare within radius r of (x, z) (tests and documentation).
     function density(x,z,r=50){
       let count=0;const ix0=Math.max(0,Math.floor((x-r-X0)/CS)),ix1=Math.min(CGX-1,Math.floor((x+r-X0)/CS)),iz0=Math.max(0,Math.floor((z-r-Z0)/CS)),iz1=Math.min(CGZ-1,Math.floor((z+r-Z0)/CS));
-      for(let iz=iz0;iz<=iz1;iz++)for(let ix=ix0;ix<=ix1;ix++){const c=iz*CGX+ix;for(let q=cStart[c];q<cStart[c+1];q++){const k=cIdx[q];if((sx[k]-x)**2+(sz[k]-z)**2<r*r)count++;}}
+      for(let iz=iz0;iz<=iz1;iz++)for(let ix=ix0;ix<=ix1;ix++){const c=iz*CGX+ix;for(let q=cStart[c];q<cStart[c+1];q++){const k=cIdx[q];if((sx[k]-x)*(sx[k]-x)+(sz[k]-z)*(sz[k]-z)<r*r)count++;}}
       return count/(Math.PI*r*r/1e4);
     }
     const layer={kind:'arbre',hit};

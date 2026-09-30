@@ -91,6 +91,15 @@ contrôles de fidélité (`tests/fidelity/`, index `tests/fidelity/INDEX.json`).
   `--adopt` ; la CI refait la preuve.
 - Les bandes de fidélité ne sont jamais élargies pour faire passer un changement.
 
+## Calculs identiques sur toutes les plateformes
+
+Les goldens sont les mêmes sous Linux et sous Windows. Dans `src/`, n'utilisez ni `Math.pow` ni `**`, dont le résultat
+dépend de la bibliothèque C du système : prenez `pow` de `src/core/pow.js` (`HeliPow.pow` dans la page) ou, pour un
+carré, un produit (`x*x`). N'écrivez `Math` que sous la forme `Math.<nom>` (pas de `Math` gardé dans une variable,
+passé à une fonction ou lu par une clé calculée). ESLint le vérifie (`npm run lint`), et l'enregistreur des goldens
+échoue si le jeu appelle `Math.pow`. Les autres fonctions de `Math` donnent les mêmes résultats sur les deux systèmes
+(mesuré, voir `docs/FIDELITE.md`).
+
 ## Constantes et sources
 
 Chaque constante qui décrit le jeu dit d'où elle vient, dans un commentaire en anglais :

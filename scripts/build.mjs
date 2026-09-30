@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Builds the self-contained page dist/web/index.html from src/ (zero dependencies): the template with style.css and
-// the eleven scripts inlined in the template's order, every input normalised to LF, then a Content-Security-Policy
-// meta tag that allows exactly the page's own inline blocks by their sha256 (12 scripts, 1 stylesheet) and nothing
+// the twelve scripts inlined in the template's order, every input normalised to LF, then a Content-Security-Policy
+// meta tag that allows exactly the page's own inline blocks by their sha256 (13 scripts, 1 stylesheet) and nothing
 // else: no network, no eval, no external resource (scripts/page-policy.mjs). The policy is also written beside the page
 // (csp.txt), and scripts/verify-build.mjs checks the result before anything is written.
 //   node scripts/build.mjs [--src <dir>] [--out <file>]
@@ -22,6 +22,7 @@ import { verifyPage } from './verify-build.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const SCRIPTS = [
   'vendor/three.min.js',
+  'core/pow.js',
   'world.js',
   'physics.js',
   'forest.js',
@@ -123,7 +124,7 @@ function main() {
   fs.writeFileSync(path.join(path.dirname(out), 'csp.txt'), csp + '\n');
   console.log(
     `Built ${path.relative(ROOT, out).replace(/\\/g, '/')}: ${Buffer.byteLength(html)} bytes, sha256 ${hex(html)}. ` +
-      'CSP: 12 script hashes, 1 style hash, everything else closed; no external request.',
+      'CSP: 13 script hashes, 1 style hash, everything else closed; no external request.',
   );
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main();

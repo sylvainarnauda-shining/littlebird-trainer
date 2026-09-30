@@ -104,7 +104,7 @@
       const nose=Math.atan2(-f.x,-f.z),path=Math.atan2(-v.x,-v.z);
       const beta=Math.atan2(Math.sin(path-nose),Math.cos(path-nose));
       this.sideslip=beta;
-      const tau=1.1*(55.6/vh)**2;
+      const tau=1.1*((55.6/vh)*(55.6/vh));
       return clamp(beta*c.weathervane/tau,-.6,.6);
     }
     step(dt,input) {

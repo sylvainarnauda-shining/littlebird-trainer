@@ -30,5 +30,6 @@ test('every runtime file has LF line endings', () => {
 test('the goldens name every runtime file the recorder reads (meta.json srcManifest)', () => {
   const meta = JSON.parse(fs.readFileSync(path.join(GOLDEN, 'meta.json'), 'utf8'));
   for (const name of Object.keys(meta.srcManifest)) assert.ok(fs.existsSync(path.join(SRC, name)), name);
-  assert.equal(Object.keys(meta.srcManifest).length, 12);
+  assert.equal(Object.keys(meta.srcManifest).length, 13);
+  assert.ok('core/pow.js' in meta.srcManifest, 'the deterministic pow is part of the recorded runtime');
 });

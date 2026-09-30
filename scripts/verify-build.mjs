@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Checks a built page against the page policy (scripts/page-policy.mjs), fail closed:
 //  - exactly one Content-Security-Policy meta tag, right after the charset and before any inline block, whose content
-//    is exactly the expected string: default-src 'none', the sha256 of each of the 12 inline scripts in order, the
+//    is exactly the expected string: default-src 'none', the sha256 of each of the 13 inline scripts in order, the
 //    sha256 of the one inline stylesheet, every other fetch directive plus base-uri and form-action 'none';
 //  - no external reference, inline handler, javascript: URL or style attribute in the markup;
 //  - the three.js block is the pinned file; no network or dynamic-code API in the page's own scripts, and in three.js
@@ -35,7 +35,7 @@ export function verifyPage(html, { threeSha256, srcDir = null, scripts = null } 
     problems.push('exactly one Content-Security-Policy meta tag expected, found ' + metas.length);
   const csp = metas.length ? metas[0][1] : '';
   const blocks = inlineBlocks(html);
-  if (blocks.scripts.length !== 12) problems.push('12 inline scripts expected, found ' + blocks.scripts.length);
+  if (blocks.scripts.length !== 13) problems.push('13 inline scripts expected, found ' + blocks.scripts.length);
   if (blocks.styles.length !== 1) problems.push('1 inline stylesheet expected, found ' + blocks.styles.length);
   const expected = cspPolicy(blocks);
   if (csp !== expected) problems.push('the policy is not the expected string');

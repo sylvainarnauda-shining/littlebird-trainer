@@ -309,7 +309,7 @@
     "movingCheckpoints": 61
    },
    "scene": {
-    "start": "699bfad9c6941471e4507fce5a405640da533a4ea541765cf78c5821e6b12c7c",
+    "start": "0c945d7df71cd85d89132e3e452a8fda958996d2098758a3e38492e0c471ed25",
     "startCounts": {
      "objects": 464,
      "meshes": 410,
@@ -320,7 +320,7 @@
      "textures": 20,
      "vertices": 419555
     },
-    "end": "af2dc7081d09d00c6c289ce18482f4ee728cc69dcbabfb5befcde253f4d35ab8",
+    "end": "479eca595038ff5e2fcd99cbd83f1d149beffb6ce941ab813aa741f3accb8491",
     "endCounts": {
      "objects": 464,
      "meshes": 410,
@@ -536,7 +536,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -4560,7 +4560,7 @@
     "movingCheckpoints": 61
    },
    "scene": {
-    "start": "2eb93cc5c9706fd4ceb795a95f4563037e4ccbb1f2c40cd8e25ae8ce445b5729",
+    "start": "22c862e7cdb5f329328e5f20cc78b15582b803980e6e9f6687bc71a2412c7b6a",
     "startCounts": {
      "objects": 388,
      "meshes": 355,
@@ -4571,7 +4571,7 @@
      "textures": 20,
      "vertices": 322963
     },
-    "end": "8f9381e06920e4aaf456d5fa7254412f1d7099c1c89c3171b8693debee598cbe",
+    "end": "4feb73b97f934e38104eb76c2d77c8b612e688ce78f883904992b12d11825bd8",
     "endCounts": {
      "objects": 388,
      "meshes": 355,
@@ -4787,7 +4787,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -8807,7 +8807,7 @@
     "movingCheckpoints": 59
    },
    "scene": {
-    "start": "b58df99475cf5fff53744627e42fe309fa10c5e5f3589e24c72b1e7d66d7f7ed",
+    "start": "43cf3ccbcc990d98daa83679f8de159ca5c1a37f964e4865d5cfa2bc277c3d96",
     "startCounts": {
      "objects": 371,
      "meshes": 328,
@@ -8818,7 +8818,7 @@
      "textures": 21,
      "vertices": 373808
     },
-    "end": "08b44f475c1bc1987eb233d7241202a8a9b7a3694e7ebe8cfb430bbcd2a95fc7",
+    "end": "157e6dd71a27d6da4800e954499bc1acf7d31cf0bde778223231349b0a800365",
     "endCounts": {
      "objects": 371,
      "meshes": 328,
@@ -9034,7 +9034,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -13015,7 +13015,7 @@
     "movingCheckpoints": 60
    },
    "scene": {
-    "start": "7a3acc68b3e0cc221434ab44b81608f2453d36e90115ad748bab417bb7ede842",
+    "start": "c4be1df24e5bc11774a8eaeb159398cb9d38322301b8ea3a59d1bbdc522a6dad",
     "startCounts": {
      "objects": 363,
      "meshes": 333,
@@ -13026,7 +13026,7 @@
      "textures": 19,
      "vertices": 216277
     },
-    "end": "5e4f35c5cba813c90c8a708e32791980a468bfeeb71504da8980d3c6be33afdb",
+    "end": "6e625e9006e05bace922141f15560711fa2847bae42f7809d378389bbe133f0e",
     "endCounts": {
      "objects": 363,
      "meshes": 333,
@@ -13233,7 +13233,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -17232,7 +17232,7 @@
     "movingCheckpoints": 61
    },
    "scene": {
-    "start": "f214be9e803c352fd627d9faecc64ec4b5dfd20e45679394a53eb4265c24d34f",
+    "start": "3444ed2e0b7b793f1464638c2af71730b94bea89fddf072c42651a87b23ecab0",
     "startCounts": {
      "objects": 403,
      "meshes": 370,
@@ -17243,7 +17243,7 @@
      "textures": 20,
      "vertices": 323083
     },
-    "end": "74d7daf2ec9c2219a3aeb4aa4d6f1d8ed4f00f592f42f8df2bbfda04e5ae2c72",
+    "end": "38c7d2307d56bd91a8e24a35df8593d5c765afb3cadc0ce325ad07b3e4c8c4e0",
     "endCounts": {
      "objects": 403,
      "meshes": 370,
@@ -17459,7 +17459,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -21619,7 +21619,7 @@
     "movingCheckpoints": 58
    },
    "scene": {
-    "start": "5279df4715b09ab667070da292e2edc836ade3de305b1090749bf74f5527be99",
+    "start": "f4678050d1f8781cfae813899d3280c32d3ea8b055da33721194ad07db0b3567",
     "startCounts": {
      "objects": 378,
      "meshes": 344,
@@ -21630,7 +21630,7 @@
      "textures": 20,
      "vertices": 327405
     },
-    "end": "7d11eb3a8737b54356e30b96bd3f61d6403dca82cc09ab3981ab7a8626733b4b",
+    "end": "ddc43c597e84eb3282ff39885e38aba42268c1aa0412369cd16da812e422d3a7",
     "endCounts": {
      "objects": 378,
      "meshes": 344,
@@ -21846,7 +21846,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -25942,7 +25942,7 @@
     "movingCheckpoints": 59
    },
    "scene": {
-    "start": "c4aa5492d9be77ce355b4f97b01ff35fc31749a0280e26afa6d7be7ea3270717",
+    "start": "b752abb5a92ec086bfb90f22445e1e7db478459e8de99eef8c748fd13b65c6e5",
     "startCounts": {
      "objects": 476,
      "meshes": 413,
@@ -25953,7 +25953,7 @@
      "textures": 20,
      "vertices": 329022
     },
-    "end": "1b01b82006fb9e79c2ea2eca7eae5215fb0eaf92fe8c0c50186393c189f7d38f",
+    "end": "663f0ed79b284b2d2c6d5249774069a0f3b1656ff3f2e2cea5f5458653310e25",
     "endCounts": {
      "objects": 452,
      "meshes": 390,
@@ -26169,7 +26169,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -30453,7 +30453,7 @@
     "movingCheckpoints": 56
    },
    "scene": {
-    "start": "b41f638b109315e3daa4e55067bbabef0ede936f28e17fd92953acba94699c8c",
+    "start": "3504e35d7ccd046b7f3761a971da677c45ece309e4d8e38e35589f70ac69effc",
     "startCounts": {
      "objects": 554,
      "meshes": 472,
@@ -30464,7 +30464,7 @@
      "textures": 20,
      "vertices": 393235
     },
-    "end": "de244d2b883994f9e384c3a47b887daa32c2bbca3c8fb4b0d5907cffc5df7864",
+    "end": "3df49e8c30a1bdd0ac4c2226d5fcd3fab2d76841023449807e5037ca81852748",
     "endCounts": {
      "objects": 554,
      "meshes": 472,
@@ -30680,7 +30680,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -34762,7 +34762,7 @@
     "movingCheckpoints": 61
    },
    "scene": {
-    "start": "9c1046662018fd0a33b176a7dfa292950176ce6ce8dafa15ddb0923e0da17a90",
+    "start": "39d823a28e6e626a3a913c3166209dcb729b835ec01fa1b8c07bd325c40bae2b",
     "startCounts": {
      "objects": 454,
      "meshes": 412,
@@ -34773,7 +34773,7 @@
      "textures": 22,
      "vertices": 385890
     },
-    "end": "0925ddbc396e624247407cfc649ed6aaebed02de9726040f3d59d4290be5b4e8",
+    "end": "d66d2ac814f11549053b33f8ecf8f72f0d96f001be8b9e7f9f85fcca070a8fb8",
     "endCounts": {
      "objects": 454,
      "meshes": 412,
@@ -34989,7 +34989,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -35528,14 +35528,14 @@
     },
     {
      "t": 1800,
-     "all": "7c1bc909fdd9ad2482f58295549ed32995967281b0bb710d4245a8dfaeb0a879",
+     "all": "858e6c802a504acf655e9cf0cf62d074d51020eef6d398861ffd92fb99c0ec04",
      "groups": {
       "flight": "53446ef11dace63a",
       "input": "1fc9c40ea185b8a1",
       "session": "f45f1a3559d32ef6",
       "camera": "d72a058ea867cdbd",
       "targets": "be7e34f3d49b85f7",
-      "bots": "79ffc0acb7dc63a2",
+      "bots": "571e28f46148de36",
       "air": "900a39e9a46cd2d9",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35556,14 +35556,14 @@
     },
     {
      "t": 1900,
-     "all": "eb9a0495319af1b27d6b5d801f0c18047f09fefe907e94c91ffccd5d212a4b03",
+     "all": "28ccd326650d693cadaa9ed11fc44d1dd40463aef75b403af32f99e0bb98f42f",
      "groups": {
       "flight": "8c05a2b96c81c2f7",
       "input": "22aef3dc5dded163",
       "session": "291bfead423cddf6",
       "camera": "f1af04f6a9529146",
       "targets": "28a4dd97a0e21bb8",
-      "bots": "3424080da197f2a0",
+      "bots": "397b618058b35d2b",
       "air": "46384798317aa020",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35584,14 +35584,14 @@
     },
     {
      "t": 2000,
-     "all": "0ec276a8f12c67186d6446894cbc0316360ef5e8a4a39bec0fdd1063947ffe13",
+     "all": "8548782d35bbcecfe3d9d6422d1bf63183a7257ae0d6770ced9fb9df32fb84fe",
      "groups": {
       "flight": "14b8a6a7c1292bc2",
       "input": "93f8ff99a7add758",
       "session": "de78212b54321633",
       "camera": "c81ee73daa0f2f11",
       "targets": "60e7d81878cde70a",
-      "bots": "f472c39a3dc08703",
+      "bots": "b9f52985d80c6778",
       "air": "f5758d99f9cf53cf",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35612,14 +35612,14 @@
     },
     {
      "t": 2100,
-     "all": "12d233f9810d5777601f1542b32492733ccb66f22d8774bda77c2139c81dbff8",
+     "all": "12a4152f063bd3d5ce262e600b86d31aa161a35a66adf50540fc86b49c31a683",
      "groups": {
       "flight": "61c649474e112ec2",
       "input": "1fc9c40ea185b8a1",
       "session": "1f919e7e76cf9b8c",
       "camera": "c252c4074c19172e",
       "targets": "7a20612d86594649",
-      "bots": "6c571c65692a97bc",
+      "bots": "ce1b0c4481f09459",
       "air": "ec2b2cced7dcdf2e",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35640,14 +35640,14 @@
     },
     {
      "t": 2200,
-     "all": "77eeb9724d7482f6a0aa4c26c49a56894a79d087b7e357c8775553bb6be23ff3",
+     "all": "f223a895321c1b7d2b17cbbc88cff364df88c2ce3986689380012edee3da5d88",
      "groups": {
       "flight": "7a9b756012089735",
       "input": "45074aca86b60241",
       "session": "9ddfb9b5ad2406c0",
       "camera": "247397ef401cc0a4",
       "targets": "ad49b37b62d99948",
-      "bots": "d39dad264cc63458",
+      "bots": "52c2e4710a0b876f",
       "air": "8df1b909dd35e86e",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35668,14 +35668,14 @@
     },
     {
      "t": 2300,
-     "all": "0a6af954b076d24a5ac6a6bd7359caa5266c74239625deee3339e4491bfbaee7",
+     "all": "36cfa0396f83a5fcb18c558987cf10f7ed8d5495c4c84d3ef708078b0f9d2a44",
      "groups": {
       "flight": "5848f73bffe5837c",
       "input": "8d582a9ae8af9fe2",
       "session": "9109ed98846ee5da",
       "camera": "8dac501d1c4f3e34",
       "targets": "772ee18ae5dcdc98",
-      "bots": "30fd27c0f3457589",
+      "bots": "f060bf3fddae3849",
       "air": "3a472e9c14719c56",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35696,14 +35696,14 @@
     },
     {
      "t": 2400,
-     "all": "f67c5732a6f6fbcf1b520f89af87e7e79116501e83ad084dbbbc2e2fb8cf9077",
+     "all": "53fcf7d6146c68876aceee7a1d36598366eeedd1b4a0da50352e2b0604104aaa",
      "groups": {
       "flight": "f8f0f26f41e32c8c",
       "input": "e023529d9aea39bb",
       "session": "fc87976756a3d8e2",
       "camera": "f4bbad1078146aac",
       "targets": "881fc5479fb978d5",
-      "bots": "48fae11209c8fc7e",
+      "bots": "8dadada486099d4d",
       "air": "17a5cad40874c9fd",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35724,14 +35724,14 @@
     },
     {
      "t": 2500,
-     "all": "29f512977268471ccec7abfe441ce8cac4429880d3f2898173fea00349c55c17",
+     "all": "94424cebe982714a759f8233b3a7d456a28360e9e7e13cac667873e68d50c7e1",
      "groups": {
       "flight": "b64d224a562f2593",
       "input": "cd061beba7d09f42",
       "session": "3a9548d09041cc5e",
       "camera": "1dcba7a912786fd8",
       "targets": "371b6a3008dadc17",
-      "bots": "4b36f207fc0e598a",
+      "bots": "0a7eda981629566a",
       "air": "02071f4d45104691",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35752,14 +35752,14 @@
     },
     {
      "t": 2600,
-     "all": "ebe47044303570ef095cba8a739b380cba3e9addfb52a36149b6fc0f58b2e612",
+     "all": "094fdb7cef122de9ff5caa1b13f38d23505805e672a5ee816fb4fd2ef0f7be93",
      "groups": {
       "flight": "11456660165d7b24",
       "input": "b38fa838b6b119a7",
       "session": "f78e228380fe45d2",
       "camera": "5658a5508909369f",
       "targets": "14008deddfb0c864",
-      "bots": "38060abedcca5650",
+      "bots": "759493f576d409a7",
       "air": "4d4c044befbbaddd",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35780,14 +35780,14 @@
     },
     {
      "t": 2700,
-     "all": "8a84dd518b741bda4cf458ff4954c170607c56670a31af2a7ab46febdbc9ec0b",
+     "all": "73af59767f08724849f21b6003fbe32bd94d8c479237fad010f81af22ad0aa69",
      "groups": {
       "flight": "75dbfd91ed73478b",
       "input": "42d1a09545e85d5e",
       "session": "7787b2d62ee3c5ca",
       "camera": "51419a04caabe5b5",
       "targets": "3b71fdf2dc920fac",
-      "bots": "618abe64380c4629",
+      "bots": "5c9854edbbcddd00",
       "air": "9c8e2f13a8cf9b24",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35808,14 +35808,14 @@
     },
     {
      "t": 2800,
-     "all": "9d7778e4a779b595b86144a6a431625691cdee15f091d48fabe89a63cbd66da3",
+     "all": "bcc138b2bc82b14abf3f39a68269028d4fb89fd62d215808c9ae65cdb906e221",
      "groups": {
       "flight": "1be83cc32e25d520",
       "input": "967b708d08467727",
       "session": "5ce2ee077d34d25e",
       "camera": "d8fc4ff5199d7ab4",
       "targets": "ad1e64dfdb739bad",
-      "bots": "3238f11e6d721f75",
+      "bots": "6f00d02c7211bfbb",
       "air": "263b7a244fea89a4",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -35836,14 +35836,14 @@
     },
     {
      "t": 2900,
-     "all": "b9db68f6436e75aa775ff8fb12d6f944c878c459c507d79a21bffe4788313195",
+     "all": "0ccaeaeedc71bef6179a5a2d70052f2b2c435f257aa15476c32fb6699d1b4151",
      "groups": {
       "flight": "b39db3d5b461b7bd",
       "input": "42d1a09545e85d5e",
       "session": "44a2cfddcadb8cb2",
       "camera": "a2b599beb3d28812",
       "targets": "45d3a3a6fd5276e8",
-      "bots": "a38d9fbafbf21393",
+      "bots": "5c74c55c3186bf5d",
       "air": "1908edbc7a1bf0f7",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -36620,14 +36620,14 @@
     },
     {
      "t": 5700,
-     "all": "9a22ee805effb9abdf05395f1406750970101c28e42a2c43a4bbd2d4a4a03b0f",
+     "all": "97f56a637796011c735c3139b185d4c241b8ee88ffdb532a9fc648f1758d1c36",
      "groups": {
       "flight": "97d238eea96253fe",
       "input": "22aef3dc5dded163",
       "session": "0a6ddfafd41cd700",
       "camera": "76964e7647d93e18",
       "targets": "f7aea427c898004f",
-      "bots": "54d99c22e6453355",
+      "bots": "c5307610221f807d",
       "air": "b9abf0346c32a00b",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -36648,14 +36648,14 @@
     },
     {
      "t": 5800,
-     "all": "2b7bc80dc2854a5bf1715aa2ec0b17088e9626063b9bd7c8a52a08b0b493845a",
+     "all": "16ee039a63320e2537b638dfdf5929a48707c1e39b284c58a1e8c505b20305fc",
      "groups": {
       "flight": "5187fd02dbee5799",
       "input": "2385358d9a66e06c",
       "session": "25a747911e05ce33",
       "camera": "e3b33b5f0351163a",
       "targets": "5554d25100371c67",
-      "bots": "dfce2a661738464b",
+      "bots": "7fc5df0e6043732b",
       "air": "dba5ee1396400334",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
@@ -36676,21 +36676,21 @@
     },
     {
      "t": 5900,
-     "all": "5753fdeca01a2c41b35ff47ed36ef6ce32f9c4a951e47c84ee1b5d2268611c3f",
+     "all": "c640fce78c2d2fd4a37b4cce881e0e6dde73d8f0eefe07eb8b00f22a5893928d",
      "groups": {
       "flight": "7d137a2be00c0560",
       "input": "e023529d9aea39bb",
       "session": "3087d2d01520ff09",
       "camera": "367616f0452b3a2a",
-      "targets": "5ac14606aa7445a3",
-      "bots": "0ad6b2f4dedbc921",
+      "targets": "6bab5e8d897e2d6d",
+      "bots": "b65c687ae0951124",
       "air": "5e55a51b346a1d26",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
       "towers": "98034621a4bfb381",
       "projectiles": "d79ab7cbd414e3f5",
       "effects": "444430f379dfb552",
-      "scene": "b426aab834257140",
+      "scene": "ff81ffc20fed4701",
       "domHud": "47557a1179720209",
       "domHudText": "ed0565a7546f5b43",
       "rng": "d964c81fac3b0289",
@@ -36704,21 +36704,21 @@
     },
     {
      "t": 6000,
-     "all": "aedee832483ab6289bebc94d32ca7dd78dcc1ffba689206d78704abf49eafd0a",
+     "all": "93fa7abfc41c7d24450e202c8e3d842bcd3dc15751e892d7a4281cc4c407f3c7",
      "groups": {
       "flight": "4a028dc43406c088",
       "input": "3f34970c50e630e4",
       "session": "f354e8be06f08297",
       "camera": "74085eea642798e7",
-      "targets": "d58c76ef31870ae9",
-      "bots": "2ba509b570aadd33",
+      "targets": "fd98c12af3406e0d",
+      "bots": "dce0d2cc5472e99c",
       "air": "30a5f74fd70e6cc4",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
       "towers": "98034621a4bfb381",
       "projectiles": "d79ab7cbd414e3f5",
       "effects": "f86d3b285cf4e6e6",
-      "scene": "dc05f160ee8ec2cd",
+      "scene": "69921f31d0f6ea2e",
       "domHud": "8a7d30282eefe46b",
       "domHudText": "716d9bf1682a8888",
       "rng": "8dc39f1ee5b41d1d",
@@ -36732,21 +36732,21 @@
     },
     {
      "t": 6100,
-     "all": "9448d4ee2a61db41d94f5ab16a0bf74f8096a414dfd1137559eda546c766e287",
+     "all": "8464a4acaecd5cb92d7ee0bf97f81f218227e439b6e81038b1ec59c1679abf9d",
      "groups": {
       "flight": "38323f2a28a40c06",
       "input": "ab5fe99e8ee930aa",
       "session": "90b4c35e6d0ff985",
       "camera": "737812816cc1647c",
-      "targets": "5b21b7f0a45ed7e1",
-      "bots": "889664cae1fbc4b1",
+      "targets": "88b17d55e9fe9bb7",
+      "bots": "e1b292408a3917d4",
       "air": "7c24008d7ef557ac",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
       "towers": "98034621a4bfb381",
       "projectiles": "d79ab7cbd414e3f5",
       "effects": "5d24d15e5f6c71ee",
-      "scene": "5b627dbb3421ba31",
+      "scene": "63c1795ead72641a",
       "domHud": "5c5dca655d13d271",
       "domHudText": "5f637aac7de7d265",
       "rng": "47c57bad02c52c78",
@@ -36760,21 +36760,21 @@
     },
     {
      "t": 6200,
-     "all": "9c37611e58258640680731e6324d51723b957065974344a9fcefe8fba3abe17d",
+     "all": "3408b6128ffa8b5bf74611b8b9e0ac4916783f525391d8eaf9620a1b6edf7d83",
      "groups": {
       "flight": "22beaee112cffacc",
       "input": "967b708d08467727",
       "session": "f03edbb6c2a6d385",
       "camera": "3d84117f69fab74c",
-      "targets": "e62b7bba51b27d6b",
-      "bots": "7564be92f5f81d58",
+      "targets": "fb2a78a7d92a8259",
+      "bots": "8af5ae76911c6969",
       "air": "7aecfa80967f2e86",
       "battle": "625373adc5ac70ae",
       "ciws": "50b7e601709cff9e",
       "towers": "98034621a4bfb381",
       "projectiles": "a36f96a08f9f9a6b",
       "effects": "e3babf11107416c5",
-      "scene": "93b2a1d3e6640616",
+      "scene": "39ccadb5c4223964",
       "domHud": "c8da6196f2fb3929",
       "domHudText": "ad203d271354717f",
       "rng": "4cc93d33752d7a73",
@@ -36782,7 +36782,7 @@
       "hudText": "49b63be772e73c48",
       "audio": "e64c544f003fe616",
       "rngT": "6cf05413c5f53e15",
-      "diag": "83ec165390eca33f",
+      "diag": "5eb7025cb5552f96",
       "names": "333ce57a453ab5ab"
      }
     }
@@ -39007,7 +39007,7 @@
     "movingCheckpoints": 24
    },
    "scene": {
-    "start": "066227f41f3254b8e2ff8233779167f6f3f12c7dddfe652e256af11c204a56f8",
+    "start": "a9fb584d4827410b668f47736dbd4fb95d82db519c228df40044274faecff5af",
     "startCounts": {
      "objects": 464,
      "meshes": 410,
@@ -39018,7 +39018,7 @@
      "textures": 20,
      "vertices": 361795
     },
-    "end": "7ed5b9b54cf79798ea24cf0770468a1f536c645ce130c8b7bb66b2f510ae79ee",
+    "end": "8feb5d1335f272b12d3bccf80fda244b09f9740888a19f78927aaf4208e26d2e",
     "endCounts": {
      "objects": 464,
      "meshes": 410,
@@ -39234,7 +39234,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -41129,7 +41129,7 @@
     "movingCheckpoints": 37
    },
    "scene": {
-    "start": "7e77a4167cc8440318d010c8d4e87ce7ebbeb36a85477271b60c7e2f387b8f3d",
+    "start": "788ab00548fdb36a363c5d6e7289f36bf94e8763dd8a46dfa3cb0107c03e3983",
     "startCounts": {
      "objects": 364,
      "meshes": 334,
@@ -41140,7 +41140,7 @@
      "textures": 20,
      "vertices": 321835
     },
-    "end": "8cfe39897206e587f00ac4e3c6e8f7361d7571a4ce6f166b09902b18e538b0b3",
+    "end": "50c5adc609c285895ecc3810c76de6a766b6fd26893b7085befbd299e81cd65b",
     "endCounts": {
      "objects": 379,
      "meshes": 346,
@@ -41356,7 +41356,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -44150,7 +44150,7 @@
     "movingCheckpoints": 39
    },
    "scene": {
-    "start": "cbc72b44707ad4ceca742fb8d76aa4d0abe33ba4052ee8f560a73a3ea52b03cd",
+    "start": "3ad1fb2ff7bad6bc0aaa9db6bf50c61ab8e25b05f3a9ed8f6ec65586197388da",
     "startCounts": {
      "objects": 425,
      "meshes": 389,
@@ -44161,7 +44161,7 @@
      "textures": 22,
      "vertices": 360608
     },
-    "end": "5e617bed76e5be51e10f3458a15f2de6b0cf17047cf462331326a30096a4f1d6",
+    "end": "a2d85afe7f936a632750c8dda08a07c4b12ed3ebbdc59aeccccb4e9652badf81",
     "endCounts": {
      "objects": 425,
      "meshes": 389,
@@ -44377,7 +44377,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -47165,7 +47165,7 @@
     "movingCheckpoints": 24
    },
    "scene": {
-    "start": "80cb56051a6c177ab4978ca78b80f2f499cbc96671afb320a149036cea5799ec",
+    "start": "4dd3bcd1fcf2e2bc51c085124e8389406afc1fd20979303c28601ebdcc4f40dd",
     "startCounts": {
      "objects": 422,
      "meshes": 380,
@@ -47176,7 +47176,7 @@
      "textures": 20,
      "vertices": 372399
     },
-    "end": "5bd91f18510b8db14eadff8e04ee8ca6103a44597229420354486186ddb94b7f",
+    "end": "f978df5a43b09c749461bc2ed24007bcd0a9c1ae02fc1f7e0a6844e9c1c0c2a7",
     "endCounts": {
      "objects": 422,
      "meshes": 380,
@@ -47392,7 +47392,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {
@@ -49191,7 +49191,7 @@
     "movingCheckpoints": 19
    },
    "scene": {
-    "start": "4296b3f068f5eabdaede248ed48f7a4646e3526cd2b7d6eafe7814aa25f2d88e",
+    "start": "60608ed721d39dd6c893d0a090c6f1484d0d365fca5f3fc001428c6f5e51ccab",
     "startCounts": {
      "objects": 375,
      "meshes": 345,
@@ -49202,7 +49202,7 @@
      "textures": 21,
      "vertices": 221764
     },
-    "end": "a65005982f68f2c203b84fc793dbc5a3969fc14ddee35b7dcd885bb8b10d28d9",
+    "end": "09904b6a6a523458ed34f10b9453e0a62b8365d6bd905bb11de03d917f7e5afb",
     "endCounts": {
      "objects": 375,
      "meshes": 345,
@@ -49409,7 +49409,7 @@
       "w": 1024,
       "h": 1024,
       "ops": 35681,
-      "log": "2ea5f07c4de66446",
+      "log": "b8d0375a5e9ef6fd",
       "text": "-"
      },
      {

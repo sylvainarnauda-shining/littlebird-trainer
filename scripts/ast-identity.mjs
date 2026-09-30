@@ -14,6 +14,7 @@ import * as acorn from 'acorn';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const RUNTIME = [
+  'core/pow.js',
   'world.js',
   'physics.js',
   'forest.js',
@@ -129,9 +130,14 @@ export function compareTemplates(before, after, { maskStrings = false } = {}) {
   return { identical: !diff, firstDifference: diff, strings: diff ? [] : changedStrings(a.strings, b.strings) };
 }
 
+// The file as committed at a ref; null when the ref does not have it (a file added since).
 function atRef(ref, file) {
   const r = spawnSync('git', ['show', `${ref}:src/${file}`], { cwd: ROOT, maxBuffer: 1 << 28 });
-  if (r.status !== 0) throw Error(`git show ${ref}:src/${file} failed: ${String(r.stderr).trim()}`);
+  if (r.status !== 0) {
+    const exists = spawnSync('git', ['cat-file', '-e', `${ref}^{commit}`], { cwd: ROOT });
+    if (exists.status === 0 && /does not exist|exists on disk, but not in/.test(String(r.stderr))) return null;
+    throw Error(`git show ${ref}:src/${file} failed: ${String(r.stderr).trim()}`);
+  }
   return r.stdout.toString('utf8');
 }
 
@@ -147,9 +153,11 @@ function main() {
     const before = atRef(ref, f),
       after = fs.readFileSync(path.join(ROOT, 'src', f), 'utf8');
     const r =
-      f === TEMPLATE
-        ? compareTemplates(before, after, { maskStrings })
-        : compareScripts(before, after, { maskStrings });
+      before === null
+        ? { identical: false, firstDifference: '(file added since ' + ref + ')', strings: [] }
+        : f === TEMPLATE
+          ? compareTemplates(before, after, { maskStrings })
+          : compareScripts(before, after, { maskStrings });
     report.files[f] = r;
     if (!r.identical) bad++;
     console.log(

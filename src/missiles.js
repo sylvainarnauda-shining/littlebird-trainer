@@ -185,7 +185,7 @@
         cmd.add(omega.cross(m.velocity).multiplyScalar(NAV));
       }
       // Agility falls with the dynamic pressure once the motor has burnt out.
-      const max=c.aaAgility*G*Math.min(1,(speed/m.speedMax)**2);if(cmd.length()>max)cmd.setLength(max);
+      const max=c.aaAgility*G*Math.min(1,(speed/m.speedMax)*(speed/m.speedMax));if(cmd.length()>max)cmd.setLength(max);
       m.acc.lerp(cmd,1-Math.exp(-dt/LAG));
       m.velocity.addScaledVector(m.acc,dt);m.velocity.y-=G*dt;
       // Motor: full speed about 1 s after ignition, burn-out after BURN s, then drag and turn losses.
@@ -226,7 +226,7 @@
         const ttg=timeToGo(m,heli);
         if(ttg!==null&&ttg>DODGE_T0&&ttg<DODGE_T1){
           const los=tmpC.copy(heli.position).sub(m.position).normalize(),a=this.heliAccel,g=tmpE.copy(a).addScaledVector(los,-a.dot(los)).length()/G;
-          if(g>DODGE_G0&&this.random.next()<DODGE_K*(g-DODGE_G0)**2*dt){m.dodged=true;m.blindUntil=m.age+1.5;this.lose(m,'maneuver');return;}
+          if(g>DODGE_G0&&this.random.next()<DODGE_K*((g-DODGE_G0)*(g-DODGE_G0))*dt){m.dodged=true;m.blindUntil=m.age+1.5;this.lose(m,'maneuver');return;}
         }
       }
       if(m.target==='flare'&&(!m.flare.alive||!inField(m.flare.position))){m.target=null;m.flare=null;m.lostAt=m.age;}

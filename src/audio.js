@@ -8,6 +8,7 @@
    Offline synthesis functions are pure (testable in Node); SoundEngine
    plays them with Web Audio in the browser. */
 (function(root){
+  const pow=typeof module!=='undefined'?require('./core/pow.js').pow:root.HeliPow.pow; // same double on every platform
   // Octave bands used for the measurements (Hz).
   const BANDS=[[20,60],[60,120],[120,250],[250,500],[500,1000],[1000,2000],[2000,4000],[4000,8000],[8000,16000]];
   // Band levels measured on the recordings (dB, arbitrary reference).
@@ -15,7 +16,7 @@
   function rng(seed){let s=(seed>>>0)||1;return ()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296*2-1;};}
   // RBJ biquad applied offline.
   function biquad(x,sr,type,f0,q=.7071,gainDb=0){
-    const A=Math.pow(10,gainDb/40),w=2*Math.PI*f0/sr,c=Math.cos(w),s=Math.sin(w),al=s/(2*q);let b0,b1,b2,a0,a1,a2;
+    const A=pow(10,gainDb/40),w=2*Math.PI*f0/sr,c=Math.cos(w),s=Math.sin(w),al=s/(2*q);let b0,b1,b2,a0,a1,a2;
     if(type==='lowpass'){b0=(1-c)/2;b1=1-c;b2=(1-c)/2;a0=1+al;a1=-2*c;a2=1-al;}
     else if(type==='highpass'){b0=(1+c)/2;b1=-(1+c);b2=(1+c)/2;a0=1+al;a1=-2*c;a2=1-al;}
     else if(type==='bandpass'){b0=al;b1=0;b2=-al;a0=1+al;a1=-2*c;a2=1-al;}
@@ -51,7 +52,7 @@
     const air=biquad(biquad(biquad(noise,sr,'lowpass',3000,.5),sr,'lowpass',12000,.7),sr,'highpass',500);
     const x=new Float32Array(n);
     for(let i=0;i<n;i++){
-      const t=i/sr,slap=.55+.45*Math.pow(.5+.5*Math.cos(2*Math.PI*f*t),2);
+      const t=i/sr,beat=.5+.5*Math.cos(2*Math.PI*f*t),slap=.55+.45*(beat*beat);
       x[i]=low[i]*slap*1.0+air[i]*.3*(.8+.2*slap)+Math.sin(2*Math.PI*tone*t)*.055*(.85+.15*slap)+Math.sin(2*Math.PI*tone*2*t)*.012+Math.sin(2*Math.PI*sub*t)*.018;
     }
     // Crossfade the ends so the loop is seamless.
