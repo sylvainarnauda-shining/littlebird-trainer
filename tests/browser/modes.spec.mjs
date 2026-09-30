@@ -16,7 +16,7 @@ import {
 } from './fixtures.mjs';
 import NAMES from '../helpers/names.js';
 
-test('F23 cabin mix in the pilot view: highs shelved below -7 dB above 4.5 kHz, rotor bus above x1.8; the chase view plain', async ({
+test('F23 cabin mix in the pilot view: highs shelved below -7 dB above 4.5 kHz, rotor bus above x1.8; the chase view plain @gpu', async ({
   page,
 }) => {
   await openTrainer(page, { manualClock: true });
@@ -45,7 +45,7 @@ test('F23 cabin mix in the pilot view: highs shelved below -7 dB above 4.5 kHz, 
   await leave(page);
 });
 
-test('range: a static air target is hit by a 2.5 s burst (8 hits or more)', async ({ page }) => {
+test('range: a static air target is hit by a 2.5 s burst (8 hits or more) @gpu', async ({ page }) => {
   await openTrainer(page, { manualClock: true });
   await page.locator('[data-mode="range"]').click();
   await page.locator('[data-scenario="air"]').click();
@@ -60,7 +60,7 @@ test('range: a static air target is hit by a 2.5 s burst (8 hits or more)', asyn
   await leave(page);
 });
 
-test('surface-to-air drill: a Verba gunner locks with a steady tone, the missile leaves his tube, flares at about 1.5 s to go', async ({
+test('surface-to-air drill: a Verba gunner locks with a steady tone, the missile leaves his tube, flares at about 1.5 s to go @gpu', async ({
   page,
 }) => {
   await openTrainer(page, { manualClock: true });
@@ -132,7 +132,7 @@ test('surface-to-air drill: a Verba gunner locks with a steady tone, the missile
   await leave(page);
 });
 
-test('full match: camps, hot zone and 300 rounds; land on the helipad and resupply with B (boxes of 150 rounds, flares)', async ({
+test('full match: camps, hot zone and 300 rounds; land on the helipad and resupply with B (boxes of 150 rounds, flares) @gpu', async ({
   page,
 }) => {
   await openTrainer(page, { manualClock: true });
@@ -175,7 +175,7 @@ test('full match: camps, hot zone and 300 rounds; land on the helipad and resupp
   await leave(page);
 });
 
-test('duel against two minigun bots: they come from 1.3 km, fire, are heard, and hit the helicopter', async ({
+test('duel against two minigun bots: they come from 1.3 km, fire, are heard, and hit the helicopter @gpu', async ({
   page,
 }) => {
   await openTrainer(page, { manualClock: true });
@@ -209,7 +209,7 @@ test('duel against two minigun bots: they come from 1.3 km, fire, are heard, and
   await leave(page);
 });
 
-test('duel against an AH-6R: a pod of 8 rockets, fired in salvos', async ({ page }) => {
+test('duel against an AH-6R: a pod of 8 rockets, fired in salvos @gpu', async ({ page }) => {
   await openTrainer(page, { manualClock: true });
   await page.locator('[data-mode="duel"]').click();
   await page.locator('#duelBots').fill('1');

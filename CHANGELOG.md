@@ -129,6 +129,15 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 - Publication : fichiers livrés liés à leur travail de construction par leurs empreintes SHA-256 (sorties des travaux),
   téléchargements d'artefacts nommés seulement, toute la CI terminée avant la construction des fichiers livrés,
   empreinte de la page dans les notes de version.
+- **Tests dans le navigateur de la CI bornés dans le temps.** En rendu logiciel (WARP), une page met environ une
+  minute à démarrer et chaque image environ une seconde : les tests qui rendent des centaines à des milliers d'images
+  (marqués `@gpu` : vol libre, modes, cartes, loi de la souris, cadence des images, politique de sécurité sur chaque
+  écran) ne pouvaient pas finir, et le travail `browser` dépassait son délai. La CI lance désormais les autres
+  (`npm run test:browser:ci` : page et politique de sécurité, WebGL2, capture simulée, parité G5, profils enregistrés,
+  export et import, garde de fermeture), en deux parties d'environ quatre tests, avec 8 minutes au plus par test et
+  35 par partie. Chaque test vérifie en plus qu'aucune règle de la politique de sécurité n'a été enfreinte. Tous les
+  tests, marqués ou non, restent lancés par `npm run test:browser` sur une carte graphique avant chaque version
+  (`docs/PUBLIER-UNE-VERSION.md`).
 - Travail `golden-update` : une modification des goldens exige la ligne `Golden-Update: <raison>` dans la description
   de la pull request et une entrée dans ce journal ; un changement de l'enregistreur seul est reprouvé neutre.
 - Scanner de confidentialité, historique : seulement ce que `HEAD` atteint (dans une pull request, le commit de fusion

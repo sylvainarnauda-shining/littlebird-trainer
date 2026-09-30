@@ -35,7 +35,9 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
    `CHANGELOG.md`, la section `## [X.Y.Z] — AAAA-MM-JJ` datée (le workflow refuse une section non datée). Tout ce qui
    change dans les sensations de vol y est écrit.
 2. Sur le PC du mainteneur, avec sa carte graphique :
-   - `npm run verify` puis `npm run test:browser` ;
+   - `npm run verify` puis `npm run test:browser` (tous les tests, y compris ceux marqués `@gpu`, que la CI ne lance
+     pas faute de carte graphique : vol libre, modes, cartes, loi de la souris, cadence des images, politique de
+     sécurité sur chaque écran) ;
    - `npm run test:perf` (seuils d'images par seconde imposés avec `LB_PERF=1`) ;
    - `npm run dist`, puis `npm run desktop:check` (fusibles, contenu de `app.asar`, fichiers d'Electron officiels,
      auto-test de l'application empaquetée) et `npm run release:check` (zip portable, installation et

@@ -119,6 +119,17 @@ test('ci.yml: ci-ok aggregates every job and is the single check to require', as
   assert.match(text, /workflow_call:/);
   assert.match(j.desktop, /desktop-smoke\.mjs .*--tamper/);
   assert.match(j.browser, /LB_GL: warp/);
+  // Software WebGL: the CI scope of the browser specs (the @gpu ones run on a GPU), in two shards, bounded.
+  assert.match(j.browser, /shard: \[1, 2\]/);
+  assert.match(j.browser, /SHARD: \$\{\{ matrix\.shard \}\}\/2/);
+  assert.match(j.browser, /run: npm run test:browser:ci -- --shard="\$SHARD"/);
+  assert.match(j.browser, /name: browser-test-results-\$\{\{ matrix\.shard \}\}/);
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert.equal(pkg.scripts['test:browser:ci'], 'npm run build && playwright test --grep-invert @gpu');
+  assert.equal(pkg.scripts['test:browser'], 'npm run build && playwright test', 'locally: every spec');
+  const cfg = fs.readFileSync(path.join(ROOT, 'playwright.config.mjs'), 'utf8');
+  assert.match(cfg, /globalTimeout: ci \? budgetMinutes \* 60_000 : 0/);
+  assert.match(cfg, /fullyParallel: ci,/, 'shards split test by test (still one worker)');
   assert.match(j.privacy, /privacy-scan\.mjs --tracked --history --strict/);
   assert.ok(!/npm ci/.test(j.privacy), 'no npm in the job that holds the private denylist');
   // Golden-Update protocol: no npm, whole history, the pull request description through env only.

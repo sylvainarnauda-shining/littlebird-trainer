@@ -21,7 +21,7 @@ function recordViolations() {
   );
 }
 
-test('the page runs every screen and mode under its CSP: no violation, no console error', async ({
+test('the page runs every screen and mode under its CSP: no violation, no console error @gpu', async ({
   page,
 }, testInfo) => {
   const consoleErrors = [];
@@ -126,4 +126,6 @@ test('the page runs every screen and mode under its CSP: no violation, no consol
   });
   expect(refused.ran, 'the injected script did not run').toBe(false);
   expect(refused.directives).toEqual(['script-src-elem']);
+  // That refusal was the control's: the fixture's own record, checked after the test, starts again from here.
+  expect(await page.evaluate(() => window.__LB_TEST_CSP__.splice(0))).toEqual(['script-src-elem']);
 });

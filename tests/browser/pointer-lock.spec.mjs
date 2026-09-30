@@ -13,7 +13,7 @@ const GAIN = {
   bindings: {},
 };
 
-test('rate law: about K x 200 px of nose-up that stops; the v12 stick: much larger and still turning', async ({
+test('rate law: about K x 200 px of nose-up that stops; the v12 stick: much larger and still turning @gpu', async ({
   page,
 }) => {
   await openTrainer(page, { manualClock: true, profile: GAIN });
