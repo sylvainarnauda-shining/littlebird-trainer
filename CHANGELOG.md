@@ -101,13 +101,14 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   (G5), session, export, et refus du réseau, des fenêtres, de la navigation, des scripts injectés et des
   téléchargements non prévus ; fenêtre qui ne prend ni le focus ni la souris, permissions toutes refusées.
 - **Auto-test : la session vole jusqu'à 2 s simulées** (au moins 20 images qui font avancer le vol et dessinent la
-  scène, 3 minutes au plus) au lieu d'être mesurée sur 3 s de temps réel. En rendu logiciel (WARP, les machines de la CI n'ont pas de carte graphique), la vallée
-  s'affiche à environ une image par seconde (0,6 s par image sur un processeur de bureau à 12 fils, 1,2 à 1,4 s avec
-  4 processeurs) et chaque image compte au plus 0,1 s de vol : 3 s de temps réel ne simulaient que 0,1 à 0,5 s, et
-  l'auto-test échouait (« the session did not fly ») alors que la session tournait, visible et avec le focus. Le rapport
-  garde la chronologie des images (première, médiane, plus longue, blocages). Les sondes négatives attendent leur
-  preuve avant de conclure : le téléchargement refusé enregistré, la tentative de navigation vue par l'application
-  (avant, la vérification pouvait réussir sans que la tentative ait eu lieu) et les violations de la politique reçues.
+  scène, 3 minutes au plus) au lieu d'être mesurée sur 3 s de temps réel. En rendu logiciel (WARP, les machines de la CI
+  n'ont pas de carte graphique), la vallée s'affiche à environ une image par seconde (0,6 s par image sur un processeur
+  de bureau à 12 fils, 1,2 à 1,4 s avec 4 processeurs) et chaque image compte au plus 0,1 s de vol : 3 s de temps réel
+  ne simulaient que 0,1 à 0,5 s, et l'auto-test échouait (« the session did not fly ») alors que la session tournait,
+  visible et avec le focus. Le rapport garde la chronologie des images (première, médiane, plus longue, blocages). Les
+  sondes négatives attendent leur preuve avant de conclure : le téléchargement refusé enregistré, la tentative de
+  navigation vue par l'application (avant, la vérification pouvait réussir sans que la tentative ait eu lieu) et les
+  violations de la politique reçues.
 - Défense en profondeur : politique de sécurité de la page vérifiée sur une liste exacte au démarrage, WebRTC limité
   au mandataire (aucun n'est configuré), commutateurs refusés étendus (commandes lancées devant un processus de
   Chromium, fonctionnalités, journaux, profil ailleurs).
@@ -141,11 +142,10 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   écran) ne pouvaient pas finir, et le travail `browser` dépassait son délai. La CI lance désormais les autres
   (`npm run test:browser:ci` : page et politique de sécurité, WebGL2, capture simulée, parité G5, profils enregistrés,
   export et import, garde de fermeture), en deux parties d'environ quatre tests, avec 8 minutes au plus par test et
-  35 par partie ; le travail de nuit sous Linux (SwiftShader, mesuré : 10 minutes pour les huit tests avec
-  4 processeurs, 5 pour le plus long) a 20 minutes par test et 60 en tout. Chaque test vérifie en plus qu'aucune règle
-  de la politique de sécurité n'a été enfreinte. Tous les
-  tests, marqués ou non, restent lancés par `npm run test:browser` sur une carte graphique avant chaque version
-  (`docs/PUBLIER-UNE-VERSION.md`).
+  35 par partie ; le travail de nuit sous Linux (SwiftShader, mesuré : 10 minutes pour les huit tests avec 4
+  processeurs, 5 pour le plus long) a 20 minutes par test et 60 en tout. Chaque test vérifie en plus qu'aucune règle de
+  la politique de sécurité n'a été enfreinte. Tous les tests, marqués ou non, restent lancés par `npm run test:browser`
+  sur une carte graphique avant chaque version (`docs/PUBLIER-UNE-VERSION.md`).
 - Travail `golden-update` : une modification des goldens exige la ligne `Golden-Update: <raison>` dans la description
   de la pull request et une entrée dans ce journal ; un changement de l'enregistreur seul est reprouvé neutre.
 - Scanner de confidentialité, historique : seulement ce que `HEAD` atteint (dans une pull request, le commit de fusion
