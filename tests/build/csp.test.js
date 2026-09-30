@@ -11,6 +11,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { ROOT, SRC } = require('../helpers/paths');
+const { scriptBodies, styleBodies } = require('../helpers/html');
 
 const load = (f) => import(pathToFileURL(path.join(ROOT, 'scripts', f)).href);
 const b64 = (s) => crypto.createHash('sha256').update(s, 'utf8').digest('base64');
@@ -39,8 +40,8 @@ const editFile = (dir, f, from, to) => {
 test('the exact policy: 13 script hashes and 1 style hash of the page blocks, in order; everything else closed', async () => {
   const { buildPage } = await load('build.mjs');
   const html = buildPage(SRC);
-  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-  const styles = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].map((m) => m[1]);
+  const scripts = scriptBodies(html);
+  const styles = styleBodies(html);
   assert.equal(scripts.length, 13);
   assert.equal(styles.length, 1);
   const expected =
@@ -83,6 +84,14 @@ test('verify-build refuses a tampered page', async () => {
     ),
     'an inline handler': html.replace('<canvas id="world"', '<canvas onclick="x()" id="world"'),
     'an external image': html.replace('</body>', '<img src="https://example.org/x.png"></body>'),
+    // Blocks in the other forms HTML accepts are counted and hashed too.
+    'an upper-case script added': html.replace('</body>', '<SCRIPT>1</SCRIPT></body>'),
+    'a mixed-case stylesheet added': html.replace('</body>', '<StYlE>p{}</sTyLe></body>'),
+    'a script whose end tag has a space': html.replace('</body>', '<script>1</script ></body>'),
+    'an upper-case script before the policy': html.replace(
+      '<meta charset="utf-8">',
+      '<SCRIPT>1</SCRIPT><meta charset="utf-8">',
+    ),
   };
   for (const [name, page] of Object.entries(cases)) {
     assert.notEqual(page, html, name + ': the case changes the page');
@@ -110,6 +119,69 @@ test('the build refuses inline handlers, javascript: URLs, style attributes, ext
   for (const [change, message] of refusals) {
     await withSource(change, (dir) => assert.throws(() => buildPage(dir), message));
   }
+});
+
+test('inline blocks are read in every form HTML accepts: any letter case, attributes, end tags with a space or a slash', async () => {
+  const { inlineBlocks, markupProblems } = await load('page-policy.mjs');
+  const page =
+    '<script>a</script><SCRIPT>b</SCRIPT ><Script type="module">c</sCrIpT\n>' +
+    '<script>d</scriptx>e</script/><scripts>not a block</scripts>' +
+    '<style>f</style><STYLE>g</STYLE\t>';
+  const want = { scripts: ['a', 'b', 'c', 'd</scriptx>e'], styles: ['f', 'g'] };
+  assert.deepEqual(inlineBlocks(page), want, 'scripts/page-policy.mjs');
+  assert.deepEqual({ scripts: scriptBodies(page), styles: styleBodies(page) }, want, 'tests/helpers/html.js');
+  // A block with attributes, in any letter case, is refused; the build's own blocks are not.
+  for (const block of ['<Script type="module">1</Script>', '<SCRIPT/>1</SCRIPT>', '<STYLE media="x">p{}</STYLE>'])
+    assert.match(markupProblems(block).join('\n'), /attributes on an inline block/, block);
+  assert.deepEqual(markupProblems('<script>1</script><style>p{}</style>'), []);
+});
+
+// Markup around which HTML delimits the blocks otherwise than the block expressions: each case swaps the template's
+// inline script for markup that the expressions read as one script holding an image with a handler, where HTML reads
+// the image as markup. The thirteen scripts are all still read, and the policy is recomputed from what the checker
+// reads, as by someone who writes the whole page: only the markup check can refuse it (the hash-only policy, the
+// rebuild comparison of the command line and check-asar's reference page are further guards, not exercised here).
+test('verify-build refuses markup where HTML would delimit the blocks otherwise, even with the policy recomputed', async () => {
+  const { buildPage, pinnedThree, SCRIPTS } = await load('build.mjs');
+  const { verifyPage } = await load('verify-build.mjs');
+  const { inlineBlocks, cspPolicy } = await load('page-policy.mjs');
+  const html = buildPage(SRC);
+  const opts = { threeSha256: pinnedThree(), srcDir: SRC, scripts: SCRIPTS };
+  const csp = /<meta http-equiv="Content-Security-Policy" content="([^"]*)">/.exec(html)[1];
+  const resign = (page) => page.replace(csp, () => cspPolicy(inlineBlocks(page)));
+  const inline = '<script>' + scriptBodies(html)[0] + '</script>';
+  assert.ok(html.includes(inline), 'the template holds an inline script');
+  assert.deepEqual(verifyPage(resign(html), opts).problems, [], 'the untouched page, its policy recomputed');
+  const img = '<img src=x onerror=alert(1)>';
+  const cases = {
+    'a comment': [`<!-- <script> -->${img}</script> -->`, /not a tag/],
+    'a <!…> declaration': [`<!x <script>${img}</script>`, /not a tag/],
+    'a quote left open in a tag': [`<i title="<script>">${img}</script>">`, /quote left open/],
+    'a "<" inside a tag': [`<i a <script>${img}</script>`, /quote left open or a "<" inside/],
+    'a title read as text': [`<title><script></title>${img}<script></script>`, /reads as text/],
+    'a noscript read as text': [`<noscript><script></noscript>${img}</script>`, /reads as text/],
+    'a script in SVG': [`<svg><script>${img}</script></svg>`, /SVG or MathML/],
+  };
+  for (const [name, [markup, message]] of Object.entries(cases)) {
+    const page = resign(html.replace(inline, () => markup));
+    assert.equal(scriptBodies(page).length, 13, name + ': thirteen scripts read');
+    assert.ok(
+      scriptBodies(page).some((b) => b.includes(img)),
+      name + ': the image is read as script',
+    );
+    const { ok, problems } = verifyPage(page, opts);
+    assert.equal(ok, false, name);
+    assert.ok(problems.length > 0 && problems.every((p) => message.test(p)), name + ': ' + problems.join('; '));
+  }
+});
+
+test('the markup check refuses an end tag that closes no block and "<!--" in a script body', async () => {
+  const { markupProblems } = await load('page-policy.mjs');
+  assert.deepEqual(markupProblems('<!doctype html><p>1</p><script>2</script><svg><path d="M0 0"/></svg>'), []);
+  assert.deepEqual(markupProblems('<script>1</script></script>'), ['an end tag that closes no inline block']);
+  assert.deepEqual(markupProblems('<p>1</STYLE ></p>'), ['an end tag that closes no inline block']);
+  assert.deepEqual(markupProblems('<script>a = "<!--";</script>'), ['"<!--" in an inline script']);
+  assert.deepEqual(markupProblems('<p>1 < 2</p>'), ['markup that is not a tag (a comment, <!…>, <?…> or a bare "<")']);
 });
 
 test('the page policy module holds the recorded three.js API counts and bans network and dynamic code', async () => {
