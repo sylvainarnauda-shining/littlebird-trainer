@@ -11,6 +11,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { pathToFileURL } = require('node:url');
 const { ROOT, SRC } = require('../helpers/paths');
+const { scriptBodies } = require('../helpers/html');
 
 const importBuild = () => import(pathToFileURL(path.join(ROOT, 'scripts', 'build.mjs')).href);
 const GAME = [
@@ -32,7 +33,7 @@ test('the page is self-contained: 13 inline scripts, all parseable, each equal t
   const { buildPage, SCRIPTS } = await importBuild();
   const html = buildPage(SRC);
   assert.ok(!/<script\s+src=|<link[^>]+stylesheet/i.test(html), 'no external script or stylesheet');
-  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  const scripts = scriptBodies(html);
   assert.equal(
     scripts.length,
     13,

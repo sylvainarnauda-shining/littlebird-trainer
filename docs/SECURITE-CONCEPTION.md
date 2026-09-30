@@ -8,7 +8,9 @@ Pour signaler une faille : [`SECURITY.md`](../SECURITY.md).
 - Une seule page autonome (`dist/web/index.html`), construite sans dépendance par `scripts/build.mjs`, non minifiée.
 - Politique de sécurité du contenu (CSP) à empreintes : seuls ses 13 scripts et sa feuille de style, identifiés par
   leur SHA-256, sont autorisés ; réseau, images, polices, médias, workers, cadres, objets, formulaires et `<base>` sont
-  fermés. `scripts/verify-build.mjs` vérifie la chaîne exacte ; la construction est reproductible.
+  fermés. `scripts/verify-build.mjs` vérifie la chaîne exacte, et refuse le balisage autour duquel le HTML
+  délimiterait les blocs autrement que cette vérification (commentaire, guillemet laissé ouvert, bloc dans un titre
+  ou du SVG) ; la construction est reproductible.
 - Aucun code réseau, aucun `eval`. Les fichiers importés (profil, réglages du jeu) sont vérifiés valeur par valeur.
 - Sous automatisation (`navigator.webdriver`), la page simule la capture de la souris : un test ne capture jamais la
   souris de la machine. `scripts/build.mjs` refuse un `app.js` sans cette simulation (vérifiée dans le code lui-même,
@@ -49,7 +51,9 @@ machine), l'export du profil fonctionne ; et la page n'a ni Node.js ni crochet d
 surgissantes, la navigation (la tentative est vue par l'application, puis refusée), un script injecté, `eval` et un
 téléchargement autre que l'export sont refusés ; chaque refus est jugé sur sa preuve, pas après un délai fixe. Pendant
 l'auto-test, la fenêtre ne peut pas prendre le focus, laisse passer la souris, et toutes les permissions sont refusées ;
-le profil est un dossier temporaire. Une copie dont `app.asar` a été modifiée d'un octet ne démarre pas.
+le profil est un dossier temporaire, et le rapport un fichier nouveau, jamais écrit à travers un fichier ou un lien
+existant, dans un dossier temporaire de l'utilisateur qui ne peut pas être un lien. Une copie dont `app.asar` a été
+modifiée d'un octet ne démarre pas.
 
 **Installateur** : NSIS en un clic, pour l'utilisateur courant, sans élévation ; aucune mise à jour automatique ;
 exécutables non signés (voir [`INSTALLATION.md`](INSTALLATION.md)).

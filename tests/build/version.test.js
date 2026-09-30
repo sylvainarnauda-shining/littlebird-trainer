@@ -11,10 +11,10 @@ const os = require('node:os');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { ROOT, SRC } = require('../helpers/paths');
+const { scriptBodies: scriptsOf } = require('../helpers/html');
 
 const load = (f) => import(pathToFileURL(path.join(ROOT, 'scripts', f)).href);
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-const scriptsOf = (html) => [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
 const cspOf = (html) => /<meta http-equiv="Content-Security-Policy" content="([^"]+)">/.exec(html)[1];
 
 test("the built page shows package.json's full version in the menu header and the À propos tab", async () => {

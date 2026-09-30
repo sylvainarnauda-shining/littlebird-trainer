@@ -45,8 +45,10 @@ export function verifyPage(html, { threeSha256, srcDir = null, scripts = null, v
   if (/'unsafe-|'strict-dynamic'|\*|https?:|data:|blob:|filesystem:/i.test(csp))
     problems.push('the policy opens a source it must not');
   const at = html.indexOf(CHARSET + cspMeta(csp));
-  const first = Math.min(...['<script', '<style'].map((t) => (html.indexOf(t) < 0 ? Infinity : html.indexOf(t))));
-  if (at < 0 || at > first) problems.push('the policy must follow the charset and come before any inline block');
+  // The first <script or <style start tag, in any letter case (a policy in a <meta> does not cover what comes before it).
+  const first = html.search(/<(script|style)[\t\n\f\r />]/i);
+  if (at < 0 || (first >= 0 && at > first))
+    problems.push('the policy must follow the charset and come before any inline block');
   problems.push(...markupProblems(html.replace(cspMeta(csp), '')));
   const three = blocks.scripts[1] || '';
   if (!three.startsWith('\n') || !three.endsWith('\n')) problems.push('three.js block framing');
