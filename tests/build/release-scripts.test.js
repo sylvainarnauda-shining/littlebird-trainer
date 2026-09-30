@@ -79,32 +79,65 @@ test('SHA256SUMS.txt: sha256sum format; the check finds a changed, a missing and
   });
 });
 
-test('release gate: tag = version, a changelog section, dated for a real release; notes carry the page hash', async () => {
-  const { releaseNotes } = await load('release-notes.mjs');
+test('release gate: tag = version, a changelog section, dated for a real release, the French notes filled', async () => {
+  const { releaseNotes, isPrerelease, notesPath } = await load('release-notes.mjs');
   const pkg = { version: '1.2.3' };
   const log = (h) => `# Journal\n\n## [1.2.3]${h}\n\n- Un changement.\n\n## [1.2.2] — 2026-01-01\n\n- Avant.\n`;
-  assert.throws(() => releaseNotes({ tag: 'v1.2.4', pkg, changelog: log(' — 2026-10-01') }), /does not match/);
-  assert.throws(() => releaseNotes({ tag: '1.2.3', pkg, changelog: log(' — 2026-10-01') }), /not vX\.Y\.Z/);
-  assert.throws(() => releaseNotes({ tag: 'v1.2.3', pkg, changelog: '# Journal\n' }), /no "## \[1\.2\.3\]" section/);
-  assert.throws(() => releaseNotes({ tag: 'v1.2.3', pkg, changelog: log(' — non publiée') }), /release date/);
-  const dry = releaseNotes({ tag: '--dry-run', dryRun: true, pkg, changelog: log(' — non publiée') });
-  assert.match(dry, /^- Un changement\./);
+  const notes =
+    '# LittleBird Trainer {{version}}\n\nSmartScreen ; Contrôle intelligent des applications : ' +
+    '`LittleBird-Trainer-{{version}}-navigateur.zip`. `SHA256SUMS.txt`, page `{{page_sha256}}`, ' +
+    '`gh attestation verify <fichier> --repo {{repo}} --signer-workflow {{repo}}/.github/workflows/release.yml`.\n';
+  const dated = log(' — 2026-10-01');
+  const page = 'ab'.repeat(32);
+  assert.throws(() => releaseNotes({ tag: 'v1.2.4', pkg, changelog: dated, notes }), /does not match/);
+  assert.throws(() => releaseNotes({ tag: '1.2.3', pkg, changelog: dated, notes }), /not vX\.Y\.Z/);
+  assert.throws(() => releaseNotes({ tag: 'v1.2.3', pkg, changelog: '# Journal\n', notes }), /no "## \[1\.2\.3\]"/);
+  assert.throws(() => releaseNotes({ tag: 'v1.2.3', pkg, changelog: log(' — non publiée'), notes }), /release date/);
+  // The hand-written notes: present, every placeholder known, every notice given; the page hash on a real release.
+  assert.throws(() => releaseNotes({ tag: 'v1.2.3', pkg, changelog: dated, pageSha256: page }), /notes-de-version/);
+  assert.throws(() => releaseNotes({ tag: 'v1.2.3', pkg, changelog: dated, notes }), /--page/);
+  const bad = (n, re) =>
+    assert.throws(() => releaseNotes({ tag: 'v1.2.3', pkg, changelog: dated, notes: n, pageSha256: page }), re);
+  bad(notes + '{{date}}', /unknown placeholder \{\{date\}\}/);
+  bad(notes.replace('SmartScreen', 'Écran'), /SmartScreen/);
+  bad(notes.replace('Contrôle intelligent des applications', 'Contrôle'), /Smart App Control/);
+  bad(notes.replace('navigateur.zip', 'web.zip'), /browser version/);
+  bad(notes.replace('gh attestation verify', 'gh verify'), /attestation/);
+  const dry = releaseNotes({ tag: '--dry-run', dryRun: true, pkg, changelog: log(' — non publiée'), notes });
+  assert.match(dry, /^# LittleBird Trainer 1\.2\.3$/m);
+  assert.match(dry, /^- Un changement\./m);
   assert.ok(!dry.includes('Avant.'), 'only this version');
-  const notes = releaseNotes({ tag: 'v1.2.3', pkg, changelog: log(' — 2026-10-01'), pageSha256: 'ab'.repeat(32) });
-  assert.match(notes, /LittleBird-Trainer-Setup-1\.2\.3\.exe/);
+  const out = releaseNotes({ tag: 'v1.2.3', pkg, changelog: dated, notes, pageSha256: page });
+  assert.match(out, /LittleBird-Trainer-1\.2\.3-navigateur\.zip/);
   assert.match(
-    notes,
+    out,
     /gh attestation verify .* --signer-workflow sylvainarnauda-shining\/littlebird-trainer\/\.github\/workflows\/release\.yml/,
   );
-  assert.match(notes, new RegExp('ab'.repeat(32)));
-  // The project's own changelog passes the dry-run gate for the current version.
-  const own = releaseNotes({
-    tag: '--dry-run',
-    dryRun: true,
-    pkg: JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')),
+  assert.match(out, new RegExp(page));
+  assert.ok(!out.includes('{{'), 'every placeholder filled');
+  // A 0.x version is a pre-release, and its notes must say so.
+  assert.deepEqual(['0.9.0', '0.10.1', '1.0.0', '10.0.0'].map(isPrerelease), [true, true, false, false]);
+  const zero = { version: '0.1.0' };
+  const log0 = '## [0.1.0] — 2026-10-01\n\n- Un changement.\n';
+  const notes0 = notes.replace('# LittleBird Trainer {{version}}', '# LittleBird Trainer {{version}} (préversion)');
+  assert.throws(
+    () => releaseNotes({ tag: 'v0.1.0', pkg: zero, changelog: log0, notes, pageSha256: page }),
+    /pre-release/,
+  );
+  assert.match(
+    releaseNotes({ tag: 'v0.1.0', pkg: zero, changelog: log0, notes: notes0, pageSha256: page }),
+    /préversion/,
+  );
+  // The project's own changelog and notes pass the gate for the current version (dry run; dated: a real tag too).
+  const own = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const args = {
+    pkg: own,
     changelog: fs.readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8'),
-  });
-  assert.match(own, /Télécharger/);
+    notes: fs.readFileSync(path.join(ROOT, notesPath(own.version)), 'utf8'),
+    pageSha256: page,
+  };
+  assert.match(releaseNotes({ tag: '--dry-run', dryRun: true, ...args }), /Vérifier les fichiers/);
+  assert.match(releaseNotes({ tag: 'v' + own.version, ...args }), /Journal des modifications/);
 });
 
 test('SBOM: CycloneDX 1.6, Electron with its official zip sha256, three.js with the pinned file sha256, deterministic', async () => {

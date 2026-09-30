@@ -183,8 +183,18 @@ test('release.yml: preflight gates, verification before publishing, publish writ
   assert.match(pub, /if: needs\.preflight\.outputs\.publish == 'true'/);
   assert.match(pub, /needs: \[preflight, ci, web, package, verify-artifacts, artifact-privacy\]/);
   assert.ok(!/npm |checkout@|node scripts/.test(pub), 'publish runs no project code');
-  assert.match(pub, /gh release create .* --draft --verify-tag/);
-  assert.match(pub, /attest-build-provenance@/);
+  // Only a draft, a pre-release for 0.x (decided in preflight), with the notes, checksums and attestations.
+  assert.match(pub, /gh release create .* --draft --verify-tag --prerelease="\$PRERELEASE"/);
+  assert.match(pub, /PRERELEASE: \$\{\{ needs\.preflight\.outputs\.prerelease \}\}/);
+  assert.match(pub, /test "\$PRERELEASE" = true \|\| test "\$PRERELEASE" = false/);
+  assert.match(pub, /--notes-file in\/notes\/release-notes\.md/);
+  assert.match(j.preflight, /prerelease: \$\{\{ steps\.gate\.outputs\.prerelease \}\}/);
+  assert.match(j.preflight, /isPrerelease/);
+  assert.match(pub, /sha256sum -- \* > SHA256SUMS\.txt/);
+  assert.match(
+    pub,
+    /attest-build-provenance@[0-9a-f]{40} # v[\d.]+\n\s+with:\n\s+subject-path: \|\n(\s+out\/\S+\n)*\s+out\/SHA256SUMS\.txt/,
+  );
   assert.match(pub, /attest-sbom@/);
   assert.match(j.preflight, /git merge-base --is-ancestor "\$GITHUB_SHA" origin\/main/);
   assert.match(j.preflight, /release-notes\.mjs "\$TAG" release-notes\.md --page dist\/web\/index\.html/);

@@ -32,8 +32,13 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
 ## À chaque version
 
 1. Sur une branche : la version dans `package.json` (`npm version X.Y.Z --no-git-tag-version`) et, dans
-   `CHANGELOG.md`, la section `## [X.Y.Z] — AAAA-MM-JJ` datée (le workflow refuse une section non datée). Tout ce qui
-   change dans les sensations de vol y est écrit.
+   `CHANGELOG.md`, la section `## [X.Y.Z] — AAAA-MM-JJ` datée du jour de l'étiquette (le workflow refuse une section
+   non datée). Tout ce qui change dans les sensations de vol y est écrit. Puis les **notes de version** en français,
+   `docs/notes-de-version/<version>.md` (modèle : [notes de la 0.9.0](notes-de-version/0.9.0.md)), écrites pour les
+   joueurs : ce qu'est l'entraîneur, son statut (une version 0.x est une préversion), quel fichier prendre,
+   SmartScreen et le Contrôle intelligent des applications avec la version navigateur en repli, la vérification des
+   empreintes et des attestations. `{{version}}`, `{{repo}}` et `{{page_sha256}}` y sont remplacés à la publication ;
+   le workflow refuse des notes absentes ou incomplètes (`scripts/release-notes.mjs`).
 2. Sur le PC du mainteneur, avec sa carte graphique :
    - `npm run verify` puis `npm run test:browser` (tous les tests, y compris ceux marqués `@gpu`, que la CI ne lance
      pas faute de carte graphique : vol libre, modes, cartes, loi de la souris, cadence des images, politique de
@@ -59,7 +64,8 @@ crochets Git (`--no-verify`) : le crochet d'envoi est le seul contrôle de confi
    à ces empreintes, même page sous Linux, sous Windows et dans les notes, fusibles, contenu, auto-tests du zip et de
    l'application installée, installation et désinstallation), l'analyse de confidentialité des fichiers livrés, puis,
    après **votre approbation** de l'environnement `release`, la même vérification des empreintes,
-   `SHA256SUMS.txt`, les attestations et un **brouillon** de version.
+   `SHA256SUMS.txt`, les attestations et un **brouillon** de version (marqué préversion pour une version 0.x), avec
+   les notes de version suivies de la section du journal.
 7. Relire le brouillon (fichiers, notes), télécharger l'installateur, vérifier son empreinte et son attestation
    ([`VERIFIER-UN-TELECHARGEMENT.md`](VERIFIER-UN-TELECHARGEMENT.md)), l'installer, voler, puis **Publish release**.
 

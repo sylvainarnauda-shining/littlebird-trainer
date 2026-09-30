@@ -4,7 +4,7 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Cha
 déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne changent que là où il le dit (trailer
 `Golden-Update:` du commit, voir `CONTRIBUTING.md`).
 
-## [0.9.0] — non publiée
+## [0.9.0] — 2026-09-30
 
 Première version publique. Elle part de l'entraîneur v13 (modèle de vol v6 identifié sur deux enregistrements de
 référence, loi de la souris v13), importé octet pour octet, puis préparé pour la publication étape par étape.
@@ -129,6 +129,12 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 - Publication : fichiers livrés liés à leur travail de construction par leurs empreintes SHA-256 (sorties des travaux),
   téléchargements d'artefacts nommés seulement, toute la CI terminée avant la construction des fichiers livrés,
   empreinte de la page dans les notes de version.
+- **Notes de version en français** (`docs/notes-de-version/0.9.0.md`), écrites pour les joueurs : ce qu'est
+  l'entraîneur, son statut de préversion (les menus fidèles au jeu arrivent en 1.0), quel fichier prendre,
+  l'avertissement SmartScreen et le Contrôle intelligent des applications avec la version navigateur en solution de
+  repli, la vérification des empreintes SHA-256 et des attestations. Le workflow de publication refuse une version
+  sans elles ; il y ajoute l'empreinte de la page et la section de ce journal. Une version 0.x est publiée en
+  **préversion** (brouillon marqué _pre-release_).
 - **Tests dans le navigateur de la CI bornés dans le temps.** En rendu logiciel (WARP), une page met environ une
   minute à démarrer et chaque image environ une seconde : les tests qui rendent des centaines à des milliers d'images
   (marqués `@gpu` : vol libre, modes, cartes, loi de la souris, cadence des images, politique de sécurité sur chaque
