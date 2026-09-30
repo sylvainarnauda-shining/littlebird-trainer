@@ -4,7 +4,7 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Cha
 déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne changent que là où il le dit (trailer
 `Golden-Update:` du commit, voir `CONTRIBUTING.md`).
 
-## [0.9.0] — 2026-09-30
+## [0.9.0] — 2026-10-01
 
 Première version publique. Elle part de l'entraîneur v13 (modèle de vol v6 identifié sur deux enregistrements de
 référence, loi de la souris v13), importé octet pour octet, puis préparé pour la publication étape par étape.
