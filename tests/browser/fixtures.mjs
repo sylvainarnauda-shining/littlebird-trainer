@@ -15,7 +15,8 @@
 // frame at 1600x900 on a 12-thread desktop CPU, about 1.2 s with 4 CPUs; SwiftShader 5 s). `npm run test:browser` runs
 // every test (the maintainer's GPU, required before each release: docs/PUBLIER-UNE-VERSION.md); the CI job, which has
 // no GPU, runs the others (`npm run test:browser:ci`, --grep-invert @gpu): the page and its policy in Chromium, WebGL2,
-// the emulated pointer lock, G5 parity, stored-profile migrations, export and import, the leave guard.
+// the emulated pointer lock, G5 parity, stored-profile migrations, export and import, the leave guard, the version and
+// the À propos tab.
 import { test as base, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';

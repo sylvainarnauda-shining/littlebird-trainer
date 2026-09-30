@@ -14,6 +14,8 @@ aucune installation, aucun compte, aucune connexion Internet.
   « Importer un profil » dans l'application.
 - L'application Windows (installation en un clic ou zip portable), les notes de version et les empreintes
   SHA-256 sont sur la page Releases du dépôt GitHub sylvainarnauda-shining/littlebird-trainer.
+- Le numéro de version est affiché en haut à droite du menu et dans l'onglet « À propos » : comparez-le avec la
+  dernière version de la page Releases (le programme ne vérifie rien tout seul et n'envoie rien).
 
 Projet non officiel, ni affilié, ni approuvé, ni soutenu par les éditeurs ou les développeurs du jeu d'origine.
 Licence : LICENSE.txt. Composants tiers : THIRD_PARTY_NOTICES.txt.

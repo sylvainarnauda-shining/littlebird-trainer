@@ -1,8 +1,8 @@
 'use strict';
 // The application booted in a mocked DOM (tests/helpers/mock-dom.js): boot with the reference valley, migration of an
 // old stored profile, the mode cards, the range drill (fields of view, 2 s burst, unlimited and limited ammunition),
-// the towers, free flight and a wire strike, the forest cards and bushes, the map card and the eight light presets,
-// and the free-look latch. One boot for the file, Math.random seeded.
+// the towers, free flight and a wire strike, the forest cards and bushes, the map card and the eight light presets, the
+// releases link of the À propos tab, and the free-look latch. One boot for the file, Math.random seeded.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { bootApp } = require('../helpers/mock-dom');
@@ -150,6 +150,12 @@ test('map card: the valley name and summary; the light menu offers "random" and 
   assert.equal(sel.children[0].value, 'random');
   assert.deepEqual([...sel.children.slice(1).map((o) => o.value)], Object.keys(W.LIGHTS));
   assert.equal(sel.children[5].textContent, W.LIGHTS[NAMES.referenceAfternoon].label);
+});
+
+test('À propos: after boot the releases link and its text are the address the Windows shell allows', () => {
+  const { RELEASES_URL } = require('../../desktop/policy.cjs');
+  assert.equal(el('releasesLink').href, RELEASES_URL);
+  assert.equal(el('releasesLink').textContent, RELEASES_URL);
 });
 
 test('light presets: applied on demand; one per session, the chosen one or drawn among the eight', () => {

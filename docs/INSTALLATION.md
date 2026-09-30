@@ -93,8 +93,13 @@ La qualité graphique (haute, moyenne, basse : Réglages › Affichage) s'appliq
 
 ## Mise à jour
 
-L'application ne cherche pas de mises à jour (elle n'a aucun code réseau). Pour être prévenu des nouvelles versions :
-sur GitHub, **Watch › Custom › Releases** sur le dépôt.
+**Quelle version est installée ?** Le numéro complet (par exemple `v0.9.0`) est affiché en haut à droite du menu du
+jeu, et dans l'onglet **À propos**, qui donne aussi l'adresse de la page **Releases** du dépôt (un clic l'ouvre dans
+votre navigateur). Le raccourci garde toujours le même nom, **LittleBird Trainer**, sans numéro.
+
+L'application ne cherche pas de mises à jour (elle n'a aucun code réseau) : comparez le numéro affiché avec la
+dernière version de la page **Releases**. Pour être prévenu des nouvelles versions : sur GitHub, **Watch › Custom ›
+Releases** sur le dépôt.
 
 - **Installateur** : installez la nouvelle version par-dessus l'ancienne ; vos réglages sont conservés.
 - **Zip portable** : remplacez le dossier ; les réglages sont dans `%APPDATA%\LittleBird Trainer`.

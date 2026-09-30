@@ -10,7 +10,7 @@
     "id": "lighting",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 13,
+    "order": 14,
     "tag": "select",
     "type": "select-one",
     "modes": [
@@ -39,7 +39,7 @@
     "id": "mapRandomEach",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 14,
+    "order": 15,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -57,7 +57,7 @@
     "id": "duration",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 18,
+    "order": 19,
     "tag": "select",
     "type": "select-one",
     "modes": [
@@ -83,7 +83,7 @@
     "id": "difficulty",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 19,
+    "order": 20,
     "tag": "select",
     "type": "select-one",
     "modes": [
@@ -103,7 +103,7 @@
     "id": "trajectory",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 20,
+    "order": 21,
     "tag": "select",
     "type": "select-one",
     "modes": [
@@ -122,7 +122,7 @@
     "id": "targetCount",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 21,
+    "order": 22,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -137,7 +137,7 @@
     "id": "targetSpeed",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 22,
+    "order": 23,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -153,7 +153,7 @@
     "id": "targetDistance",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 23,
+    "order": 24,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -169,7 +169,7 @@
     "id": "targetSize",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 24,
+    "order": 25,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -185,7 +185,7 @@
     "id": "targetAltitude",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 25,
+    "order": 26,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -201,7 +201,7 @@
     "id": "airHealth",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 26,
+    "order": 27,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -217,7 +217,7 @@
     "id": "groundHealth",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 27,
+    "order": 28,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -233,7 +233,7 @@
     "id": "duelBots",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 28,
+    "order": 29,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -248,7 +248,7 @@
     "id": "duelHealth",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 29,
+    "order": 30,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -264,7 +264,7 @@
     "id": "duelEnemy",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 30,
+    "order": 31,
     "tag": "select",
     "type": "select-one",
     "modes": [
@@ -281,7 +281,7 @@
     "id": "duelStart",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 31,
+    "order": 32,
     "tag": "select",
     "type": "select-one",
     "modes": [
@@ -298,7 +298,7 @@
     "id": "duelRespawn",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 32,
+    "order": 33,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -310,7 +310,7 @@
     "id": "camps",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 33,
+    "order": 34,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -326,7 +326,7 @@
     "id": "infantryPerCamp",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 34,
+    "order": 35,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -342,7 +342,7 @@
     "id": "convoy",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 35,
+    "order": 36,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -358,7 +358,7 @@
     "id": "rpgPerCamp",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 36,
+    "order": 37,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -374,7 +374,7 @@
     "id": "enemyFire",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 37,
+    "order": 38,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -386,7 +386,7 @@
     "id": "aaEverywhere",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 38,
+    "order": 39,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -398,7 +398,7 @@
     "id": "aaLaunchers",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 39,
+    "order": 40,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -414,7 +414,7 @@
     "id": "aaLockRange",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 40,
+    "order": 41,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -431,7 +431,7 @@
     "id": "ciwsCount",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 41,
+    "order": 42,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -447,7 +447,7 @@
     "id": "aaRockets",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 42,
+    "order": 43,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -463,7 +463,7 @@
     "id": "aaObjective",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 43,
+    "order": 44,
     "tag": "select",
     "type": "select-one",
     "modes": [
@@ -479,7 +479,7 @@
     "id": "baseHealth",
     "place": "modes",
     "section": "162c7b5f753c5e26",
-    "order": 44,
+    "order": 45,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -495,7 +495,7 @@
     "id": "aaLockTime",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 45,
+    "order": 46,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -513,7 +513,7 @@
     "id": "aaMinAltitude",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 46,
+    "order": 47,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -531,7 +531,7 @@
     "id": "aaLaunchDelay",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 47,
+    "order": 48,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -549,7 +549,7 @@
     "id": "aaMissileSpeed",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 48,
+    "order": 49,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -567,7 +567,7 @@
     "id": "aaAgility",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 49,
+    "order": 50,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -585,7 +585,7 @@
     "id": "aaReload",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 50,
+    "order": 51,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -603,7 +603,7 @@
     "id": "aaMaxConcurrent",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 51,
+    "order": 52,
     "tag": "input",
     "type": "range",
     "modes": [
@@ -620,7 +620,7 @@
     "id": "aaHitsToKill",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 52,
+    "order": 53,
     "tag": "select",
     "type": "select-one",
     "modes": [
@@ -640,7 +640,7 @@
     "id": "aaTreesBlock",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 53,
+    "order": 54,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -654,7 +654,7 @@
     "id": "showMarkers",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 54,
+    "order": 55,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -668,7 +668,7 @@
     "id": "aaAssist",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 55,
+    "order": 56,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -680,7 +680,7 @@
     "id": "unlimitedAmmo",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 56,
+    "order": 57,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -697,7 +697,7 @@
     "id": "aaRespawn",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 57,
+    "order": 58,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -710,7 +710,7 @@
     "id": "indestructible",
     "place": "modes",
     "section": "8fe3dc5620b34616",
-    "order": 58,
+    "order": 59,
     "tag": "input",
     "type": "checkbox",
     "modes": [
@@ -722,7 +722,7 @@
     "id": "mouseLaw",
     "place": "controls",
     "section": "a790b274b793cf69",
-    "order": 76,
+    "order": 77,
     "tag": "select",
     "type": "select-one",
     "modes": null,
@@ -736,7 +736,7 @@
     "id": "pitchSens",
     "place": "controls",
     "section": "a790b274b793cf69",
-    "order": 77,
+    "order": 78,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -750,7 +750,7 @@
     "id": "yawSens",
     "place": "controls",
     "section": "a790b274b793cf69",
-    "order": 78,
+    "order": 79,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -764,7 +764,7 @@
     "id": "vehicleMultiplier",
     "place": "controls",
     "section": "a790b274b793cf69",
-    "order": 79,
+    "order": 80,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -778,7 +778,7 @@
     "id": "isolation",
     "place": "controls",
     "section": "a790b274b793cf69",
-    "order": 80,
+    "order": 81,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -791,7 +791,7 @@
     "id": "invertY",
     "place": "controls",
     "section": "a790b274b793cf69",
-    "order": 81,
+    "order": 82,
     "tag": "input",
     "type": "checkbox",
     "modes": null,
@@ -801,7 +801,7 @@
     "id": "importGame",
     "place": "controls",
     "section": "a790b274b793cf69",
-    "order": 82,
+    "order": 83,
     "tag": "input",
     "type": "file",
     "modes": null,
@@ -812,7 +812,7 @@
     "id": "volume",
     "place": "settings",
     "section": "b4eed881dc7fa248",
-    "order": 83,
+    "order": 84,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -823,20 +823,6 @@
    },
    {
     "id": "volEngine",
-    "place": "settings",
-    "section": "b4eed881dc7fa248",
-    "order": 84,
-    "tag": "input",
-    "type": "range",
-    "modes": null,
-    "min": "0",
-    "max": "2",
-    "step": "0.05",
-    "unit": "06bebd465d671e96",
-    "inCfg": true
-   },
-   {
-    "id": "volWeapons",
     "place": "settings",
     "section": "b4eed881dc7fa248",
     "order": 85,
@@ -850,7 +836,7 @@
     "inCfg": true
    },
    {
-    "id": "volAlerts",
+    "id": "volWeapons",
     "place": "settings",
     "section": "b4eed881dc7fa248",
     "order": 86,
@@ -864,10 +850,24 @@
     "inCfg": true
    },
    {
-    "id": "aaToneHz",
+    "id": "volAlerts",
     "place": "settings",
     "section": "b4eed881dc7fa248",
     "order": 87,
+    "tag": "input",
+    "type": "range",
+    "modes": null,
+    "min": "0",
+    "max": "2",
+    "step": "0.05",
+    "unit": "06bebd465d671e96",
+    "inCfg": true
+   },
+   {
+    "id": "aaToneHz",
+    "place": "settings",
+    "section": "b4eed881dc7fa248",
+    "order": 88,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -881,7 +881,7 @@
     "id": "aaBeepRate",
     "place": "settings",
     "section": "b4eed881dc7fa248",
-    "order": 88,
+    "order": 89,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -895,7 +895,7 @@
     "id": "graphics",
     "place": "settings",
     "section": "6cdf49686786f388",
-    "order": 89,
+    "order": 90,
     "tag": "select",
     "type": "select-one",
     "modes": null,
@@ -910,7 +910,7 @@
     "id": "fovCockpit",
     "place": "settings",
     "section": "6cdf49686786f388",
-    "order": 90,
+    "order": 91,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -924,7 +924,7 @@
     "id": "fovChase",
     "place": "settings",
     "section": "6cdf49686786f388",
-    "order": 91,
+    "order": 92,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -938,7 +938,7 @@
     "id": "chaseSpeedView",
     "place": "settings",
     "section": "6cdf49686786f388",
-    "order": 92,
+    "order": 93,
     "tag": "input",
     "type": "checkbox",
     "modes": null,
@@ -948,7 +948,7 @@
     "id": "showTelemetry",
     "place": "settings",
     "section": "6cdf49686786f388",
-    "order": 93,
+    "order": 94,
     "tag": "input",
     "type": "checkbox",
     "modes": null,
@@ -958,7 +958,7 @@
     "id": "showMinimap",
     "place": "settings",
     "section": "6cdf49686786f388",
-    "order": 94,
+    "order": 95,
     "tag": "input",
     "type": "checkbox",
     "modes": null,
@@ -968,7 +968,7 @@
     "id": "showKeyHints",
     "place": "settings",
     "section": "6cdf49686786f388",
-    "order": 95,
+    "order": 96,
     "tag": "input",
     "type": "checkbox",
     "modes": null,
@@ -978,7 +978,7 @@
     "id": "impactDamage",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 96,
+    "order": 97,
     "tag": "select",
     "type": "select-one",
     "modes": null,
@@ -999,7 +999,7 @@
     "id": "rpm",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 97,
+    "order": 98,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1013,7 +1013,7 @@
     "id": "spinUp",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 98,
+    "order": 99,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1027,7 +1027,7 @@
     "id": "bulletSpeed",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 99,
+    "order": 100,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1041,7 +1041,7 @@
     "id": "spread",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 100,
+    "order": 101,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1055,7 +1055,7 @@
     "id": "gunConvergence",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 101,
+    "order": 102,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1069,7 +1069,7 @@
     "id": "flareCharges",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 102,
+    "order": 103,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1082,7 +1082,7 @@
     "id": "flareCooldown",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 103,
+    "order": 104,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1096,7 +1096,7 @@
     "id": "flareUnlimited",
     "place": "settings",
     "section": "82e09187b20c6bfb",
-    "order": 104,
+    "order": 105,
     "tag": "input",
     "type": "checkbox",
     "modes": null,
@@ -1106,7 +1106,7 @@
     "id": "mouseRateScale",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 106,
+    "order": 107,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1119,7 +1119,7 @@
     "id": "mouseYawScale",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 107,
+    "order": 108,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1132,7 +1132,7 @@
     "id": "mouseLag",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 108,
+    "order": 109,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1146,7 +1146,7 @@
     "id": "mouseFine",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 109,
+    "order": 110,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1160,7 +1160,7 @@
     "id": "gain",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 110,
+    "order": 111,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1173,7 +1173,7 @@
     "id": "mouseReturn",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 111,
+    "order": 112,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1187,7 +1187,7 @@
     "id": "mouseYawBoost",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 112,
+    "order": 113,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1201,7 +1201,7 @@
     "id": "mousePitchBoost",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 113,
+    "order": 114,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1215,7 +1215,7 @@
     "id": "rollRate",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 114,
+    "order": 115,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1229,7 +1229,7 @@
     "id": "yawRate",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 115,
+    "order": 116,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1243,7 +1243,7 @@
     "id": "pitchRate",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 116,
+    "order": 117,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1257,7 +1257,7 @@
     "id": "cyclicResponse",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 117,
+    "order": 118,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1271,7 +1271,7 @@
     "id": "cyclicYaw",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 118,
+    "order": 119,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1285,7 +1285,7 @@
     "id": "response",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 119,
+    "order": 120,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1299,7 +1299,7 @@
     "id": "responseYaw",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 120,
+    "order": 121,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1313,7 +1313,7 @@
     "id": "collectiveUpRate",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 121,
+    "order": 122,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1327,7 +1327,7 @@
     "id": "collectiveDownRate",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 122,
+    "order": 123,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1341,7 +1341,7 @@
     "id": "leverHover",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 123,
+    "order": 124,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1354,7 +1354,7 @@
     "id": "collectiveAccel",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 124,
+    "order": 125,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1368,7 +1368,7 @@
     "id": "collectiveDownAccel",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 125,
+    "order": 126,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1382,7 +1382,7 @@
     "id": "holdGain",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 126,
+    "order": 127,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1395,7 +1395,7 @@
     "id": "holdDamping",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 127,
+    "order": 128,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1406,20 +1406,6 @@
    },
    {
     "id": "verticalDamping",
-    "place": "settings",
-    "section": "a69d676a7c2a040c",
-    "order": 128,
-    "tag": "input",
-    "type": "range",
-    "modes": null,
-    "min": "0",
-    "max": "1.5",
-    "step": "0.05",
-    "unit": "69ad89bbd88750c3",
-    "inCfg": true
-   },
-   {
-    "id": "bodyFlowDrag",
     "place": "settings",
     "section": "a69d676a7c2a040c",
     "order": 129,
@@ -1433,10 +1419,24 @@
     "inCfg": true
    },
    {
-    "id": "quadraticDrag",
+    "id": "bodyFlowDrag",
     "place": "settings",
     "section": "a69d676a7c2a040c",
     "order": 130,
+    "tag": "input",
+    "type": "range",
+    "modes": null,
+    "min": "0",
+    "max": "1.5",
+    "step": "0.05",
+    "unit": "69ad89bbd88750c3",
+    "inCfg": true
+   },
+   {
+    "id": "quadraticDrag",
+    "place": "settings",
+    "section": "a69d676a7c2a040c",
+    "order": 131,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1449,7 +1449,7 @@
     "id": "lateralDrag",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 131,
+    "order": 132,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1463,7 +1463,7 @@
     "id": "weathervane",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 132,
+    "order": 133,
     "tag": "input",
     "type": "range",
     "modes": null,
@@ -1477,7 +1477,7 @@
     "id": "altitudeHold",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 133,
+    "order": 134,
     "tag": "input",
     "type": "checkbox",
     "modes": null,
@@ -1487,7 +1487,7 @@
     "id": "mouseClamp",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 134,
+    "order": 135,
     "tag": "input",
     "type": "checkbox",
     "modes": null,
@@ -1497,7 +1497,7 @@
     "id": "import",
     "place": "settings",
     "section": "a69d676a7c2a040c",
-    "order": 136,
+    "order": 137,
     "tag": "input",
     "type": "file",
     "modes": null,
@@ -1531,151 +1531,157 @@
    },
    {
     "id": null,
-    "place": "modes",
+    "place": "root",
     "order": 4,
-    "data-mode": "range"
+    "data-tab": "about"
    },
    {
     "id": null,
     "place": "modes",
     "order": 5,
-    "data-mode": "assault"
+    "data-mode": "range"
    },
    {
     "id": null,
     "place": "modes",
     "order": 6,
-    "data-mode": "missiles"
+    "data-mode": "assault"
    },
    {
     "id": null,
     "place": "modes",
     "order": 7,
-    "data-mode": "match"
+    "data-mode": "missiles"
    },
    {
     "id": null,
     "place": "modes",
     "order": 8,
-    "data-mode": "towers"
+    "data-mode": "match"
    },
    {
     "id": null,
     "place": "modes",
     "order": 9,
-    "data-mode": "free"
+    "data-mode": "towers"
    },
    {
     "id": null,
     "place": "modes",
     "order": 10,
+    "data-mode": "free"
+   },
+   {
+    "id": null,
+    "place": "modes",
+    "order": 11,
     "data-mode": "duel"
    },
    {
     "id": "mapNew",
     "place": "modes",
-    "order": 11
+    "order": 12
    },
    {
     "id": "mapVideo",
     "place": "modes",
-    "order": 12
-   },
-   {
-    "id": null,
-    "place": "modes",
-    "order": 15,
-    "data-scenario": "air"
+    "order": 13
    },
    {
     "id": null,
     "place": "modes",
     "order": 16,
-    "data-scenario": "ground"
+    "data-scenario": "air"
    },
    {
     "id": null,
     "place": "modes",
     "order": 17,
+    "data-scenario": "ground"
+   },
+   {
+    "id": null,
+    "place": "modes",
+    "order": 18,
     "data-scenario": "mixed"
    },
    {
     "id": "resume",
     "place": "modes",
-    "order": 59
+    "order": 60
    },
    {
     "id": "start",
     "place": "modes",
-    "order": 60
+    "order": 61
    },
    {
     "id": "demanding",
     "place": "settings",
-    "order": 105
+    "order": 106
    },
    {
     "id": "export",
     "place": "settings",
-    "order": 135
+    "order": 136
    },
    {
     "id": "defaults",
     "place": "settings",
-    "order": 137
+    "order": 138
    },
    {
     "id": "pauseResume",
     "place": "pause",
-    "order": 138
+    "order": 139
    },
    {
     "id": "pauseRestart",
     "place": "pause",
-    "order": 139
+    "order": 140
    },
    {
     "id": "pauseModes",
     "place": "pause",
-    "order": 140
+    "order": 141
    },
    {
     "id": "pauseSettings",
     "place": "pause",
-    "order": 141
-   },
-   {
-    "id": null,
-    "place": "shop",
-    "order": 142,
-    "data-item": "ammo"
+    "order": 142
    },
    {
     "id": null,
     "place": "shop",
     "order": 143,
-    "data-item": "flare"
+    "data-item": "ammo"
    },
    {
     "id": null,
     "place": "shop",
     "order": 144,
+    "data-item": "flare"
+   },
+   {
+    "id": null,
+    "place": "shop",
+    "order": 145,
     "data-item": "repair"
    },
    {
     "id": "shopClose",
     "place": "shop",
-    "order": 145
+    "order": 146
    },
    {
     "id": "resultSettings",
     "place": "results",
-    "order": 146
+    "order": 147
    },
    {
     "id": "retry",
     "place": "results",
-    "order": 147
+    "order": 148
    }
   ],
   "bindingRows": 15,
@@ -1708,7 +1714,7 @@
    "speedFov",
    "stability"
   ],
-  "labelHash": "565a5f20113b09c5f4eb0ad6d97555cca963f3b77be7cda26c50a0d2978c43c8",
+  "labelHash": "ab184596ee39b29f40fe10f607cd8485f8574bb9bdbca891382253da2c217b35",
   "defaultsHash": "5ce0b3e88c5dab3ca53b913f85b77343ca865efce694448a4e23df65afa30f13"
  },
  "sessionConfigs": [

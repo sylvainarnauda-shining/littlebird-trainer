@@ -11,7 +11,9 @@ const ORIGIN = `${SCHEME}://${HOST}`;
 // and the player's profile (localStorage) lives under the origin above. Equal to electron-builder.yml (test).
 const APP_ID = 'io.github.sylvainarnauda-shining.littlebird-trainer';
 // The only external address the shell may hand to the default browser (the releases page). A test checks it against
-// package.json's repository URL.
+// package.json's repository URL. It is the link of the page's "À propos" tab (src/app.js RELEASES_URL, the same string:
+// tests/unit/about.test.js): a plain target=_blank link reaches the window-open handler of main.cjs, so the page needs
+// no preload and no IPC to open it.
 const RELEASES_URL = 'https://github.com/sylvainarnauda-shining/littlebird-trainer/releases';
 // Pointer lock for the flight; fullscreen for F11 and a future display-mode setting. Nothing else, ever.
 const ALLOWED_PERMISSIONS = new Set(['pointerLock', 'fullscreen']);

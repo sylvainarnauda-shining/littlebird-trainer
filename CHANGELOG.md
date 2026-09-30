@@ -4,7 +4,7 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Cha
 déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne changent que là où il le dit (trailer
 `Golden-Update:` du commit, voir `CONTRIBUTING.md`).
 
-## [0.9.0] — 2026-09-30
+## [0.9.0] — 2026-10-01
 
 Première version publique. Elle part de l'entraîneur v13 (modèle de vol v6 identifié sur deux enregistrements de
 référence, loi de la souris v13), importé octet pour octet, puis préparé pour la publication étape par étape.
@@ -79,6 +79,22 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
   - three.js dans l'enregistreur : empreintes des 18 modèles 3D, des scènes et du cockpit de chaque carte et profil de
     démarrage, des scènes de départ et de fin des sessions (couleurs converties par three.js) ;
   - inchangés : vol, parité (G5), son, HUD, réglages, interface, API de test.
+- **Version complète dans le menu et onglet « À propos »** (demande du 30/09 : que la personne qui télécharge ou suit
+  le projet voie si elle a la dernière version). Le menu affiche le numéro complet (`v0.9.0` au lieu de `v0.9`), et un
+  quatrième onglet, **À propos**, redonne le nom et la version, dit comment savoir si c'est la dernière (« Compare avec
+  la dernière version sur la page des versions du dépôt ; l'entraîneur ne vérifie rien tout seul et n'envoie rien. »), montre
+  l'adresse de la page Releases en texte et en lien (nouvel onglet, sans `opener` ni référent), la licence MIT, la
+  mention « projet non officiel » et où se trouvent les avis des composants tiers. La version n'est écrite qu'une fois,
+  dans `package.json` : la construction la reporte dans la page (aucune copie dans les sources ; construction refusée
+  pour un modèle sans emplacement de version ou une version qui n'est pas X.Y.Z, `verify:build` refuse une page qui en
+  affiche une autre). Aucun code réseau ni vérification de mise à jour : le jeu ne contacte rien. Dans l'application
+  Windows, le lien s'ouvre dans le navigateur par défaut par la règle qui existait déjà (l'adresse exacte de la page
+  Releases, et elle seule, jamais pendant l'auto-test), sans préchargement ni IPC. Le raccourci garde son nom,
+  **LittleBird Trainer**, sans numéro. Seul le golden de l'interface (`ui`) change : un bouton de plus dans
+  l'inventaire (l'onglet `about`, au rang 4), le rang de chaque commande et bouton qui le suit décalé d'un, et
+  l'empreinte des textes ; les configurations de session et les valeurs par défaut n'y changent pas, et les autres
+  goldens (vol, parité, sessions, monde, son, HUD, réglages, modèles, modules, API de test) sont identiques octet pour
+  octet.
 
 ### Application Windows
 
@@ -112,7 +128,12 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 - Défense en profondeur : politique de sécurité de la page vérifiée sur une liste exacte au démarrage, WebRTC limité
   au mandataire (aucun n'est configuré), commutateurs refusés étendus (commandes lancées devant un processus de
   Chromium, fonctionnalités, journaux, profil ailleurs).
-- Icône propre, dessinée par le code (`scripts/make-icon.mjs`, `build/icon.svg`).
+- **Icône Little Bird** (demande du 30/09) : l'hélicoptère vu de profil, nez à droite (cabine en œuf, grande verrière
+  teintée, poutre de queue fine, empennage en T, patins, rotor), en cyan sur le carré ardoise. C'est notre propre
+  dessin, fait par le code à partir de formes simples (`scripts/make-icon.mjs`, `build/icon.svg`) : aucune image du
+  jeu, photo, logo, texte ni police. Chacune des sept tailles du fichier `.ico` (16 à 256 px) est calculée pour ses
+  pixels : traits d'au moins un pixel, traits horizontaux et verticaux calés sur la grille jusqu'à 48 px, cadre de la
+  verrière toujours visible, et jusqu'à 32 px un empennage simplifié en T.
 - Aucun changement de comportement du vol ni du jeu : la page livrée est octet pour octet celle de la version
   navigateur ; les goldens sont inchangés. Mesure (G5) : le moteur de Chromium (Electron 44.4.5 et 44.5.1, Chrome 154)
   arrondit certaines fonctions mathématiques autrement que Node.js 24 au dernier chiffre binaire ; le vol calculé reste
@@ -179,6 +200,10 @@ référence, loi de la souris v13), importé octet pour octet, puis préparé po
 
 - Identité visuelle propre (R3) : couleurs, arrondis et police définis par des jetons CSS, surfaces ardoise et accent
   cyan, coins arrondis de 6 px, polices du système, logo de l'entraîneur. Le HUD de vol ne change pas.
+- Le logo du menu est le Little Bird de l'icône, d'une seule couleur, la verrière ouverte sur le fond du bandeau
+  (`logoSvg()` de `scripts/make-icon.mjs` ; les tests vérifient que la page contient exactement ce dessin). Aucun
+  golden ne change : seule l'empreinte du modèle de page que les goldens nomment (`meta.json`, `srcManifest`) est mise
+  à jour.
 
 ### Construction et sécurité
 

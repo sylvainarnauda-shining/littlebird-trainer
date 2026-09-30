@@ -2,8 +2,20 @@
   <title>LittleBird Trainer</title>
   <defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c262d"/><stop offset="1" stop-color="#0f1418"/></linearGradient></defs>
   <rect width="48" height="48" rx="9" fill="url(#bg)"/>
-  <g transform="translate(4 4)" fill="none" stroke="#38bdd4" stroke-width="2.4" stroke-linecap="round">
-    <ellipse cx="20" cy="17" rx="5" ry="7"/>
-    <path d="M20 24 L20 36 M16 36 L24 36 M5 10 L35 24 M5 24 L35 10"/>
-  </g>
+  <path d="M11 10.8 L44.6 10.8" fill="none" stroke="#38bdd4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M29.6 16.4 L29.6 11.2" fill="none" stroke="#38bdd4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32.4 11 A2.8 1.5 0 0 1 26.8 11 A2.8 1.5 0 0 1 32.4 11Z" fill="#38bdd4"/>
+  <path d="M18 20.2 L18 23.4 L6.6 19.8 L6.6 18.4Z" fill="#38bdd4"/>
+  <path d="M17 21.7 L6.6 19.1" fill="none" stroke="#38bdd4" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M9.2 19.4 L6.4 19.6 L4.4 13.4 L6.8 13.4Z" fill="#38bdd4"/>
+  <path d="M2.9 13.4 L8.8 13.4" fill="none" stroke="#38bdd4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M3 10.8 L4.8 10.8 L5.2 16 L3.4 16Z" fill="#38bdd4"/>
+  <path d="M7.4 19.6 L9.4 19.8 L7.4 23.8 L6.2 23.6Z" fill="#38bdd4"/>
+  <path d="M5.4 16.3 L8.6 22.3" fill="none" stroke="#38bdd4" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M21.4 29.2 L20.6 36.8" fill="none" stroke="#38bdd4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M32.54 32 L33.4 36.8" fill="none" stroke="#38bdd4" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M16.4 36.8 L38.2 36.8 L40.8 34.8" fill="none" stroke="#38bdd4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M38.4 24 A9.4 8.7 0 0 1 29 32.7 A14.6 8.7 0 0 1 14.4 24 A14.6 8.7 0 0 1 29 15.3 A9.4 8.7 0 0 1 38.4 24Z" fill="#38bdd4" transform="rotate(7 29 24)"/>
+  <path d="M29.632 16.723 A8 7.3 0 0 1 31.592 30.906 A11.4 11.4 0 0 1 29.632 16.723Z" fill="#04222a" transform="rotate(7 29 24)"/>
+  <path d="M32.2 17.6 L35 18.9 L36.8 21" fill="none" stroke="#9fe6f2" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" transform="rotate(7 29 24)"/>
 </svg>

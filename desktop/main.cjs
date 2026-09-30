@@ -137,16 +137,23 @@ async function start() {
   win.loadURL(`${policy.ORIGIN}/index.html`);
 }
 
-// Every web contents: no pop-up (the releases page alone goes to the default browser), no navigation away from the
-// app, no <webview>, no WebRTC traffic outside a proxy (none is configured: the page has no WebRTC code, and this
-// keeps a peer connection from bypassing the request filter). The page asks the browser to confirm closing during a
-// session (a guard against Ctrl+W in a browser tab); the app has no such shortcut, and closing its window is always a
-// deliberate choice, so the app closes without asking.
+// Every web contents: no pop-up (the releases page alone, the link of the page's "À propos" tab, goes to the default
+// browser, and never during a self-test), no navigation away from the app, no <webview>, no WebRTC traffic outside a
+// proxy (none is configured: the page has no WebRTC code, and this keeps a peer connection from bypassing the request
+// filter). The page asks the browser to confirm closing during a session (a guard against Ctrl+W in a browser tab); the
+// app has no such shortcut, and closing its window is always a deliberate choice, so the app closes without asking.
+// At most one browser tab per 1.5 s, however often the page asks (click, Enter, script): a nuisance guard, the address
+// being the shell's own constant anyway. A failure of Windows to open it is ignored (no unhandled rejection).
+const EXTERNAL_INTERVAL_MS = 1500;
+let lastExternal = 0;
 function guard(contents) {
   contents.setWebRTCIPHandlingPolicy('disable_non_proxied_udp');
   contents.on('will-prevent-unload', (event) => event.preventDefault());
   contents.setWindowOpenHandler(({ url }) => {
-    if (!selfTest && policy.externalAllowed(url)) shell.openExternal(policy.RELEASES_URL);
+    if (!selfTest && policy.externalAllowed(url) && Date.now() - lastExternal > EXTERNAL_INTERVAL_MS) {
+      lastExternal = Date.now();
+      shell.openExternal(policy.RELEASES_URL).catch(() => {});
+    }
     return { action: 'deny' };
   });
   const stayHome = (event, legacyUrl) => {

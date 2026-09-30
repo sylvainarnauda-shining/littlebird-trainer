@@ -1,8 +1,8 @@
 // G-CSP: the built page under its own Content-Security-Policy in a real browser. The meta policy is the one written
 // beside the page (csp.txt); then every screen and mode runs with zero `securitypolicyviolation` event and zero console
-// error: the menu tabs and the flight-model panel, WebGL2 drawing, the sound engine, the emulated pointer lock (asserted
-// before each Start), the seven modes, the pause and resupply screens, the results, both imports (a profile and a game
-// settings file) and the export (a blob download). Frames at 100 Hz (manual clock).
+// error: the menu tabs (À propos included) and the flight-model panel, WebGL2 drawing, the sound engine, the emulated
+// pointer lock (asserted before each Start), the seven modes, the pause and resupply screens, the results, both imports
+// (a profile and a game settings file) and the export (a blob download). Frames at 100 Hz (manual clock).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -42,7 +42,7 @@ test('the page runs every screen and mode under its CSP: no violation, no consol
   // WebGL2 draws; the menu tabs and panels.
   await seconds(page, 0.2);
   expect((await diag(page)).webgl.calls, 'WebGL draw calls').toBeGreaterThan(0);
-  for (const tab of ['controls', 'settings', 'modes']) {
+  for (const tab of ['controls', 'settings', 'about', 'modes']) {
     await page.locator(`[data-tab="${tab}"]`).click();
     if (tab === 'settings') await page.locator('.flight-tuning summary').click();
   }
