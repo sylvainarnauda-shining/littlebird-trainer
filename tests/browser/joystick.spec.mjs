@@ -4,6 +4,7 @@
 // joysticks are never read. Pad ids are public product identifiers (the vJoy virtual device); the game settings file is
 // the repository's synthetic sample. Frames at 100 Hz (manual clock); each test renders a few dozen frames at most (CI
 // scope, no @gpu tag).
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, expect, openTrainer, start, frames, diag, PROFILE_KEY } from './fixtures.mjs';
@@ -134,6 +135,31 @@ test('import of the game joystick section (synthetic file): a preview, then the 
     'bead',
     'main',
   ]);
+});
+
+test('the joystick test hooks do what the panel controls do: reading, HOTAS, device of an axis, import, preview, Appliquer', async ({
+  page,
+}) => {
+  await openTrainer(page, { manualClock: true });
+  await plug(page, 0);
+  await page.evaluate(() => window.__app.joyReading(true));
+  await frames(page, 6);
+  expect(await page.evaluate(() => window.__app.joyDevices())).toEqual(['vJoy Device']);
+  await expect(page.locator('#joyRead')).toHaveText('Arrêter la lecture');
+  await page.evaluate(() => window.__app.joyReading(false));
+  expect(await page.evaluate(() => window.__app.joyDevices())).toEqual([]);
+  await expect(page.locator('#joyRead')).toHaveText('Lire les manettes');
+  await page.evaluate(() => window.__app.joyHotas(true));
+  await expect(page.locator('#joyUseHotas')).toBeChecked();
+  const text = fs.readFileSync(SAMPLE, 'utf8');
+  await page.evaluate((t) => window.__app.joyImport(new File([t], 'sample.txt')), text);
+  const shown = await page.evaluate(() => window.__app.joyPreviewShown());
+  expect(shown.text).toContain('HOTAS dans le jeu : activé');
+  await page.evaluate(() => window.__app.joyApply());
+  expect(await page.evaluate(() => window.__app.joyPreviewShown())).toBeNull();
+  await expect(page.locator('#toast')).toContainText('appliquée : HOTAS activé, 4 axes et 3 boutons liés');
+  await page.evaluate(() => window.__app.joyAxisDevice('Pitch', 'left'));
+  await expect(page.locator('#joyPitchDevice')).toHaveValue('left');
 });
 
 test('HOTAS on: an emulated vJoy stick pitches the helicopter; unplugged in flight, the session pauses', async ({

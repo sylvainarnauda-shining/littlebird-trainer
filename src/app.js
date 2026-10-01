@@ -1756,6 +1756,7 @@
       if(joyProfile.useHotas&&!J.usedRefs(joyProfile).size)toast('HOTAS activé, mais aucun axe ni bouton n’est lié : Commandes › Manette · HOTAS.');
     }
     function joyStop(){if(!joy.reading&&!joy.learn&&!joy.roles.identify)return;joy.reading=false;joy.learn=null;J.cancelIdentify(joy.roles);joyPanel();}
+    function joyReading(on){if(!on)joyStop();else if(!joy.reading){joy.reading=true;joy.tick=0;joyPanel();}}
     // The controls a device reference drives: axes (but the axis binding of row skip) and their Positive / Negative
     // sources by name, button actions by label.
     function joyUsersOf(ref,skip){
@@ -1791,6 +1792,9 @@
       toast(`${JOY_NAMES[n]} : axe ${hit.axis} de ${name} (${JOY_REF_NAMES[ref]}${was}).`);
     }
     function joyChanged(){joyProfile=J.validateProfile(joyProfile);save();joySync();}
+    function joyHotas(on){joyProfile.useHotas=!!on;joyChanged();
+      toast(joyProfile.useHotas?'HOTAS activé : en vol, l’entraîneur lit les manettes liées ici.':'HOTAS désactivé : aucune manette n’est lue en vol.');}
+    function joyAxisDevice(n,ref){joyProfile.axes[n].device=J.REFS.includes(ref)?ref:null;joyChanged();}
     function joyFill(sel,list){if(!sel||!sel.replaceChildren)return;sel.replaceChildren();for(const [v,t] of list){const o=document.createElement('option');o.value=v;o.textContent=t;sel.append(o);}}
     const joyKey=m=>m.vendor+':'+m.product;
     function joyModelByKey(key){
@@ -1862,9 +1866,10 @@
     }
     // Import of the game's joystick section: the file the player picks is read here, in the page, and sent nowhere; a
     // preview lists what was found and asks which device of this PC each device of the file is.
-    function joyPreviewClose(){const box=$('joyPreview');if(box){box.hidden=true;if(box.replaceChildren)box.replaceChildren();}}
+    let joyApplying=null;   // the open preview's « Appliquer » (null once it is closed), for the test hook joyApply
+    function joyPreviewClose(){const box=$('joyPreview');if(box){box.hidden=true;if(box.replaceChildren)box.replaceChildren();}joyApplying=null;}
     function joyPreview(parsed){
-      const box=$('joyPreview');if(!box||!box.replaceChildren)return;box.replaceChildren();box.hidden=false;
+      const box=$('joyPreview');if(!box||!box.replaceChildren)return;box.replaceChildren();box.hidden=false;joyApplying=null;
       const line=text=>{const d=document.createElement('div');d.textContent=text;box.append(d);return d;};
       const dev=d=>d?`${d.name||'manette'} (${J.gameIdentifier(d).slice(0,9)})`:'aucune manette';
       // A hat direction of a device whose hat layout is not known (a vJoy POV can be 4-way or continuous) is not bound.
@@ -1891,7 +1896,11 @@
         if(r.conflict.length){toast('Deux appareils du fichier sur la même manette : choisis un rôle différent pour chacun.');return;}
         joyProfile=r.profile;joy.roles=J.createRoles();joyPreviewClose();save();joySync();
         toast(`Configuration joystick du jeu appliquée : HOTAS ${joyProfile.useHotas?'activé':'désactivé'}, ${J.AXES.filter(n=>joyProfile.axes[n].device&&joyProfile.axes[n].axis>=0).length} axes et ${Object.keys(joyProfile.actions).length} boutons liés.`);};
-      cancel.onclick=joyPreviewClose;row.append(apply,cancel);box.append(row);
+      cancel.onclick=joyPreviewClose;joyApplying=apply.onclick;row.append(apply,cancel);box.append(row);
+    }
+    async function joyImport(file){
+      try{if(file.size>400000)throw Error('too-large');const parsed=J.parseGameJoystick(await file.text());if(!parsed.found&&parsed.useHotas===null)throw Error('none');joyPreview(parsed);}
+      catch(err){toast('Import refusé : '+({'too-large':'fichier trop volumineux',none:'aucune configuration joystick dans ce fichier'}[err.message]||'fichier illisible')+'.');}
     }
     function joyInit(){
       if(!$('joyUseHotas')||!$('joyPreview'))return;
@@ -1899,25 +1908,21 @@
         joyFill($(`joy${n}Device`),[['','Aucune'],['main','Manette principale'],['left','Manche gauche'],['right','Manche droit']]);
         joyFill($(`joy${n}Axis`),[['-1','Aucun'],...Array.from({length:J.BOUNDS.axis+1},(_,i)=>[String(i),`Axe ${i}${HID_AXES[i]?' · '+HID_AXES[i]:''}`])]);
         const b=()=>joyProfile.axes[n],on=(id,fn)=>$(id).addEventListener('input',fn);
-        on(`joy${n}Device`,()=>{const v=$(`joy${n}Device`).value;b().device=J.REFS.includes(v)?v:null;joyChanged();});
+        on(`joy${n}Device`,()=>joyAxisDevice(n,$(`joy${n}Device`).value));
         on(`joy${n}Axis`,()=>{const v=parseInt($(`joy${n}Axis`).value,10);if(Number.isInteger(v))b().axis=v;joyChanged();});
         on(`joy${n}Invert`,()=>{b().invert=!!$(`joy${n}Invert`).checked;joyChanged();});
         on(`joy${n}Sens`,()=>{b().sensitivity=Number($(`joy${n}Sens`).value);joyChanged();});
         on(`joy${n}Dz`,()=>{b().deadZone=Number($(`joy${n}Dz`).value);joyChanged();});
         $(`joy${n}Learn`).onclick=()=>{joy.learn=joy.learn===n?null:n;joy.learnBase=new Map();if(joy.learn){joy.reading=true;joy.tick=0;}joyPanel();};
       }
-      $('joyUseHotas').addEventListener('input',()=>{joyProfile.useHotas=!!$('joyUseHotas').checked;joyChanged();
-        toast(joyProfile.useHotas?'HOTAS activé : en vol, l’entraîneur lit les manettes liées ici.':'HOTAS désactivé : aucune manette n’est lue en vol.');});
+      $('joyUseHotas').addEventListener('input',()=>joyHotas($('joyUseHotas').checked));
       $('joyConfirmRoles').addEventListener('input',()=>{joyProfile.confirmRoles=!!$('joyConfirmRoles').checked;joyChanged();});
       $('joyDeviceMatch').addEventListener('input',()=>{joyProfile.deviceMatch=$('joyDeviceMatch').value;joy.roles=J.createRoles();joyChanged();});
       $('joyMain').addEventListener('input',()=>{const v=$('joyMain').value;joyProfile.devices.main=v==='auto'?null:joyModelByKey(v);joyChanged();});
-      $('joyRead').onclick=()=>{if(joy.reading)joyStop();else{joy.reading=true;joy.tick=0;joyPanel();}};
+      $('joyRead').onclick=()=>joyReading(!joy.reading);
       $('joyIdentify').onclick=()=>{J.startIdentify(joy.roles);joy.reading=true;joy.tick=0;joyPanel();};
       $('joySwap').onclick=()=>{J.swapRoles(joy.roles,joyProfile.devices);joyChanged();toast('Manches gauche et droit inversés.');};
-      $('importJoystick').onchange=async e=>{const file=e.target.files[0];if(!file)return;
-        try{if(file.size>400000)throw Error('too-large');const parsed=J.parseGameJoystick(await file.text());if(!parsed.found&&parsed.useHotas===null)throw Error('none');joyPreview(parsed);}
-        catch(err){toast('Import refusé : '+({'too-large':'fichier trop volumineux',none:'aucune configuration joystick dans ce fichier'}[err.message]||'fichier illisible')+'.');}
-        e.target.value='';};
+      $('importJoystick').onchange=async e=>{const file=e.target.files[0];if(!file)return;await joyImport(file);e.target.value='';};
       joy.ready=true;
     }
     document.addEventListener('keydown',e=>{
@@ -2022,7 +2027,10 @@
       get targets(){return targets;},get samSites(){return samSites;},get stats(){return stats;},get cfg(){return cfg;},get run(){return run;},get bullets(){return bullets;},get heliAlive(){return heliAlive;},get bindings(){return bindings;},get ammo(){return ammo;},set ammo(v){ammo=v;},get health(){return health;},set health(v){health=v;},get fuel(){return fuel;},set fuel(v){fuel=v;},get score(){return score;},get hot(){return hot;},
       setConfig(values){Object.assign(cfg,values);run=sessionConfig();defense.cfg=run;battle.cfg=run;},pushRound(p,v){bullets.push({p,v,age:0,previous:p.clone()});},setTime(value){time=value;},setView(value){view=value;},setLook(yaw,pitch){lookYaw=yaw;lookPitch=pitch;freeLookHeld=!!(yaw||pitch);},
       get bots(){return bots;},get enemyRounds(){return enemyRounds;},get rockets(){return rockets;},get duel(){return duel;},addBot,placeBot,heliHits,get ciws(){return ciwsList;},get ciwsStats(){return ciwsStats;},addCiws,CIWS,
-      addVerba,addSamSite,resetAir(){for(const u of samSites)scene.remove(u.view.group);samSites=[];targets=targets.filter(t=>!t.samSite);for(const u of ciwsList)scene.remove(u.view.group);ciwsList=[];targets=targets.filter(t=>!t.ciws);battle.reset();defense.reset([],1);aaActive=true;}});
+      addVerba,addSamSite,resetAir(){for(const u of samSites)scene.remove(u.view.group);samSites=[];targets=targets.filter(t=>!t.samSite);for(const u of ciwsList)scene.remove(u.view.group);ciwsList=[];targets=targets.filter(t=>!t.ciws);battle.reset();defense.reset([],1);aaActive=true;},
+      // Joystick panel (J1) for the joystick golden suite and the specs, without the ids of its controls: each member runs what its control runs.
+      joyReading,joyHotas,joyAxisDevice,joyImport,joyApply(){if(joyApplying)joyApplying();},joyCancel:joyPreviewClose,
+      joyDevices(){return joy.reading?joy.pads.map(p=>p.name):[];},joyPreviewShown(){const box=$('joyPreview');return box&&!box.hidden?{rows:box.children.length,text:box.textContent}:null;}});
   }
   // Let the loading screen paint before the valley is built (2-3 s).
   if(window.__LB_SYNC__)boot();else requestAnimationFrame(()=>setTimeout(boot,30));

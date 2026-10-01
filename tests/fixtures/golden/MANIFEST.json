@@ -12,8 +12,8 @@
   },
   {
    "file": "hookapi.json",
-   "bytes": 3026,
-   "sha256": "2f75452422db73472cf52149f08709bf1a152987f8d1f1a0092bb9ed0f164225"
+   "bytes": 3252,
+   "sha256": "231d58784cb9cfdff156d3e546ede20a8c377f470d8328506b0e5cea1f4c0e6f"
   },
   {
    "file": "hud.json",
@@ -28,7 +28,7 @@
   {
    "file": "meta.json",
    "bytes": 8904,
-   "sha256": "f4904fbff3bc85589925bb77e2a1a47155bc9e78a20887ae9339d03813fa1bd6"
+   "sha256": "994eed911415fdd4c98f8fc2388ebd0b52524e4435703574ad2198c039a6fe2a"
   },
   {
    "file": "models.json",

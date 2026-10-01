@@ -2,7 +2,7 @@
 // Under automation (navigator.webdriver), the page answers navigator.getGamepads with its own emulation: the pads a test
 // puts into window.__LB_EMULATED_GAMEPADS__, never the browser's. Here the browser's getGamepads is a trap that counts
 // calls (it would hand out a "real" stick): the panel and a flight with the HOTAS on never reach it, and an emulated vJoy
-// device flies the helicopter. One boot, Math.random seeded.
+// device flies the helicopter. The panel is driven through the joystick test hooks (no ids). One boot, Math.random seeded.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { bootApp } = require('../helpers/mock-dom');
@@ -36,18 +36,16 @@ test('the emulation replaces getGamepads before any read; there is no way back t
 });
 
 test('the panel and a flight with the HOTAS on read the emulated pads only', () => {
-  el('joyRead').onclick();
+  app.joyReading(true);
   frames(12);
-  assert.match(el('joyStatus').textContent, /Bouge un manche/);
+  assert.deepEqual(app.joyDevices(), [], 'the trap hands out a stick, the emulation none');
   const vjoy = G.pad({ index: 0, id: G.VJOY_ID });
   S.context.__LB_EMULATED_GAMEPADS__.push(vjoy);
   frames(12);
-  assert.match(el('joyDevices').children[0].children[0].textContent, /vJoy Device/);
-  el('joyRead').onclick();
-  el('joyUseHotas').checked = true;
-  el('joyUseHotas').oninput();
-  el('joyPitchDevice').value = 'main';
-  el('joyPitchDevice').oninput();
+  assert.deepEqual(app.joyDevices(), ['vJoy Device']);
+  app.joyReading(false);
+  app.joyHotas(true);
+  app.joyAxisDevice('Pitch', 'main');
   S.document.pointerLockElement = el('world');
   app.setConfig({ scenario: 'free', duration: 0 });
   app.start();

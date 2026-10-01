@@ -4,6 +4,28 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Cha
 déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne changent que là où il le dit (trailer
 `Golden-Update:` du commit, voir `CONTRIBUTING.md`).
 
+## [Non publié]
+
+### Tests et outils
+
+- **Crochets de test du joystick ; la suite `joystick` de l'enregistreur n'en dépend plus par les `id` du panneau
+  (menus 1.0, phase M0c).** La suite `joystick` et les specs du joystick pilotaient le panneau Manette · HOTAS par les
+  `id` de ses contrôles (le bouton « Lire les manettes », la liste des appareils, l'interrupteur HOTAS, l'appareil du
+  tangage, l'import du fichier du jeu, son aperçu et « Appliquer »), que la page HOTAS fidèle au jeu retirera. Le crochet de
+  test de la page (`window.__LB_EXPOSE__`, réservé aux tests, jamais défini par la page) expose en fin de liste huit
+  membres, qui exécutent le code que les contrôles exécutent : `joyReading(on)`, `joyDevices()`, `joyHotas(on)`,
+  `joyAxisDevice(axe, appareil)`, `joyImport(fichier)`, `joyPreviewShown()`, `joyApply()` et `joyCancel()` (`joyCancel`
+  ferme l'aperçu : l'oracle de la suite s'en sert quand l'application est refusée). Les contrôles du panneau appellent
+  les mêmes fonctions : rien ne change pour le joueur. La suite `joystick` prend les crochets quand le runtime les a tous,
+  sinon les `id` (le baseline que `golden.mjs prove` enregistre est un runtime sans crochets) : les deux chemins
+  enregistrent les mêmes octets, ce que `tests/regression/joystick-panel-paths.test.js` vérifie en les faisant tourner
+  sur la page actuelle (appareils listés, aperçu, profil enregistré, avis). Le test d'automatisation du joystick et une
+  spec du navigateur passent par les crochets. Ce qui change dans les goldens : `hookapi` seul, qui liste les membres du
+  crochet de test (huit de plus, jamais retirés) ; tous les autres sont identiques octet pour octet, celui du joystick
+  compris (les deux chemins enregistrent la même chose), et `meta.json` ne change que par les empreintes de
+  l'enregistreur et d'`app.js`. Le changement de l'enregistreur est prouvé neutre (`golden.mjs prove` sur le runtime
+  d'avant les crochets, puis `--adopt`).
+
 ## [0.10.0] — 2026-10-02
 
 Préversion : les joysticks (T.16000M, manche virtuel vJoy) peuvent piloter l’entraîneur, la cabine de l’hélicoptère est plus pleine devant les portes, et l’outillage de test se prépare aux menus fidèles au jeu (version 1.0). Les menus restent ceux de l’entraîneur.
