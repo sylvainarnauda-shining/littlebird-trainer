@@ -117,10 +117,14 @@
     { "name": "dependabot[bot]", "email": "49699333+dependabot[bot]@users.noreply.github.com" },
     { "name": "github-actions[bot]", "email": "41898282+github-actions[bot]@users.noreply.github.com" }
   ],
-  "_commitMessageEmailsAllowed": "Addresses a commit or tag message may name besides emailAllowDomains, as regular expressions on the address and, when given, on the whole line: GitHub's noreply address (trailers such as Co-authored-by), and GitHub's support address only on Dependabot's own sign-off line. Files never get these allowances.",
+  "_commitMessageEmailsAllowed": "Addresses a commit or tag message may name besides emailAllowDomains, as regular expressions on the address and, when given, on the whole line: GitHub's noreply address (trailers such as Co-authored-by), GitHub's support address only on Dependabot's own sign-off line, and Anthropic's noreply address only on the co-author trailer of the Claude coding assistant. Files never get these allowances.",
   "commitMessageEmailsAllowed": [
     { "email": "^noreply@github\\.com$" },
-    { "email": "^support@github\\.com$", "line": "^Signed-off-by: dependabot\\[bot\\] <support@github\\.com>$" }
+    { "email": "^support@github\\.com$", "line": "^Signed-off-by: dependabot\\[bot\\] <support@github\\.com>$" },
+    {
+      "email": "^noreply@anthropic\\.com$",
+      "line": "^Co-[Aa]uthored-[Bb]y: Claude [A-Za-z0-9 .]+ <noreply@anthropic\\.com>$"
+    }
   ],
   "nominativeAllowed": [
     "src/app.js",

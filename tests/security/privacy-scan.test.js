@@ -474,7 +474,7 @@ test('history scope: what HEAD reaches (a pull request test merge included), or 
   }
 });
 
-test('commit messages: GitHub noreply addresses and Dependabot sign-off accepted; any other address refused', () => {
+test('commit messages: GitHub noreply addresses, Dependabot sign-off and Claude co-author trailer accepted; any other address refused', () => {
   const R = scratchRepo();
   const at = (local, domain) => local + '@' + domain;
   try {
@@ -482,6 +482,7 @@ test('commit messages: GitHub noreply addresses and Dependabot sign-off accepted
       'Bump electron\n\nSigned-off-by: dependabot[bot] <' + at('support', 'github.com') + '>',
       'Bump x\n\nSigned-off-by: dependabot[bot] <' + at('49699333+dependabot[bot]', 'users.noreply.github.com') + '>',
       'Edit\n\nCo-authored-by: GitHub <' + at('noreply', 'github.com') + '>',
+      'Fix\n\nCo-Authored-By: Claude Opus 5.5 <' + at('noreply', 'anthropic.com') + '>',
       'Web flow: ' + at('noreply', 'github.com') + ' commits the squash merges',
       // Markdown link text: the bracket before the address is not part of it.
       'See [' + at('noreply', 'github.com') + '](mailto:' + at('noreply', 'github.com') + ')',
@@ -489,11 +490,14 @@ test('commit messages: GitHub noreply addresses and Dependabot sign-off accepted
     accepted.forEach((m, i) => R.commit('m' + i + '.js', '//\n', m));
     let r = R.scan(['--tracked', '--history']);
     assert.equal(r.code, 0, r.out);
-    // Refused: GitHub's support address outside Dependabot's sign-off, another sign-off, a private address, a private
-    // address disguised as a host under an allowed domain.
+    // Refused: GitHub's support address outside Dependabot's sign-off, Anthropic's noreply address outside the Claude
+    // co-author trailer, another sign-off, a private address, a private address disguised as a host under an allowed
+    // domain.
     const refused = [
       'Ask ' + at('support', 'github.com') + ' about it',
       'Fix\n\nSigned-off-by: someone <' + at('support', 'github.com') + '>',
+      'Write to ' + at('noreply', 'anthropic.com'),
+      'Fix\n\nCo-Authored-By: someone <' + at('noreply', 'anthropic.com') + '>',
       'Fix\n\nSigned-off-by: someone <' + at('someone', 'mailhost.io') + '>',
       'Fix\n\nCo-authored-by: someone <' + at('someone', 'mailhost.io.users.noreply.github.com') + '>',
     ];
