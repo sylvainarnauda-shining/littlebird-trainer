@@ -612,7 +612,6 @@ test('profile block: defaults (game factory values), round trip, hostile input, 
       devices: {
         main: { vendor: '1234', product: 'BEAD' },
         left: { vendor: '044f', product: 'b10a', slotHint: 99, hatAxis: 1.5, name: 'x'.repeat(300) },
-        __proto__: { vendor: '0000', product: '0000' },
       },
       axes: {
         Pitch: { device: 'constructor', axis: 99, invert: 'true', sensitivity: 1e308, deadZone: -1 },
@@ -628,7 +627,7 @@ test('profile block: defaults (game factory values), round trip, hostile input, 
         view: [{ device: 'main', button: 3 }],
         constructor: [{ device: 'main', button: 9 }],
       },
-    }).replace('"__proto__x"', '"__proto__"'),
+    }),
   );
   const out = J.validateProfile(hostile, codes);
   assert.deepEqual([out.useHotas, out.deviceMatch, out.confirmRoles], [false, 'role', true]);
@@ -652,8 +651,29 @@ test('profile block: defaults (game factory values), round trip, hostile input, 
     'two sources at most, a used button dropped',
   );
   assert.deepEqual(codes, ['duplicate-button']);
-  assert.equal(Object.getPrototypeOf(out.devices), Object.prototype);
   assert.ok(!Object.hasOwn(out.axes, 'toString') && !Object.hasOwn(out.actions, 'constructor'));
+  // Own "__proto__" keys, as JSON.parse creates them from a profile file (in an object literal, __proto__ sets the
+  // prototype instead, and JSON.stringify drops it): ignored, the output has none, and no prototype is reached.
+  const proto = JSON.parse(
+    '{"schema":1,"devices":{"__proto__":{"vendor":"0000","product":"0000"},"main":{"vendor":"1234","product":"bead"}},' +
+      '"axes":{"__proto__":{"axis":3,"device":"main"},"Pitch":{"device":"main","axis":2}},' +
+      '"actions":{"__proto__":[{"device":"main","button":9}],"fire":[{"device":"main","button":1}]}}',
+  );
+  for (const k of ['devices', 'axes', 'actions'])
+    assert.ok(Object.hasOwn(proto[k], '__proto__'), 'input: own key in ' + k);
+  const protoCodes = [];
+  const clean = J.validateProfile(proto, protoCodes);
+  assert.deepEqual(protoCodes, []);
+  for (const k of ['devices', 'axes', 'actions']) {
+    assert.ok(!Object.hasOwn(clean[k], '__proto__'), 'output: no own __proto__ in ' + k);
+    assert.equal(Object.getPrototypeOf(clean[k]), Object.prototype, k);
+  }
+  assert.deepEqual(Object.keys(clean.devices), ['main', 'left', 'right']);
+  assert.deepEqual(Object.keys(clean.axes), J.AXES);
+  assert.deepEqual(clean.actions, { fire: [{ device: 'main', button: 1 }] });
+  assert.deepEqual([clean.devices.main.product, clean.axes.Pitch.axis], ['bead', 2]);
+  assert.deepEqual([{}.vendor, {}.axis, {}.device], [undefined, undefined, undefined], 'no prototype polluted');
+  assert.equal(JSON.stringify(clean).includes('__proto__'), false);
 });
 
 test('the game section of a synthetic settings file: named fields, positional indices, section scoping', () => {
