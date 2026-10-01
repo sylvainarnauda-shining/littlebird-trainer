@@ -130,7 +130,11 @@ dans Chrome, Edge et l'application Windows (même moteur) ; Firefox n'est pas v�
 - **Axes.** Les six axes du fichier de réglages du jeu : tangage, collectif, roulis, lacet, regard libre horizontal et
   vertical, chacun avec sa manette, son numéro d'axe (celui du navigateur : X 0, Y 1, Z 2, Rx 3, Ry 4, Rz 5, curseur 6,
   chapeau 9), inversion, sensibilité et zone morte. Valeurs par défaut, celles du jeu (lues dans son fichier de
-  réglages) : aucun appareil, sensibilité 1, zone morte 0,05, sans inversion. « Détecter » lie l'axe qu'on bouge.
+  réglages) : aucun appareil, sensibilité 1, zone morte 0,05, sans inversion. « Détecter » lie l'axe qu'on bouge, sur
+  la manette qui a bougé : un manche identifié (gauche ou droit), sinon la manette principale. Deux manches identiques
+  doivent d'abord être identifiés. Une autre manette ne devient la manette principale que si aucune autre commande
+  n'utilise celle-ci ; sinon rien ne change et l'avis renvoie à « En faire la manette principale », qui fait lire la
+  nouvelle manette à toutes les commandes de la manette principale (l'avis les nomme).
 - **Chapeau.** Ses directions (boutons des deux sens d'un axe) ne sont lues que sur un appareil dont le codage du
   chapeau est connu : le T.16000M (8 directions). Le navigateur donne la position d'un chapeau selon le codage que
   l'appareil déclare (4 directions, 8 directions ou continu) ; celui d'un manche virtuel vJoy dépend de son réglage et

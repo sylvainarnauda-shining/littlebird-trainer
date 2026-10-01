@@ -1756,15 +1756,39 @@
       if(joyProfile.useHotas&&!J.usedRefs(joyProfile).size)toast('HOTAS activé, mais aucun axe ni bouton n’est lié : Commandes › Manette · HOTAS.');
     }
     function joyStop(){if(!joy.reading&&!joy.learn&&!joy.roles.identify)return;joy.reading=false;joy.learn=null;J.cancelIdentify(joy.roles);joyPanel();}
-    // "Détecter": the axis moved past half its travel goes to the row being learnt, on the device reference that pad has
-    // (an identified stick first, else the main device, which becomes that pad's model when it was another one).
+    // The controls a device reference drives: axes (but the axis binding of row skip) and their Positive / Negative
+    // sources by name, button actions by label.
+    function joyUsersOf(ref,skip){
+      const p=joyProfile,out=[],src=s=>!!s&&s.device===ref;
+      for(const n of JOY_ROWS){const b=p.axes[n];if(n!==skip&&b.device===ref&&b.axis>=0||src(b.positive)||src(b.negative))out.push(JOY_NAMES[n]);}
+      for(const a of Object.keys(p.actions))if(p.actions[a].some(src))out.push(labels[a]);
+      return out;
+    }
+    // "Détecter": the axis moved past half its travel goes to the row being learnt, on the device reference of the pad
+    // that moved: its identified role (left or right stick), else the main device. One of two identical sticks needs the
+    // roles first (as the main device, the first of them in the browser's order, which can change at the next launch);
+    // another model becomes the main device only while no other control uses it (« En faire la manette principale »
+    // moves every control at once). A refusal changes nothing and says why.
     function joyLearnStep(){
       const hit=J.learnAxis(joy.learnBase,joy.pads,joy.live);if(!hit)return;
-      const n=joy.learn,pad=joy.pads.find(p=>p.index===hit.index);joy.learn=null;
-      let ref=['left','right','main'].find(r=>joy.res[r].includes(hit.index));
-      if(!ref){if(!pad.vendor){toast('Manette sans identifiant lisible : choisis la manette principale à la main.');joyPanel();return;}joyProfile.devices.main=J.modelOf(pad);ref='main';}
+      const n=joy.learn,pad=joy.pads.find(p=>p.index===hit.index),name=`« ${pad.name||'manette'} »`;joy.learn=null;
+      const refuse=text=>{toast(text);joyPanel();};
+      const same=joy.pads.filter(p=>p.mapping!=='standard'&&J.sameModel(p,pad)).map(p=>p.index),twin=same.length>1;
+      let ref=['left','right'].find(r=>joy.res[r].includes(hit.index)),was='';
+      if(ref&&joy.unconfirmed)return refuse(JOY_PROMPTS['confirm-left']+' Puis détecte l’axe.');
+      if(!ref&&twin&&joyProfile.deviceMatch==='role')return refuse('Deux manches identiques : clique d’abord sur « Identifier les manches gauche et droit », puis détecte l’axe.');
+      if(!ref&&joy.res.main.includes(hit.index))ref='main';
+      if(!ref){
+        if(!pad.vendor)return refuse('Manette sans identifiant lisible : choisis la manette principale à la main.');
+        if(twin&&joyProfile.deviceMatch==='first'&&hit.index!==Math.min(...same))return refuse(`Plusieurs manettes ${name} et le réglage « la première détectée de chaque modèle » : seule la n° ${Math.min(...same)} est lue. Détecte l’axe sur elle, ou change ce réglage.`);
+        const users=joyUsersOf('main',n);
+        if(users.length)return refuse(`${name} n’est pas la manette principale, qu’utilisent déjà : ${users.join(', ')}. Rien n’est changé. Pour la lier, clique sur « En faire la manette principale » sous ${name} (toutes ces commandes la liront), puis détecte de nouveau.`);
+        const old=joy.res.main.length?joy.pads.find(p=>p.index===joy.res.main[0]):joyProfile.devices.main;
+        was=`, désormais ${name}${old?` à la place de « ${old.name||'manette'} »`:''}`;
+        joyProfile.devices.main=J.modelOf(pad);ref='main';
+      }
       joyProfile.axes[n].device=ref;joyProfile.axes[n].axis=hit.axis;joyChanged();
-      toast(`${JOY_NAMES[n]} : axe ${hit.axis} de « ${pad.name||'manette'} » (${JOY_REF_NAMES[ref]}).`);
+      toast(`${JOY_NAMES[n]} : axe ${hit.axis} de ${name} (${JOY_REF_NAMES[ref]}${was}).`);
     }
     function joyChanged(){joyProfile=J.validateProfile(joyProfile);save();joySync();}
     function joyFill(sel,list){if(!sel||!sel.replaceChildren)return;sel.replaceChildren();for(const [v,t] of list){const o=document.createElement('option');o.value=v;o.textContent=t;sel.append(o);}}
@@ -1815,7 +1839,8 @@
       if(box.joyKey!==key){box.joyKey=key;box.replaceChildren();joy.rows=new Map();
         for(const p of pads){const row=document.createElement('div'),head=document.createElement('div'),axes=document.createElement('div'),buttons=document.createElement('div');row.className='joy-device';row.append(head,axes,buttons);let main=null;
           if(p.mapping!=='standard'&&p.vendor){const b=document.createElement('button'),model=J.modelOf(p);main=b;b.textContent='En faire la manette principale';
-            b.onclick=()=>{joyProfile.devices.main=model;joyChanged();toast(`Manette principale : ${model.name||'manette'} (${J.gameIdentifier(model).slice(0,9)}).`);};row.append(b);}
+            b.onclick=()=>{joyProfile.devices.main=model;joyChanged();const users=joyUsersOf('main');
+              toast(`Manette principale : ${model.name||'manette'} (${J.gameIdentifier(model).slice(0,9)}). ${users.length?`Commandes qui la lisent désormais : ${users.join(', ')}.`:'Aucune commande ne la lit encore.'}`);};row.append(b);}
           box.append(row);joy.rows.set(p.index,{head,axes,buttons,main});}}
       for(const p of pads){const v=joy.rows.get(p.index);if(!v)continue;const tags=[];if(v.main)v.main.hidden=J.sameModel(joyProfile.devices.main,p);
         if(J.isVirtual(p))tags.push('virtuelle (vJoy)');if(p.mapping==='standard')tags.push('manette de jeu standard : non prise en charge ici');
