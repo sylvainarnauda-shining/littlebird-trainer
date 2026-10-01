@@ -4,7 +4,8 @@
 //  - desktop/self-test.cjs asserts the page's pointer-lock emulation (navigator.webdriver and
 //    window.__LB_EMULATED_POINTER_LOCK__) before its first click on Start, and again right before that click;
 //  - it clicks Start once, and calls no real capture or fullscreen API;
-//  - every permission is denied while it runs (policy.permissionAllowed with selfTest), and main.cjs passes that flag;
+//  - every permission is denied while it runs (policy.permissionAllowed with selfTest), and main.cjs passes that flag,
+//    also to the page's headers (Permissions-Policy gamepad=(): the machine's joysticks are never read);
 //  - the self-test window cannot take focus, is click-through and absent from the taskbar;
 //  - its report is a new file in a real folder of the temporary folder (on POSIX, one of this user with mode 0700),
 //    never written through an existing file or link;
@@ -38,6 +39,30 @@ test('self-test.cjs: the emulation is asserted before Start is clicked, and agai
   assert.match(between, /navigator\.webdriver === true/);
   for (const banned of ['requestFullscreen', 'keyboard.lock', 'setFullScreen', 'focus()', 'requestPointerLock'])
     assert.ok(!src.includes(banned), banned);
+});
+
+test('self-test.cjs: the joystick read is checked emulated and refused by the page policy before Start, never called', () => {
+  const src = code('desktop/self-test.cjs');
+  const at = src.indexOf("document.getElementById('start').click()");
+  const check = src.indexOf("Object.getOwnPropertyDescriptor(navigator, 'getGamepads')");
+  assert.ok(check > 0 && check < at, 'checked before Start is clicked');
+  assert.match(src, /writable === false && typeof d\.value === 'function' && Array\.isArray\(list\)/);
+  assert.match(src, /fp\.allowsFeature\('gamepad'\)/);
+  assert.match(
+    src,
+    /if \(!pads\.emulated \|\| pads\.pads !== 0 \|\| pads\.policyAllows !== false\)\s*return finish\(/,
+    'a page that could read the joysticks stops the self-test before Start',
+  );
+  // The policy must answer "refused": a missing document.featurePolicy (null) stops the self-test too.
+  assert.ok(!/policyAllows === true/.test(src), 'no check that passes when the policy gives no answer');
+  assert.ok(!/getGamepads\s*\(/.test(src), 'the self-test never calls getGamepads');
+  // The self-test's headers refuse the Gamepad API (a normal run allows it for the page only), and no permission of the
+  // shell stands for it.
+  const policyOf = (h) => Object.fromEntries(h['permissions-policy'].split(/,\s*/).map((d) => d.split('=')));
+  assert.equal(policyOf(p.responseHeaders('x', { selfTest: true })).gamepad, '()');
+  assert.equal(policyOf(p.responseHeaders('x')).gamepad, '(self)');
+  for (const selfTest of [true, false])
+    assert.equal(p.permissionAllowed('gamepad', 'app://littlebird/index.html', { selfTest }), false);
 });
 
 test('self-test.cjs: a session flies until it has simulated 2 s over 20 drawn frames, whatever the machine speed', async () => {
@@ -153,6 +178,9 @@ test('every permission is denied during a self-test, and the self-test window ca
   assert.match(main, /const flags = \{ selfTest: Boolean\(selfTest\) \}/);
   assert.match(main, /policy\.permissionAllowed\(permission, details\.requestingUrl, flags\)/);
   assert.match(main, /policy\.permissionAllowed\(permission, requestingOrigin, flags\)/);
+  // The page's response headers take the flag too: gamepad=() during a self-test (its joysticks are never read).
+  assert.match(main, /policy\.responseHeaders\(csp, flags\)/);
+  assert.match(p.responseHeaders('x', { selfTest: true })['permissions-policy'], /(?:^|, )gamepad=\(\)(?:,|$)/);
   const o = p.windowOptions({ packaged: true, selfTest: true });
   assert.deepEqual([o.focusable, o.skipTaskbar, o.webPreferences.devTools], [false, true, false]);
   const st = code('desktop/self-test.cjs');

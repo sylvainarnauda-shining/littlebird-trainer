@@ -4,6 +4,56 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Cha
 déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne changent que là où il le dit (trailer
 `Golden-Update:` du commit, voir `CONTRIBUTING.md`).
 
+## [Non publié]
+
+### Comportement (changements déclarés)
+
+- **Joysticks et HOTAS : le moteur (phase J1) et une page provisoire.** L'entraîneur peut lire des joysticks dans
+  Chrome, Edge et l'application Windows : d'abord un manche virtuel vJoy (ce que le jeu lit quand un logiciel comme
+  Joystick Gremlin fusionne les vrais manches et que HidHide les cache), sinon la première manette vue, ou deux manches
+  physiques identiques, gauche et droit, désignés par une pression sur une gâchette (au lancement suivant, ils ne
+  pilotent qu'une fois gauche et droite confirmés, et cette pression ne tire pas). Les six axes du fichier de réglages
+  du jeu (tangage, collectif, roulis, lacet, regard libre horizontal et vertical), chacun avec sa manette, son numéro
+  d'axe, l'inversion, la sensibilité, la zone morte et les boutons des deux sens, plus les boutons Tirer, Leurres et
+  Changer de vue. Les directions d'un chapeau ne sont lues que sur un appareil dont le codage du chapeau est connu
+  (T.16000M, 8 directions) : celui d'un manche vJoy dépend de son réglage, n'est pas vérifié, et l'import ne reprend
+  pas ces directions. Valeurs par défaut publiques : celles du jeu (aucun appareil, sensibilité 1, zone morte 0,05, HOTAS
+  désactivé). Réponse **supposée** (base B0, rien n'est encore mesuré dans le jeu) : déviation dans le canal des touches
+  (déviation complète = vitesse de la touche), zone morte retirée puis remise à l'échelle, sensibilité en gain plafonné,
+  collectif = position du levier, regard libre = angle de vue, manches ajoutés au clavier et à la souris. Rien n'est lu
+  avant que le joueur le demande (« Lire les manettes », ou en vol avec le HOTAS activé) ; une manette qui n'a encore
+  rien envoyé ne commande rien ; un appareil débranché en vol met la session en pause ; un bouton encore tenu à la
+  reprise est ignoré jusqu'à son relâchement, y compris sur une manette qui n'envoie ses valeurs qu'après la reprise
+  (rebranchée, ou après une page masquée). Nouvelle carte « Manette · HOTAS (page provisoire) » dans l'onglet
+  Commandes, avec un test des axes en direct et l'import de la section joystick du fichier de réglages du jeu (aperçu,
+  puis question sur chaque appareil ; le fichier est lu dans la page, rien n'est envoyé). Les réglages forment un bloc
+  `joystick` du profil (schéma 1), enregistré et exporté seulement quand il diffère des valeurs par défaut. Sécurité :
+  sous automatisation, `navigator.getGamepads` est une simulation (les manettes de la machine ne sont jamais lues par un
+  test, les specs du navigateur piègent la vraie fonction) ; l'application Windows envoie `gamepad=(self)`, et
+  `gamepad=()` pendant son auto-test. Sans manette, le clavier et la souris volent au bit près comme avant : les goldens
+  de vol, des sessions, du monde, du son, du HUD, des réglages, des modèles, des modules et du contrat de test sont
+  identiques ; seul le golden de l'interface change (inventaire des nouveaux réglages et textes de la carte). Détail :
+  `docs/REGLAGES.md`.
+
+### Tests et outils
+
+- **Joysticks : le banc de test (phase J3).** Nouveau golden `joystick`, enregistré avec des manettes simulées (jamais
+  un appareil) et déterministe : la porte G-J2 (avec le HOTAS activé, des manches au repos dans leur zone morte volent
+  au bit près comme le clavier et la souris avec le HOTAS désactivé, et avec le HOTAS désactivé aucune manette n'est
+  lue, menu compris), la porte G-J3 (déviations complètes et boutons des manches = touches, au bit près), la base B0
+  supposée (son descripteur, les valeurs par défaut publiques, `axisValue`, `decodeHat` et `joystickMix` sur des
+  grilles), un vol avec un manche vJoy réglé par l'import d'une section de jeu synthétique (levier, déviations
+  partielles, regard sur deux axes, chapeau du manche vJoy sans effet, boutons, débranché puis rebranché, gâchette tenue à la reprise), deux manches
+  T.16000M identiques (proposition qui ne pilote rien, même manches en butée, échange par la première gâchette, qui ne
+  tire pas, levier tenu tant que le manche
+  rebranché n'a rien envoyé), un oracle de profils et de sections de jeu hostiles, et, sous automatisation, la vraie
+  fonction `getGamepads` jamais appelée. Les autres goldens ne changent pas d'un octet ; l'enregistreur accepte des
+  manettes simulées (`opts.gamepads`), changement prouvé neutre (`golden.mjs prove`). La porte complète et le test de
+  mutation couvrent le nouveau golden (signe du roulis inversé, une valeur par défaut, le verrou de la reprise, la
+  simulation coupée). Specs du navigateur pour la carte « Manette · HOTAS » avec des manettes simulées ; chaque spec
+  vérifie la simulation de `getGamepads` avant tout départ ; l'auto-test de l'application Windows la vérifie aussi,
+  avec `gamepad=()`, avant de cliquer sur « Démarrer ».
+
 ## [0.9.0] — 2026-10-01
 
 Première version publique. Elle part de l'entraîneur v13 (modèle de vol v6 identifié sur deux enregistrements de

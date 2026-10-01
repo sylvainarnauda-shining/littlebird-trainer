@@ -1,0 +1,19 @@
+[/Script/Engine.GameUserSettings]
+bUseVSync=False
+[/Script/WDGame.WDUserSettings]
+bUseHOTASHelicopters=True
+bCollectiveSelfCentering=False
+RotaryMousePitchSensitivity=50.000000
+[/Script/WDJoystick.WDJoystickSettings]
+Pitch=(DeviceIdentifier="1234:BEAD:vJoy Device",_f1=1,bInvert=False,_f2=False,Positive=(DeviceIdentifier="",_f3=-1,_f4=-1,_f5=Up),Negative=(DeviceIdentifier="",_f3=-1,_f4=-1,_f5=Up),_f6=1.000000,_f7=False,_f8=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),_f11=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),Sensitivity=0.800000,DeadZone=0.100000)
+Throttle=(DeviceIdentifier="1234:BEAD:vJoy Device",_f1=2,bInvert=False,_f2=False,Positive=(DeviceIdentifier="",_f3=-1,_f4=-1,_f5=Up),Negative=(DeviceIdentifier="",_f3=-1,_f4=-1,_f5=Up),_f6=1.000000,_f7=False,_f8=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),_f11=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),Sensitivity=1.000000,DeadZone=0.050000)
+Roll=(DeviceIdentifier="1234:BEAD:vJoy Device",_f1=0,bInvert=False,_f2=False,Positive=(DeviceIdentifier="",_f3=-1,_f4=-1,_f5=Up),Negative=(DeviceIdentifier="",_f3=-1,_f4=-1,_f5=Up),_f6=1.000000,_f7=False,_f8=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),_f11=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),Sensitivity=0.600000,DeadZone=0.050000)
+Yaw=(DeviceIdentifier="1234:BEAD:vJoy Device",_f1=5,bInvert=True,_f2=False,Positive=(DeviceIdentifier="",_f3=-1,_f4=-1,_f5=Up),Negative=(DeviceIdentifier="",_f3=-1,_f4=-1,_f5=Up),_f6=1.000000,_f7=False,_f8=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),_f11=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),Sensitivity=0.400000,DeadZone=0.020000)
+LookYaw=(DeviceIdentifier="",_f1=-1,bInvert=False,_f2=True,Positive=(DeviceIdentifier="1234:BEAD:vJoy Device",_f3=-1,_f4=0,_f5=Right),Negative=(DeviceIdentifier="1234:BEAD:vJoy Device",_f3=-1,_f4=0,_f5=Left),_f6=1.000000,_f7=False,_f8=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),_f11=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),Sensitivity=1.000000,DeadZone=0.050000)
+LookPitch=(DeviceIdentifier="",_f1=-1,bInvert=False,_f2=True,Positive=(DeviceIdentifier="1234:BEAD:vJoy Device",_f3=-1,_f4=0,_f5=Up),Negative=(DeviceIdentifier="1234:BEAD:vJoy Device",_f3=-1,_f4=0,_f5=Down),_f6=1.000000,_f7=False,_f8=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),_f11=(DeviceIdentifier="",_f1=-1,_f9=0.500000,_f10=True,_f3=-1,_f4=-1,_f5=Up),Sensitivity=1.000000,DeadZone=0.050000)
+ActionBindings=(Action=Fire,Binding=(DeviceIdentifier="1234:BEAD:vJoy Device",_f3=3))
+ActionBindings=(Action=Flares,Binding=(DeviceIdentifier="1234:BEAD:vJoy Device",_f3=4))
+ActionBindings=(Action=ToggleCameraMode,Binding=(DeviceIdentifier="1234:BEAD:vJoy Device",_f3=5))
+ActionBindings=(Action=Horn,Binding=(DeviceIdentifier="1234:BEAD:vJoy Device",_f3=6))
+[/Script/Engine.InputSettings]
+Pitch=(DeviceIdentifier="1234:BEAD:vJoy Device",_f1=9,bInvert=True,Sensitivity=3.000000,DeadZone=0.500000)

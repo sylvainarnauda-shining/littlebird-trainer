@@ -12,7 +12,11 @@
 //   (canvas and DOM); a wrong compass letter; the declared R5.7 fix reverted (its difference must stay inside the
 //   declared scope); behaviour-neutral refactors (a comment and blank lines, an unused field, a renamed field mapped by the
 //   alias table of a copied recorder, an added hook member) that must change nothing; a wording step (strict without
-//   --wording-step, accepted with it); the automation pointer-lock shim switched off (the user-safety invariant).
+//   --wording-step, accepted with it); the automation pointer-lock shim switched off (the user-safety invariant); the
+//   joystick path: the roll sign of the stick mix (the gate G-J3 must catch it, the keys and mouse goldens must not
+//   move), a one-ulp joystick default, the latch of a pad that reports late reverted, and the automation emulation of
+//   getGamepads switched off with the read guard (the page would read the machine's joysticks: the user-safety
+//   invariant).
 const fs = require('node:fs'), path = require('node:path'), { spawn } = require('node:child_process');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const abs = k => arg(k) && path.resolve(arg(k));
@@ -20,7 +24,7 @@ const src = abs('src'), template = abs('template'), inputs = abs('inputs'), gold
 const jobs = +arg('jobs', 4), only = arg('only') ? arg('only').split(',') : null;
 const nextUp = x => { const b = new DataView(new ArrayBuffer(8)); b.setFloat64(0, x); b.setBigUint64(0, b.getBigUint64(0) + 1n); return b.getFloat64(0); };
 const RUNTIME = ['core/pow.js', 'world.js', 'physics.js', 'forest.js', 'scenery.js', 'missiles.js', 'audio.js', 'models.js', 'ground.js', 'bot.js', 'app.js', 'vendor/three.min.js'];
-const ALLS = 'flight,sessions,world,audio,hud,settings,models,ui,modules,hookapi';
+const ALLS = 'flight,sessions,world,audio,hud,settings,models,ui,modules,hookapi,joystick';
 const AD = ['missiles', 'match', 'missiles-destroy'];   // the air-defence sessions (declared scope of R5.7)
 
 // Helpers over a check report: the suites' findings.
@@ -88,7 +92,19 @@ const MUTANTS = [
     check: rep => F(rep, 'hud').some(f => f.wording && f.declaredWordingStep) || 'the wording change is not seen' },
   // User safety: with the automation shim switched off, the page would take the real pointer lock.
   { id: 'automation-shim-off', edits: [['app.js', "navigator.webdriver===true&&!window.__LB_REAL_POINTER_LOCK__", () => "navigator.webdriver===false&&!window.__LB_REAL_POINTER_LOCK__"]], suites: 'hookapi', expect: { hookapi: 'DIFF' },
-    check: rep => strictF(rep, 'hookapi').some(f => /automationPointerLock/.test(f.path)) || 'the automation boot does not differ' }
+    check: rep => strictF(rep, 'hookapi').some(f => /automationPointerLock/.test(f.path)) || 'the automation boot does not differ' },
+  // Joysticks (J3): the stick mix with the roll sign flipped is caught by the full-deflection gate G-J3 (and the B0 law),
+  // while every key-and-mouse golden stays the same; a joystick default moved by one ulp moves the joystick golden only;
+  // the latch of a pad that has not reported at a resume, reverted, lets a held trigger fire (vjoy-b0).
+  { id: 'joystick-mix-roll-sign', edits: [['physics.js', 'if(cmd.roll)input.roll=clamp(input.roll+cmd.roll,-1,1);', () => 'if(cmd.roll)input.roll=clamp(input.roll-cmd.roll,-1,1);']], suites: 'joystick,flight', expect: { joystick: 'DIFF', flight: 'SAME', parity: 'SAME' },
+    check: rep => strictF(rep, 'joystick').some(f => f.path === '$.runs.G-J3.gate.holds') || 'the gate G-J3 does not fail' },
+  { id: 'joystick-default-deadzone-ulp', edits: [['physics.js', 'deadZone:.05,positive:null,negative:null};', () => 'deadZone:' + nextUp(.05) + ',positive:null,negative:null};']], suites: 'joystick,ui', expect: { joystick: 'DIFF', ui: 'SAME' } },
+  { id: 'joystick-late-pad-latch-reverted', edits: [['physics.js', 'state.pending.delete(i);for(const [a,ps] of on)if(ps.has(i))state.latched.add(a);', () => 'state.pending.delete(i);']], suites: 'joystick', expect: { joystick: 'DIFF' },
+    check: rep => strictF(rep, 'joystick').some(f => f.run === 'vjoy-b0' || (f.path || '').startsWith('$.runs.vjoy-b0.')) || 'vjoy-b0 does not differ' },
+  // User safety: with the emulation switched off and the read guard flipped, an automated page would read the
+  // machine's joysticks.
+  { id: 'joystick-emulation-off', edits: [['app.js', "if(typeof navigator!=='undefined'&&navigator.webdriver===true){", () => "if(typeof navigator!=='undefined'&&navigator.webdriver===false){"], ['app.js', 'if(navigator.webdriver===true&&navigator.getGamepads!==emulatedGamepads)', () => 'if(navigator.webdriver===false&&navigator.getGamepads!==emulatedGamepads)']],
+    suites: 'joystick', expect: { joystick: 'DIFF' }, check: rep => strictF(rep, 'joystick').some(f => (f.path || '').startsWith('$.automation.')) || 'the automation part does not differ' }
 ];
 
 function copyRecorder(to, aliases) {

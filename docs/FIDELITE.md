@@ -70,7 +70,9 @@ Chaque constante indique dans le code si elle est **measured** (mesurée), **rea
   par l'analyse, avec sa tolérance. Les tolérances ne sont jamais élargies pour faire passer un changement.
 - **Goldens** (`tests/fixtures/golden/`) : enregistrements bit à bit du vol et du chemin d'entrée, de sessions
   complètes de chaque mode, des cartes, des sons, du HUD, de l'import des réglages (10 000 profils générés), des
-  modèles 3D, de l'interface et des modules. Toute différence fait échouer les tests.
+  modèles 3D, de l'interface et des modules, et du chemin des joysticks avec des manettes simulées (portes G-J2 et
+  G-J3 : avec le HOTAS activé, des manches au repos volent au bit près comme le clavier et la souris, et une déviation
+  complète comme la touche ; réponse de base B0, supposée). Toute différence fait échouer les tests.
 - **Changements déclarés** : un changement de comportement est un commit à lui seul, décrit dans `CHANGELOG.md`, avec
   la preuve que les goldens ne changent que là où il le dit.
 - **Identité des arbres syntaxiques** (`scripts/ast-identity.mjs`) : un changement de commentaires ou de textes ne

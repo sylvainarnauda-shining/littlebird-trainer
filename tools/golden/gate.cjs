@@ -8,6 +8,8 @@
 //     thresholds; the HUD fixed states over a live helicopter; the Verba reload race gone from the module goldens
 //     (fix R5.7) while their gunners still reload after launching;
 //     the touchdowns straddling every crash threshold; the automation pointer-lock boot emulated with no real call;
+//     the joystick gates G-J2 and G-J3 holding, no joystick read with the HOTAS off, and the automation emulation of
+//     getGamepads with no real read;
 //  5. check mode on the unmodified runtime: every suite SAME, the recorder SAME, the private sidecars SAME;
 //  6. check mode with the suites in reverse order: every suite SAME (no suite depends on another);
 //  7. the mutation smoke test (mutation-smoke.cjs) against the new goldens;
@@ -20,7 +22,7 @@ const fs = require('node:fs'), path = require('node:path'), { spawn } = require(
 const arg = k => { const i = process.argv.indexOf('--' + k); return i > 0 ? path.resolve(process.argv[i + 1]) : null; };
 const A = { src: arg('src'), template: arg('template') }, BASE = { src: arg('baseline-src'), template: arg('baseline-template') }, inputs = arg('inputs'), scratch = arg('scratch');
 const install = arg('install'), installPrivate = arg('install-private'), privacy = arg('privacy'), jobs = (() => { const i = process.argv.indexOf('--jobs'); return i > 0 ? process.argv[i + 1] : '4'; })();
-const ALL = ['flight', 'sessions', 'world', 'audio', 'hud', 'settings', 'models', 'ui', 'modules', 'hookapi'];
+const ALL = ['flight', 'sessions', 'world', 'audio', 'hud', 'settings', 'models', 'ui', 'modules', 'hookapi', 'joystick'];
 const node = (args) => new Promise(resolve => { const t0 = Date.now(), p = spawn(process.execPath, args, { stdio: ['ignore', 'pipe', 'pipe'] }); let out = '', err = '';
   p.stdout.on('data', d => out += d); p.stderr.on('data', d => err += d); p.on('close', code => resolve({ code, out, err, seconds: +((Date.now() - t0) / 1000).toFixed(1) })); });
 const rec = (who, dir) => node([path.join(__dirname, 'record.cjs'), '--src', who.src, '--template', who.template, '--inputs', inputs, '--out', path.join(dir, 'fixtures'), '--private-out', path.join(dir, 'private'), '--quiet']);
@@ -52,8 +54,10 @@ const step = (name, pass, info) => { report.steps.push({ name, pass, ...info });
     const mod = J('modules.json'), race = mod.ground.verbaReloadSkipped.count, reloads = mod.ground.verbaReloadStarted ? mod.ground.verbaReloadStarted.count : 0;
     const fl = J('flight.json'), td = Object.entries(fl.runs).filter(([k]) => k.startsWith('touchdown-')), tdBad = td.filter(([k, r]) => r.outcome.crashed !== /^touchdown-(fast|hard-4\.8|tilt-35)/.test(k) || !r.outcome.touched).map(([k]) => k);
     const lock = J('hookapi.json').automationPointerLock, lockOk = lock.emulated && lock.lockedAfterStart && lock.unlockedAfterPause && !lock.realLockCalls && !lock.realExitCalls && !lock.fullscreenCalls && !lock.keyboardLockCalls;
-    step('exercise and coverage', !zero.length && !short.length && !hudBad.length && race === 0 && reloads > 0 && td.length >= 10 && !tdBad.length && lockOk, { scenarios: Object.keys(s.scenarios).length, required: Object.values(s.scenarios).reduce((n, sc) => n + sc.meta.required.length, 0), zero, short, exercise: ex,
-      hudFixedStatesBad: hudBad, verbaReloadSkipped: race, verbaReloadStarted: reloads, touchdowns: td.length, touchdownsBad: tdBad, automationPointerLock: lock }); }
+    const js = J('joystick.json'), gates = Object.entries(js.runs).filter(([, r]) => r.gate), gatesBad = gates.filter(([, r]) => !r.gate.holds || r.gate.reads[r.gate.runs[0]].total !== 0 || r.gate.reads[r.gate.runs[1]].beforeStart !== 0).map(([k]) => k);
+    const joyOk = gates.length >= 2 && !gatesBad.length && js.automation.emulated && js.automation.realGamepadReads === 0;
+    step('exercise and coverage', !zero.length && !short.length && !hudBad.length && race === 0 && reloads > 0 && td.length >= 10 && !tdBad.length && lockOk && joyOk, { scenarios: Object.keys(s.scenarios).length, required: Object.values(s.scenarios).reduce((n, sc) => n + sc.meta.required.length, 0), zero, short, exercise: ex,
+      hudFixedStatesBad: hudBad, verbaReloadSkipped: race, verbaReloadStarted: reloads, touchdowns: td.length, touchdownsBad: tdBad, automationPointerLock: lock, joystickGates: gates.map(([k]) => k), joystickGatesBad: gatesBad, joystickAutomation: js.automation }); }
   const check = async (suites, label) => {
     const r = await node([path.join(__dirname, 'record.cjs'), '--src', A.src, '--template', A.template, '--inputs', inputs, '--check', f1, '--private-check', p1, '--suites', suites.join(','), '--quiet']);
     const lines = r.out.split(/\r?\n/).filter(l => /^(SAME|DIFF) /.test(l));

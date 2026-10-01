@@ -4,9 +4,11 @@
 // job). It proves, on the shipped files and under the
 // shipped fuses, that:
 //  1. positive: the page loads from app.asar under its policy and boots; the page runs under automation and emulates
-//     the pointer lock itself (checked BEFORE Start is clicked; without it the test stops); the engine replays the
-//     golden parity script (G5, desktop/parity.cjs: a known engine digest, every state within tolerance of the Node
-//     golden); a session starts, flies and pauses; storage and the profile export work; no console error;
+//     the pointer lock itself, and answers getGamepads with its own emulation while its policy refuses the Gamepad API
+//     (both checked BEFORE Start is clicked; without them the test stops, and the machine's joysticks are never read);
+//     the engine replays the golden parity script (G5, desktop/parity.cjs: a known engine digest, every state within
+//     tolerance of the Node golden); a session starts, flies and pauses; storage and the profile export work; no
+//     console error;
 //  2. negative: the page has no Node.js and no test hook; network, pop-ups, navigation away, injected scripts, eval
 //     and non-JSON downloads are refused; the app serves nothing but its page.
 // Safety on the machine that runs it: the window is shown without activation in a corner of the screen, cannot take
@@ -312,6 +314,22 @@ function run(win, app, { args, session, policy }) {
       report.steps.emulation = { ...env, via: prepared };
       if (!env.webdriver || !env.emulated || !env.unlocked)
         return finish('the page does not emulate the pointer lock: Start was not clicked');
+      // Joysticks, before anything is clicked too: getGamepads is the page's own emulation (non-writable, with no pad
+      // in it), and the page policy refuses the Gamepad API (gamepad=(): document.featurePolicy, which the pinned
+      // Electron's Chromium has, answers false; no answer stops the self-test too, so the check never passes
+      // vacuously). Checked without calling getGamepads: the machine's joysticks are never read.
+      report.steps.gamepads = await js(
+        "(() => { const d = Object.getOwnPropertyDescriptor(navigator, 'getGamepads'), list = window.__LB_EMULATED_GAMEPADS__," +
+          ' fp = document.featurePolicy;' +
+          " return {emulated: !!d && d.writable === false && typeof d.value === 'function' && Array.isArray(list)," +
+          ' pads: Array.isArray(list) ? list.length : -1,' +
+          " policyAllows: fp && typeof fp.allowsFeature === 'function' ? fp.allowsFeature('gamepad') : null}; })()",
+      );
+      const pads = report.steps.gamepads;
+      if (!pads.emulated || pads.pads !== 0 || pads.policyAllows !== false)
+        return finish(
+          'the page could read the joysticks (no emulation, or gamepad not refused by the page policy): Start was not clicked',
+        );
       // 2. The menu renders WebGL frames.
       await poll('trainerDiagnostics().webgl.calls > 0', 60000, 'WebGL frames in the menu');
       report.steps.menu = await js('({calls: trainerDiagnostics().webgl.calls, map: trainerDiagnostics().map.id})');

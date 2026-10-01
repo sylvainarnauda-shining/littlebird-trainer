@@ -21,9 +21,14 @@
    "sha256": "aabd9e9d28c1df9276e854ad57afd05cc122021f7ae5387a283b714bcca0f8a9"
   },
   {
+   "file": "joystick.json",
+   "bytes": 270993,
+   "sha256": "84ed680b635f42fc7639479d71cc439a873ded4159f7099f281577060e98754c"
+  },
+  {
    "file": "meta.json",
-   "bytes": 8505,
-   "sha256": "91e744859315ca9edd731c5045411950841c51f610a9dc894bf15b25a67ea480"
+   "bytes": 8715,
+   "sha256": "238f75f0651b1a0b7930fcfc957f27fdc4b0e8096af9f4ccddffcf406f7cc6a5"
   },
   {
    "file": "models.json",
@@ -52,8 +57,8 @@
   },
   {
    "file": "ui.json",
-   "bytes": 44986,
-   "sha256": "8d9095cbd5892adca3e87c454197ab2e68ce0f53cbfa012de47a5c1a82df81ab"
+   "bytes": 55436,
+   "sha256": "12b38ee64b2f92f91bba4682c9702fa979e345282b940a4b0e55189dec00fbcf"
   },
   {
    "file": "world.json",
