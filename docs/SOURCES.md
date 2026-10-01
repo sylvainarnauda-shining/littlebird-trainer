@@ -75,6 +75,7 @@ Les touches et réglages par défaut du jeu ont leurs propres sources, dans `REG
 | AH-6R : deux paniers de roquettes B-13, 8 roquettes de 122 mm, 350 coups/min, rechargés en 6 s, 100 points par roquette (4 roquettes abattent l'AH-6M) | B1, B2, G2 | lu                                                                                                                                      |
 | Vitesse des roquettes de 122 mm : 600 m/s                                                                                                              | —          | choisie (une base donne 1 430 m/s, valeur douteuse)                                                                                     |
 | Bots : perception, niveaux, tactique                                                                                                                   | —          | choisis (voir `analyse/foret-dca.md`)                                                                                                   |
+| Largeur du fuselage de l'appareil réel (MD 500E et 530F) : 1,40 m ; 1,45 à 1,50 m selon d'autres fiches                                                | A1, A2     | lu ; contrôle de vraisemblance seulement, la forme de la cabine vient des images du jeu (voir `analyse/apparence.md`)                   |
 
 ## Monde, vues et modes
 
@@ -114,6 +115,14 @@ citées par leur site et leur sujet.
   https://allthings.how/wardogs-towers-explained-capturing-codes-and-the-hot-zone-magnet/ ; wardogshub.gg, tours —
   https://wardogshub.gg/towers/
 - G5 — PCGamesN, « How to capture Wardogs towers » — https://www.pcgamesn.com/wardogs/capture-wardogs-towers
+
+**Fiches de l'appareil réel** (consultées le 1er octobre 2026)
+
+- A1 — globalair.com, fiches techniques du MD 500E et du MD 530F (largeur du fuselage) —
+  https://www.globalair.com/aircraft-specifications/mcdonnell-douglas/mcdonnell-douglas-500e-specifications/322 et
+  https://www.globalair.com/aircraft-specifications/mcdonnell-douglas/mcdonnell-douglas-530f-specifications/350
+- A2 — aerocorner.com, fiche du MD 500E — https://aerocorner.com/aircraft/md-500e/ ; aerospaceweb.org, fiche de l'OH-6 —
+  https://aerospaceweb.org/aircraft/helicopter-m/oh6
 
 **Discussions Steam de WARDOGS** (https://steamcommunity.com/app/1867240/discussions/)
 

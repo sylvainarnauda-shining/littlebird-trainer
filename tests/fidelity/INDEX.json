@@ -260,7 +260,7 @@
     {
       "id": "F37",
       "check": "measured exterior key points",
-      "band": "hub 1.768, stabiliser 1.721 / x 0.836, boom 0.70 at z 4.2, skids -1.25, grips 0.81 m, cowl recess z 1.215, boom top 0.93 at z 2.4, end cap z 4.985, rotor band 25-50 km/h",
+      "band": "hub 1.768, stabiliser 1.721 / x 0.836, boom 0.70 at z 4.2, skids -1.25, grips 0.81 m, cowl recess z 1.215, boom top 0.93 at z 2.4, end cap z 4.985, rotor band 25-50 km/h, cabin plan widest 1.46 m at z -0.9 and 1.40 m at the A-post",
       "basis": "recordings",
       "files": ["tests/fidelity/exterior-keypoints.test.js"]
     }

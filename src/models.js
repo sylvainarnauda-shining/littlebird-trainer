@@ -37,9 +37,21 @@
     // DY: the game's hub stands 2.97 m above the skid caps vs 2.78 in v12 (BA, +7 %); the skid bottom stays at -1.25
     // (the flight model rests the origin 1.25 m above the ground), so the whole airframe is raised: model y = B + DY.
     const DY=.188;
-    // Egg profile: radius r at axial position z (nose -z). Scaled x 0.7, y 0.97 (cabin width 1.43 vs 1.40 measured). v13: closed tip.
+    // Egg profile: radius r at axial position z (nose -z), scaled x 0.7, y 0.97 about the axis. v13: closed tip.
     const PROFILE=[[0,-2.2],[.34,-2.13],[.6,-1.96],[.8,-1.7],[.93,-1.36],[1,-.9],[1.02,-.4],[.98,.15],[.88,.65],[.72,1.05],[.52,1.38],[.36,1.62],[.3,1.74],[.18,1.81],[0,1.84]];
     const SX=.7,SY=.97,CY=.12+DY;
+    // Plan fullness ahead of the widest section (measured): the game's cabin keeps nearly parallel sides through the door
+    // area where v13's egg narrowed. Cabin outline edges (two detectors agreeing within 1.6 px) in 12 fitted chase frames
+    // vs the exact silhouette of this model in the same cameras: from above-behind (5 frames, camera 5.6-8.3 m up, both
+    // recordings) the game was 9.5 cm wider (+8.8 cm a side at z about -1.2..-1.6, +3.8 at -0.9, 0 at the widest
+    // section); from low behind (5 frames) the closed hull matched within 1 cm a side up to 60 % of its height, and a
+    // wider or rounder section (SX 0.72-0.76, superellipse 2.3-2.6) made that outline 7-17 cm wider than the game's (v13
+    // 5.2). FWD widens x only, a smoothstep from 1 at z -0.4 to 1.12 at z -1.6 and ahead: widest 1.46 m at z -0.9 (v13
+    // 1.43 at -0.4; real fuselage 1.40-1.50 m, read), 1.40 m at the A-post (v13 1.25), width / height 0.755 at z -0.9 (v13
+    // 0.72); height, length and everything behind z -0.4 unchanged. Outline width error, game minus model: top-rear
+    // +9.5 -> +2.6 cm, rear -5.2 -> -5.4 cm (the door-frame tubes stand 3.8 cm proud; the game has none); rms over the 12
+    // frames 3.95 -> 2.91 px.
+    const FWD=z=>{const u=Math.min(1,Math.max(0,(-.4-z)/1.2));return 1+.12*u*u*(3-2*u);};
     // v13 rear dome: behind z 0.2 the pod is shortened (tip 1.84 -> 1.10) and its axis drops 0.2 m, so that the exhaust
     // measured at (0, -0.26 B = -0.07, 0.80 +- 0.32) (BA; nozzle seen in two rear views) comes out of its lower rear.
     const warp=v=>{if(v.z>.2){const u=Math.min(1,(v.z-.2)/1.64);v.y-=.2*pow(u,1.6);v.z=.2+(v.z-.2)*(1-.45*u);}return v;};
@@ -49,12 +61,12 @@
       const at=z=>{for(let i=1;i<PROFILE.length;i++){const [r0,a]=PROFILE[i-1],[r1,b]=PROFILE[i];if(z>=a&&z<=b)return r0+(r1-r0)*(z-a)/(b-a);}return 0;};
       if(!pts.length||pts[0].y>z0+1e-6)pts.unshift(new T.Vector2(at(z0)*scale,z0));if(pts[pts.length-1].y<z1-1e-6)pts.push(new T.Vector2(at(z1)*scale,z1));
       const g=new T.LatheGeometry(pts,segments,phiStart,phiLength);g.rotateX(Math.PI/2);g.scale(SX,SY,1);g.translate(0,CY,0);
-      const p=g.attributes.position,v=new T.Vector3();for(let i=0;i<p.count;i++){warp(v.fromBufferAttribute(p,i));p.setXYZ(i,v.x,v.y,v.z);}g.computeVertexNormals();return g;
+      const p=g.attributes.position,v=new T.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);v.x*=FWD(v.z);warp(v);p.setXYZ(i,v.x,v.y,v.z);}g.computeVertexNormals();return g;
     }
     // Point on the cabin surface: axial z, angle a around the axis (0 = top, + = right).
     function surface(z,a,out=0){
       let r=0;for(let i=1;i<PROFILE.length;i++){const [r0,z0]=PROFILE[i-1],[r1,z1]=PROFILE[i];if(z>=z0&&z<=z1){r=r0+(r1-r0)*(z-z0)/(z1-z0);break;}}
-      r+=out;return warp(V(Math.sin(a)*r*SX,CY+Math.cos(a)*r*SY,z));
+      r+=out;return warp(V(Math.sin(a)*r*SX*FWD(z),CY+Math.cos(a)*r*SY,z));
     }
     // Lofted skin through superellipse sections [z, centre y, width, height, squareness] (Catmull-Rom between the
     // sections, sub rings per span, seam underneath), closed at both ends.

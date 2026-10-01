@@ -8,7 +8,7 @@
  },
  "models": {
   "own": {
-   "digest": "64dfb9c68794925d76bd24f15851d09e",
+   "digest": "e5ba5e6893c5c23a7748a5dcf6300aa9",
    "counts": {
     "objects": 28,
     "meshes": 22,
@@ -23,7 +23,7 @@
    "text": "15174d986fedb23f"
   },
   "air-target": {
-   "digest": "8a654953189f7316621f880e2ca77b33",
+   "digest": "7a9ddc92ef14ce1f1894ec1363175d38",
    "counts": {
     "objects": 25,
     "meshes": 19,
@@ -38,7 +38,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "bot-0-miniguns": {
-   "digest": "a074f0995169730d832c2a2ec93e2a46",
+   "digest": "a1dd48e51fc541c5be29b4a656743290",
    "counts": {
     "objects": 28,
     "meshes": 22,
@@ -53,7 +53,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "bot-1-miniguns": {
-   "digest": "d3e2744f99b2c11bad45f85ebbf03f87",
+   "digest": "9e7110a0749a295e973699b56ccb8dbf",
    "counts": {
     "objects": 28,
     "meshes": 22,
@@ -68,7 +68,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "bot-2-miniguns": {
-   "digest": "68af735ea249d866c74334c34872a51a",
+   "digest": "3fc3a89d535992df03626a0fa81faf70",
    "counts": {
     "objects": 28,
     "meshes": 22,
@@ -83,7 +83,7 @@
    "text": "e3b0c44298fc1c14"
   },
   "bot-rockets": {
-   "digest": "1e33be72469a3a2c65ce74475a8c1408",
+   "digest": "00c0ebe88938d41788fa16744282fe88",
    "counts": {
     "objects": 29,
     "meshes": 23,
