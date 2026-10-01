@@ -148,8 +148,9 @@ privée du moment. Identités admises (auteur, « committer », étiquette) : le
 lui-même, seulement comme « committer » (fusions, modifications en ligne) ; les robots Dependabot et GitHub Actions,
 chacun avec son nom et son adresse « noreply » exacts (`botIdentities`). Le champ d'adresse doit être tout entier une
 adresse « noreply » (`commitEmailPattern`), et le nom d'une identité ne doit contenir aucune adresse (un `user.name`
-réglé sur une adresse, par exemple). Dans les messages de commit, les adresses « noreply » de GitHub et la ligne de
-signature de Dependabot sont admises (`commitMessageEmailsAllowed`). Toute autre adresse fait échouer le scanner, y
+réglé sur une adresse, par exemple). Dans les messages de commit, les adresses « noreply » de GitHub, la ligne de
+signature de Dependabot et la ligne `Co-Authored-By: Claude …` de l'assistant de code Claude, avec l'adresse « noreply »
+d'Anthropic, sont admises (`commitMessageEmailsAllowed`). Toute autre adresse fait échouer le scanner, y
 compris dans le commit de fusion d'essai d'une pull request, qui porte l'adresse principale de son auteur : activez
 « Keep my email addresses private » dans les réglages de votre compte GitHub avant d'en ouvrir une.
 
