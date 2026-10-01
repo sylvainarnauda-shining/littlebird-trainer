@@ -18,12 +18,12 @@
    "sha256_lf": "3e3b5ba0ef890b4e98d540908e9154c70de82130433bd47ba39845a83c9a8e3a"
   },
   "harness.cjs": {
-   "sha256": "7c12276bfc8c1b404add6f8e76b0413e8c87778b7d39e5c01cc96f48b840f0fa",
-   "sha256_lf": "7c12276bfc8c1b404add6f8e76b0413e8c87778b7d39e5c01cc96f48b840f0fa"
+   "sha256": "2e8e3d35a5ffc69aec7f3c16f82b3f514c81ed5d8b8abf114c5210bef0914161",
+   "sha256_lf": "2e8e3d35a5ffc69aec7f3c16f82b3f514c81ed5d8b8abf114c5210bef0914161"
   },
   "mutation-smoke.cjs": {
-   "sha256": "5f7fa65322eebd6dc924f07276bdc4e52ad176be6dad4a29b903b764dc768ced",
-   "sha256_lf": "5f7fa65322eebd6dc924f07276bdc4e52ad176be6dad4a29b903b764dc768ced"
+   "sha256": "7089ecb9050c6ceac62f545b683a5f0787c8b84f8d83e0f425511d17af9b4c92",
+   "sha256_lf": "7089ecb9050c6ceac62f545b683a5f0787c8b84f8d83e0f425511d17af9b4c92"
   },
   "probe-aliases.json": {
    "sha256": "f1c131989b55281e1ef5a72abb32d02f87a529909155ab0795a24ef1d6b3dff4",
@@ -42,8 +42,8 @@
    "sha256_lf": "98c25f231fa7a386fdc7a43512c13d5c5f749545c6baaad0f8142666ea22225f"
   },
   "record.cjs": {
-   "sha256": "b3a045aaaeba06076fcd491a2313eb0fe2dfc1b4617e9202735ccb7112cf4d39",
-   "sha256_lf": "b3a045aaaeba06076fcd491a2313eb0fe2dfc1b4617e9202735ccb7112cf4d39"
+   "sha256": "ddfe51e58fc54d2c8f3abee2d31493ba3a709dbb881ebab90e3d27a922c7c803",
+   "sha256_lf": "ddfe51e58fc54d2c8f3abee2d31493ba3a709dbb881ebab90e3d27a922c7c803"
   },
   "runtime-names.cjs": {
    "sha256": "98a525631b698f411e4d40e0eed05eb5a1c738be13d06364579b98d1875cfda8",
@@ -56,6 +56,10 @@
   "scene.cjs": {
    "sha256": "bb2800fc2104c533abcbd8a967fe5f758f7674ed97cdad4f57b66fe63e6a9764",
    "sha256_lf": "bb2800fc2104c533abcbd8a967fe5f758f7674ed97cdad4f57b66fe63e6a9764"
+  },
+  "template.cjs": {
+   "sha256": "8c5c9ab847b3c7e28ab90b6e9fe43ec1bd0caeee4f3613918d1d9a91946170fa",
+   "sha256_lf": "8c5c9ab847b3c7e28ab90b6e9fe43ec1bd0caeee4f3613918d1d9a91946170fa"
   },
   "webaudio.cjs": {
    "sha256": "6a7fc853c3436e59a4bfb7618ae071d63a2f1b32d8b0a315f2889f7f04cf1c6d",
@@ -90,8 +94,8 @@
    "sha256_lf": "9a915e674a90a81933d315f518aaa814c5ad713053e9a86260420f3aa923d1ff"
   },
   "suites/settings.cjs": {
-   "sha256": "a55ddde92bd3b64f4e0d304bacf5367b881273c8f23166863e092abc95c516c5",
-   "sha256_lf": "a55ddde92bd3b64f4e0d304bacf5367b881273c8f23166863e092abc95c516c5"
+   "sha256": "b9c862db5a05c37193b693d1b28cd08d199285fe28c693ab217e7e990e1f2068",
+   "sha256_lf": "b9c862db5a05c37193b693d1b28cd08d199285fe28c693ab217e7e990e1f2068"
   },
   "suites/ui.cjs": {
    "sha256": "7653d03e821e0e8b75aeb1f7b61b0c0d070b80ad3043b483e5044d2f22d6f6a6",
