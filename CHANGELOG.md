@@ -15,7 +15,9 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   pilotent qu'une fois gauche et droite confirmés, et cette pression ne tire pas). Les six axes du fichier de réglages
   du jeu (tangage, collectif, roulis, lacet, regard libre horizontal et vertical), chacun avec sa manette, son numéro
   d'axe, l'inversion, la sensibilité, la zone morte et les boutons des deux sens, plus les boutons Tirer, Leurres et
-  Changer de vue. Valeurs par défaut publiques : celles du jeu (aucun appareil, sensibilité 1, zone morte 0,05, HOTAS
+  Changer de vue. Les directions d'un chapeau ne sont lues que sur un appareil dont le codage du chapeau est connu
+  (T.16000M, 8 directions) : celui d'un manche vJoy dépend de son réglage, n'est pas vérifié, et l'import ne reprend
+  pas ces directions. Valeurs par défaut publiques : celles du jeu (aucun appareil, sensibilité 1, zone morte 0,05, HOTAS
   désactivé). Réponse **supposée** (base B0, rien n'est encore mesuré dans le jeu) : déviation dans le canal des touches
   (déviation complète = vitesse de la touche), zone morte retirée puis remise à l'échelle, sensibilité en gain plafonné,
   collectif = position du levier, regard libre = angle de vue, manches ajoutés au clavier et à la souris. Rien n'est lu
@@ -41,7 +43,7 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   lue, menu compris), la porte G-J3 (déviations complètes et boutons des manches = touches, au bit près), la base B0
   supposée (son descripteur, les valeurs par défaut publiques, `axisValue`, `decodeHat` et `joystickMix` sur des
   grilles), un vol avec un manche vJoy réglé par l'import d'une section de jeu synthétique (levier, déviations
-  partielles, regard sur le chapeau, boutons, débranché puis rebranché, gâchette tenue à la reprise), deux manches
+  partielles, regard sur deux axes, chapeau du manche vJoy sans effet, boutons, débranché puis rebranché, gâchette tenue à la reprise), deux manches
   T.16000M identiques (proposition qui ne pilote rien, même manches en butée, échange par la première gâchette, qui ne
   tire pas, levier tenu tant que le manche
   rebranché n'a rien envoyé), un oracle de profils et de sections de jeu hostiles, et, sous automatisation, la vraie

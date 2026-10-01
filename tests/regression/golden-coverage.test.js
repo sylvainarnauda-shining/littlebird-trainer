@@ -148,6 +148,7 @@ test('joysticks: gates G-J2 and G-J3 hold, nothing read with the HOTAS off, B0 r
     assert.equal(r.coverage.deaths, 0, id + ': the helicopter flies through');
   }
   assert.equal(j.runs['vjoy-b0'].events.shotsWhileLatched, 0, 'a trigger held through a resume is latched');
+  assert.equal(j.runs['vjoy-b0'].events.hatLookFrames, 0, 'the hat of a vJoy device (layout not known) moves nothing');
   assert.equal(j.runs.twins.events.shotsWhileConfirming, 0, 'the press that confirms the sticks never fires');
   assert.equal(
     j.runs.twins.events.flewWhileProposed,

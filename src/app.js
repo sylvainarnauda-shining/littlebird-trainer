@@ -1822,7 +1822,7 @@
         for(const r of J.REFS)if(joy.res[r].includes(p.index))tags.push(JOY_REF_NAMES[r]+(joy.unconfirmed&&r!=='main'?' (proposé, à confirmer)':''));
         tags.push(joy.live.has(p.index)?'reçoit':'pas encore de signal');if(J.hatMute(joy.fresh,p.index))tags.push('chapeau muet');
         v.head.textContent=`n° ${p.index} · ${p.name||'manette sans nom'}${p.vendor?` · ${J.gameIdentifier(p).slice(0,9)}`:''} · ${tags.join(' · ')}`;
-        const hat=J.decodeHat(p.axes[9]),on=p.buttons.map((b,i)=>b?i:-1).filter(i=>i>=0);
+        const hat=J.hatKnown(p)?J.decodeHat(p.axes[J.presetHat(p)]):null,on=p.buttons.map((b,i)=>b?i:-1).filter(i=>i>=0);
         v.axes.textContent='Axes : '+p.axes.map((x,i)=>`${i} ${Math.abs(x)>1.05?'centré':joyNum(x)}`).join(' · ')+(hat?` · chapeau ${HAT_FR[hat]}`:'');
         v.buttons.textContent=`Boutons appuyés (numéros du jeu, à partir de 0) : ${on.length?on.join(', '):'aucun'}`;}
     }
@@ -1842,7 +1842,8 @@
       const box=$('joyPreview');if(!box||!box.replaceChildren)return;box.replaceChildren();box.hidden=false;
       const line=text=>{const d=document.createElement('div');d.textContent=text;box.append(d);return d;};
       const dev=d=>d?`${d.name||'manette'} (${J.gameIdentifier(d).slice(0,9)})`:'aucune manette';
-      const src=s=>!s?'':s.button>=0?`bouton ${s.button} de ${dev(s.device)}`:s.hat>=0&&s.dir?`chapeau ${s.hat} ${HAT_FR[s.dir]||s.dir} de ${dev(s.device)}`:'';
+      // A hat direction of a device whose hat layout is not known (a vJoy POV can be 4-way or continuous) is not bound.
+      const src=s=>!s?'':s.button>=0?`bouton ${s.button} de ${dev(s.device)}`:s.hat>=0&&s.dir?`chapeau ${s.hat} ${HAT_FR[s.dir]||s.dir} de ${dev(s.device)}${J.hatKnown(s.device)?'':' (codage du chapeau non vérifié sur cet appareil : non repris)'}`:'';
       line('Configuration joystick lue dans le fichier du jeu (rien n’est modifié dans le jeu) :').className='joy-tag';
       if(parsed.useHotas!==null)line(`HOTAS dans le jeu : ${parsed.useHotas?'activé. D’après des joueurs, la souris et le clavier ne pilotent alors plus l’hélicoptère ; l’entraîneur les garde actifs tant que ce n’est pas vérifié (supposé).':'désactivé.'}`);
       for(const n of JOY_ROWS){const a=parsed.axes[n];if(!a)continue;

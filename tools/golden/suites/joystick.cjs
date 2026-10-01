@@ -14,7 +14,8 @@
 //    G-J3: a session whose pitch, roll and yaw, fire, flares and view change come from keys, then from full deflections
 //      and buttons of a vJoy device (collective keys and mouse in both): every checkpoint the same;
 //    vjoy-b0: a vJoy device set up through the import of a (synthetic) game joystick section, flown with the stick
-//      alone: the collective lever, partial deflections, a twist, look on the hat, gun, flares and view on buttons,
+//      alone: the collective lever, partial deflections, a twist, look on two axes (the file's look on the vJoy hat is
+//      not bound: that hat's layout is not known, and moving it moves nothing), gun, flares and view on buttons,
 //      unplugged (the session pauses), plugged again, resumed with the trigger held (latched: no round until it is
 //      released);
 //    twins: two identical T.16000M sticks proposed from the saved slots fly nothing while the roles are only proposed,
@@ -87,7 +88,8 @@ function gameSection({ hotas = true, device = '1234:BEAD:vJoy Device', axes = {}
 }
 const VJOY_SECTION = gameSection({ axes: {
   Pitch: { axis: 1, sensitivity: .8, deadZone: .1 }, Throttle: { axis: 2 }, Roll: { axis: 0, sensitivity: .6 }, Yaw: { axis: 5, invert: true, sensitivity: .4, deadZone: .02 },
-  LookYaw: { device: '', positive: { hat: 0, dir: 'Right' }, negative: { hat: 0, dir: 'Left' } }, LookPitch: { device: '', positive: { hat: 0, dir: 'Up' }, negative: { hat: 0, dir: 'Down' } } },
+  // Look on two axes; the hat directions of the file are not bound (a vJoy hat's layout is not known).
+  LookYaw: { axis: 3, positive: { hat: 0, dir: 'Right' }, negative: { hat: 0, dir: 'Left' } }, LookPitch: { axis: 4, positive: { hat: 0, dir: 'Up' }, negative: { hat: 0, dir: 'Down' } } },
 actions: [['Fire', 3], ['Flares', 4], ['ToggleCameraMode', 5], ['Horn', 6]] });
 
 // ---- B0 law (module realm: physics.js alone) ----
@@ -220,7 +222,7 @@ const RUNS = {
     pair: [{ name: 'keys', joystick: null }, { name: 'stick', joystick: PROFILES.deflect }],
     spec: name => ({ sticks: () => [new Stick(0, VJOY_ID, { hat: HAT_CENTRED })], script: (pl, ctx) => deflect(pl, controls(pl, name === 'stick' ? ctx.sticks[0] : null), 3000) }) },
   'vjoy-b0': { seedG: 143, map: 'vallee', frames: 3600, settings: { scenario: 'free', graphics: 'low' }, joystick: null,
-    required: ['imported', 'shots', 'flaresUsed', 'viewChanges', 'lookFrames', 'leverFrames', 'pausedOnUnplug', 'shotsAfterRelease', 'flightDistance'], spec: () => VJOY_B0 },
+    required: ['imported', 'shots', 'flaresUsed', 'viewChanges', 'lookFrames', 'hatFrames', 'leverFrames', 'pausedOnUnplug', 'shotsAfterRelease', 'flightDistance'], spec: () => VJOY_B0 },
   twins: { seedG: 144, map: 'vallee', frames: 2400, settings: { scenario: 'free', graphics: 'low' }, joystick: PROFILES.twins,
     required: ['proposedFrames', 'swapped', 'pausedOnUnplug', 'leverHeldFrames', 'leverFollowsFrames', 'shots', 'flightDistance'], spec: () => TWINS }
 };
@@ -243,13 +245,19 @@ const VJOY_B0 = {
     // The lever follows the collective axis (law L): after each frame, the collective is the processed value of the raw
     // value that frame read.
     const LEVER = { invert: false, sensitivity: 1, deadZone: .05 }; let read = null;
-    ev.lookFrames = 0; ev.leverFrames = 0;
+    // Look: its two axes move the view (yaw, then pitch); then the hat, whose directions the import did not bind (the
+    // layout of a vJoy hat is not known): the view must not move toward it (hatLookFrames counts the frames it grew).
+    ev.lookFrames = 0; ev.leverFrames = 0; ev.hatFrames = 0; ev.hatLookFrames = 0; let look = { yaw: 0, pitch: 0 };
     await pl.frames(2500, () => {
       if (read !== null && app().running && app().flight.collective === J.axisValue(read, LEVER)) ev.leverFrames++;
       const i = pilot(); if (!i) return; read = s.next.axes[2];
-      s.set(9, i >= 1000 && i < 1100 ? hatAt(2) : i >= 1200 && i < 1300 ? hatAt(0) : HAT_CENTRED);
+      s.set(3, i >= 1000 && i < 1100 ? .6 : 0).set(4, i >= 1200 && i < 1300 ? -.5 : 0);
+      s.set(9, i >= 1400 && i < 1500 ? hatAt(2) : i >= 1500 && i < 1600 ? hatAt(0) : HAT_CENTRED);
       s.press(3, i >= 800 && i < 950 || i >= 1600 && i < 1700); s.press(4, i >= 1400 && i < 1405); s.press(5, i >= 1800 && i < 1803 || i >= 2200 && i < 2203);
-      if (app().freeLook.yaw !== 0 && i > 1000) ev.lookFrames++;
+      const now = app().freeLook;
+      if ((now.yaw !== 0 || now.pitch !== 0) && i > 1000 && i <= 1310) ev.lookFrames++;
+      if (i > 1400 && i <= 1600) { ev.hatFrames++; if (Math.abs(now.yaw) > Math.abs(look.yaw) || Math.abs(now.pitch) > Math.abs(look.pitch)) ev.hatLookFrames++; }
+      look = { yaw: now.yaw, pitch: now.pitch };
     });
     // Unplugged in flight: the session pauses.
     ctx.unplug(s); await pl.frames(5, () => { if (!app().running) { ev.pausedOnUnplug = 1; return false; } });
@@ -315,6 +323,7 @@ async function runs(rt, { golden, defaults, log }) {
     const joystick = g ? g.meta.joystick : R.joystick, r = await fly(rt, { id, seedG: R.seedG, map: R.map, ...R.spec() }, { settings, bindings, joystick, frames, schema });
     const missing = R.required.filter(k => !((r.events[k] ?? r.coverage[k]) > 0)); if (r.events.shotsWhileLatched || r.events.shotsWhileConfirming) missing.push('a latched or consumed press fired');
     if (r.events.flewWhileProposed) missing.push('a stick flew before its role was confirmed');
+    if (r.events.hatLookFrames) missing.push('the hat of a device whose hat layout is not known moved the view');
     if (!golden && missing.length) throw Error(`${id}: ${missing.join(', ')} (${JSON.stringify({ ...r.events, ...r.coverage })})`);
     log(id, JSON.stringify(r.events));
     out[id] = { meta: { seedG: R.seedG, seedT: SEED_T, map: R.map, frames: r.framesRun, menuFrames: r.menuFrames, frameMs: 10, checkpointEvery: EVERY, settings, bindings, joystick, required: R.required, probeSchema: g ? g.meta.probeSchema : r.schema },

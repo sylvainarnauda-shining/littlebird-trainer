@@ -132,7 +132,11 @@ test('import of the game joystick section: a preview, then the profile mirrors t
   assert.match(lines, /HOTAS dans le jeu : activé/);
   assert.match(lines, /Tangage : vJoy Device \(1234:BEAD\), axe 1, sensibilité 0,8, zone morte 0,1\./);
   assert.match(lines, /Lacet : vJoy Device \(1234:BEAD\), axe 5, inversé/);
-  assert.match(lines, /Regard libre horizontal : aucun axe, .*sens \+ : chapeau 0 droite de vJoy Device/);
+  // Look on the vJoy hat: its layout (4-way or continuous POV) is not known, so those directions are not taken.
+  assert.match(
+    lines,
+    /Regard libre horizontal : aucun axe, .*sens \+ : chapeau 0 droite de vJoy Device \(1234:BEAD\) \(codage du chapeau non vérifié sur cet appareil : non repris\)/,
+  );
   assert.match(lines, /Tirer aux miniguns = bouton 3/);
   assert.match(lines, /sans équivalent dans l’entraîneur, ignorées : Horn\./);
   assert.match(lines, /lus par leur position/);
@@ -146,6 +150,7 @@ test('import of the game joystick section: a preview, then the profile mirrors t
     [j.useHotas, j.devices.main.product, j.axes.Pitch.device, j.axes.Pitch.axis],
     [true, 'bead', 'main', 1],
   );
+  assert.deepEqual([j.axes.LookYaw.positive, j.axes.LookPitch.negative], [null, null]);
   assert.equal(el('joyPitchAxis').value, '1');
   assert.equal(el('joyPitchDevice').value, 'main');
   // A file without a joystick section is refused with a reason.

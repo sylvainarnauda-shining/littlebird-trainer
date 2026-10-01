@@ -257,7 +257,7 @@
   const VJOY={vendor:'1234',product:'bead'};
   // Thrustmaster T.16000M FCS (USB 044F:B10A; B10B = the left-handed identity of its TARGET software): hat switch on
   // axis 9 (HID usage 0x39 - 0x30, read in Chromium's source); its zero-initialised hat tells a stick that has not
-  // reported yet (freshness).
+  // reported yet (freshness), and its 8-way hat (logical 0..7) is a layout decodeHat reads (hatKnown).
   const HAT_PRESETS=[{vendor:'044f',products:['b10a','b10b'],hat:9}];
   const HAT_DIRS=['up','upRight','right','downRight','down','downLeft','left','upLeft'];
   const HAT_HAS={up:['upLeft','up','upRight'],right:['upRight','right','downRight'],down:['downRight','down','downLeft'],left:['downLeft','left','upLeft']};
@@ -315,13 +315,19 @@
     return v<0?-m:m;
   }
   // Hat axis value -> direction, or null: centred (above 1: 1.2857 or 3.2857), not reported yet (exactly 0) or invalid.
-  // Directions read 2k/7 - 1 for k = 0 (up) to 7 (up-left), clockwise.
+  // Directions of an 8-way hat with the logical range 0..7 (hatKnown) read 2k/7 - 1 for k = 0 (up) to 7 (up-left),
+  // clockwise.
   function decodeHat(v){
     if(typeof v!=='number'||!Number.isFinite(v)||v===0||v>1.05||v<-1.05)return null;
     const k=Math.round((v+1)*3.5);
     return k>=0&&k<=7&&Math.abs(v-(2*k/7-1))<.05?HAT_DIRS[k]:null;
   }
   const hatHas=(dir,want)=>!!dir&&Object.hasOwn(HAT_HAS,want)&&HAT_HAS[want].includes(dir);
+  // Hat directions are read only on a device model whose hat layout is known: the presets (an 8-way hat, logical 0..7).
+  // Chromium scales a hat over the device's own logical range, so a 4-way or a continuous hat (a vJoy POV, as vJoy's
+  // configuration sets it) reads other values, which decodeHat would misread. Until the hat kind of such a device is
+  // measured, its hat directions read nothing and the import does not bind them. m: a pad or a device model.
+  const hatKnown=m=>!!(m&&HAT_PRESETS.some(x=>x.vendor===m.vendor&&x.products.includes(m.product)));
   // ---- Freshness: until a pad has reported, Chromium shows zeros (a throttle wheel at mid-travel, a hat at exactly 0,
   // which no hat state gives); after the page was hidden its values stay stale until its timestamp changes. A preset
   // device (hat known) is live once its hat is no longer exactly 0; any other device once its timestamp has changed
@@ -441,7 +447,7 @@
   function joyFrame(state,profile,pads,res,live){
     const byIndex=new Map(pads.map(p=>[p.index,p])),padsOf=ref=>(res[ref]||[]).map(i=>byIndex.get(i)).filter(Boolean);
     const hatOf=s=>{const m=profile.devices[s.device];return m&&Number.isInteger(m.hatAxis)?m.hatAxis:9;};
-    const srcHeld=(s,p)=>Number.isInteger(s.button)?!!p.buttons[s.button]:hatHas(decodeHat(p.axes[hatOf(s)]),s.dir);
+    const srcHeld=(s,p)=>Number.isInteger(s.button)?!!p.buttons[s.button]:hatKnown(p)&&hatHas(decodeHat(p.axes[hatOf(s)]),s.dir);
     const srcOn=s=>{if(!s)return 0;for(const p of padsOf(s.device))if(live.has(p.index)&&srcHeld(s,p))return 1;return 0;};
     const axes={};
     for(const name of JOY_AXES){
@@ -643,7 +649,9 @@
       if(prev&&!sameModel(prev,d)){if(!conflict.includes(r))conflict.push(r);return null;}
       given.set(r,d);const old=sameModel(next.devices[r],d)?next.devices[r]:null;
       next.devices[r]={...modelOf({...d,index:0}),slotHint:old?old.slotHint:0,hatAxis:old?old.hatAxis:9};return r;};
-    const source=g=>{if(!g)return null;const r=ref(g.device);if(!r)return null;if(g.button>=0&&g.button<=JOY_BOUNDS.button)return {device:r,button:g.button};return g.hat>=0&&g.dir?{device:r,dir:g.dir}:null;};
+    // A hat direction is bound only on a device whose hat layout is known (hatKnown); the preview says so for the others.
+    const source=g=>{if(!g)return null;const button=g.button>=0&&g.button<=JOY_BOUNDS.button,hat=!button&&g.hat>=0&&!!g.dir&&hatKnown(g.device);
+      if(!button&&!hat)return null;const r=ref(g.device);if(!r)return null;return button?{device:r,button:g.button}:{device:r,dir:g.dir};};
     if(parsed.useHotas!==null)next.useHotas=parsed.useHotas;
     for(const n of JOY_AXES){
       const a=parsed.axes[n];if(!a)continue;const b=next.axes[n];
@@ -662,7 +670,7 @@
     const codes=[];return {profile:validateJoystickProfile(next,codes),skipped,conflict,codes};
   }
   const joystick={AXES:JOY_AXES,REFS:JOY_REFS,ACTIONS:JOY_ACTIONS,GAME_ACTIONS,BOUNDS:JOY_BOUNDS,LAW:JOY_LAW,VJOY,HAT_DIRS,
-    parseGamepadId,parseGameIdentifier,gameIdentifier,sameModel,isVirtual,presetHat,modelOf,snapshotPads,axisValue,decodeHat,hatHas,
+    parseGamepadId,parseGameIdentifier,gameIdentifier,sameModel,isVirtual,presetHat,modelOf,snapshotPads,axisValue,decodeHat,hatHas,hatKnown,
     createFreshness,freshStep,markStale,hatMute,createRoles,startIdentify,cancelIdentify,swapRoles,rolesStep,resolveDevices,rolesLive,usedRefs,
     createJoyState,joyFrame,latchButtons,joystickMix,learnAxis,defaultProfile:defaultJoystickProfile,validateProfile:validateJoystickProfile,
     isDefaultProfile:isDefaultJoystickProfile,iniSection,parseStruct,parseGameJoystick,gameDevices,importGameJoystick};

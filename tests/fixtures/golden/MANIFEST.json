@@ -22,13 +22,13 @@
   },
   {
    "file": "joystick.json",
-   "bytes": 270929,
-   "sha256": "bc319ed21770e833155a15161b23b1533fe88294a41cf515131541b60c63211e"
+   "bytes": 270993,
+   "sha256": "84ed680b635f42fc7639479d71cc439a873ded4159f7099f281577060e98754c"
   },
   {
    "file": "meta.json",
    "bytes": 8715,
-   "sha256": "32377cac57c3535331a105409c6f11e874c871c0159e9c37e49ad5b3fae65fa6"
+   "sha256": "432b138af0353a93d7ab7c63fd034b5bc169d51afaa15a428f538db3a5e2131c"
   },
   {
    "file": "models.json",

@@ -131,6 +131,11 @@ dans Chrome, Edge et l'application Windows (même moteur) ; Firefox n'est pas v�
   vertical, chacun avec sa manette, son numéro d'axe (celui du navigateur : X 0, Y 1, Z 2, Rx 3, Ry 4, Rz 5, curseur 6,
   chapeau 9), inversion, sensibilité et zone morte. Valeurs par défaut, celles du jeu (lues dans son fichier de
   réglages) : aucun appareil, sensibilité 1, zone morte 0,05, sans inversion. « Détecter » lie l'axe qu'on bouge.
+- **Chapeau.** Ses directions (boutons des deux sens d'un axe) ne sont lues que sur un appareil dont le codage du
+  chapeau est connu : le T.16000M (8 directions). Le navigateur donne la position d'un chapeau selon le codage que
+  l'appareil déclare (4 directions, 8 directions ou continu) ; celui d'un manche virtuel vJoy dépend de son réglage et
+  n'est pas encore vérifié : sur un tel appareil, les directions du chapeau ne commandent rien, et l'import du jeu ne
+  les reprend pas (l'aperçu le dit).
 - **Réponse (supposée, rien n'est encore mesuré).** La déviation commande une vitesse de rotation comme une touche
   (déviation complète = vitesse de la touche) ; la zone morte est retirée puis le reste de la course remis à l'échelle ;
   la sensibilité multiplie la déviation, plafonnée à la déviation complète ; le collectif suit la position du levier, et
@@ -143,7 +148,8 @@ dans Chrome, Edge et l'application Windows (même moteur) ; Firefox n'est pas v�
   dans la page (rien n'est envoyé) : l'interrupteur HOTAS des réglages utilisateur du jeu et sa section des joysticks
   (pour chaque axe : appareil, numéro d'axe, inversion, sensibilité, zone morte, boutons des deux sens ; les boutons
   Tirer, Leurres et Changer de vue). Les numéros d'axe et de bouton n'ont pas de nom lisible dans le fichier : ils sont
-  lus par leur position. Un aperçu montre ce qui a été trouvé et demande ce qu'est chaque appareil du fichier (manette
+  lus par leur position. Les directions du chapeau d'un appareil dont le codage n'est pas connu ne sont pas reprises
+  (voir « Chapeau »). Un aperçu montre ce qui a été trouvé et demande ce qu'est chaque appareil du fichier (manette
   principale, manche gauche ou droit) avant d'appliquer. Exemple synthétique :
   `tests/fixtures/synthetic/joystick-settings.sample.txt`.
 - **Profil.** Ces réglages forment un bloc à part du profil (`joystick`, schéma 1), enregistré et exporté seulement

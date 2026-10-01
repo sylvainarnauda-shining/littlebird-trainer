@@ -383,7 +383,7 @@ test('joyFrame: signs bridged to the trainer (roll and yaw +1 = left), collectiv
   assert.equal(f.cmd.yaw, -1, 'twist right -> nose right (trainer -1)');
   assert.equal(f.cmd.pitch, J.axisValue(-0.5, profile.axes.Pitch), 'stick forward (raw -) -> nose down');
   assert.equal(f.cmd.lever, J.axisValue(0.3, profile.axes.Throttle), 'collective + = lever up');
-  assert.equal(f.cmd.lookYaw, -1, 'hat right -> look right (trainer -1)');
+  assert.equal(f.cmd.lookYaw, 0, 'the hat of a vJoy device is not read: its layout (4-way, continuous) is not known');
   assert.equal(f.axes.Roll.raw, 1);
   assert.deepEqual([[...f.held], f.pressed, f.released], [['fire'], ['fire'], []]);
   G.report(v, { release: [3], press: [5] });
@@ -401,6 +401,22 @@ test('joyFrame: signs bridged to the trainer (roll and yaw +1 = left), collectiv
   // Device gone: the keys take the collective back (lever undefined), the device is reported missing.
   f = frameOf(J.createJoyState(), profile, []);
   assert.deepEqual([f.axes.Throttle.status, f.cmd.lever, f.refs.main], ['missing', undefined, 'missing']);
+  // Hat look on a T.16000M (8-way hat, logical 0..7: a known layout): its directions are read.
+  const t = G.pad({ id: G.T16000M_ID, buttons: 16 });
+  const tFresh = J.createFreshness();
+  for (const [k, yaw] of [
+    [2, -1],
+    [1, -1],
+    [6, 1],
+    [0, 0],
+  ]) {
+    G.report(t, { axes: { 9: G.hatValue(k) } });
+    assert.equal(frameOf(J.createJoyState(), profile, [t], undefined, tFresh).cmd.lookYaw, yaw, 'hat ' + k);
+  }
+  assert.deepEqual(
+    [J.hatKnown(snap(t)[0]), J.hatKnown(snap(G.pad({ id: G.VJOY_ID }))[0]), J.hatKnown(null)],
+    [true, false, false],
+  );
 });
 
 test('joyFrame: a latch also covers a pad that reports only after it (stale after a hidden page, plugged again)', () => {
@@ -723,10 +739,10 @@ test('import: the game file mirrored into the profile; a role per device; clamps
       ['main', 5, 0.4],
     ],
   );
-  assert.deepEqual(
-    [p.axes.LookYaw.device, p.axes.LookYaw.positive, p.axes.LookYaw.negative],
-    [null, { device: 'main', dir: 'right' }, { device: 'main', dir: 'left' }],
-  );
+  // The file's look on the hat of the vJoy device: a hat whose layout is not known (vJoy POVs are 4-way or continuous,
+  // set in vJoy's configuration) is not bound.
+  assert.equal(J.hatKnown(g.axes.LookYaw.positive.device), false);
+  assert.deepEqual([p.axes.LookYaw.device, p.axes.LookYaw.positive, p.axes.LookYaw.negative], [null, null, null]);
   assert.deepEqual(p.actions, {
     fire: [{ device: 'main', button: 3 }],
     flares: [{ device: 'main', button: 4 }],
@@ -737,6 +753,14 @@ test('import: the game file mirrored into the profile; a role per device; clamps
   const twin = J.parseGameJoystick(ini.replaceAll('1234:BEAD:vJoy Device', '044F:B10A:T.16000M'));
   const left = J.importGameJoystick(twin, J.defaultProfile(), () => 'left').profile;
   assert.deepEqual([left.axes.Pitch.device, left.devices.left.product, left.devices.main], ['left', 'b10a', null]);
+  // The T.16000M's 8-way hat is a known layout: its directions are bound.
+  assert.deepEqual(
+    [left.axes.LookYaw.positive, left.axes.LookYaw.negative],
+    [
+      { device: 'left', dir: 'right' },
+      { device: 'left', dir: 'left' },
+    ],
+  );
   assert.equal(J.importGameJoystick(twin, J.defaultProfile(), () => 'nobody').profile.axes.Pitch.device, null);
   // Two devices given the same role: refused.
   const two = J.parseGameJoystick(
