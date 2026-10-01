@@ -51,7 +51,7 @@
     const JOY_NOTICES={invalid:'Configuration joystick illisible : réglages joystick par défaut.',schema:'Configuration joystick d’une version inconnue : réglages joystick par défaut.','duplicate-button':'Bouton de joystick utilisé pour deux actions : la seconde est ignorée.'};
     let joyProfile=J.defaultProfile();
     const joy={roles:J.createRoles(),fresh:J.createFreshness(),state:J.createJoyState(),pads:[],res:{main:[],left:[],right:[]},live:new Set(),frame:null,rolesInfo:null,
-      active:false,reading:false,error:'',present:new Set(),learn:null,learnBase:new Map(),stickLook:false,tick:0,prompted:'',rows:new Map(),ready:false};
+      active:false,reading:false,error:'',present:new Set(),unconfirmed:false,learn:null,learnBase:new Map(),stickLook:false,tick:0,prompted:'',rows:new Map(),ready:false};
     function joyLoad(block,into){const codes=[],p=J.validateProfile(block,codes);for(const c of new Set(codes))into.push(JOY_NOTICES[c]);return p;}
     // Flight-model values of the v6 model identified on the videos. Earlier
     // revisions used another model: their values have no equivalent here.
@@ -1694,7 +1694,7 @@
     const JOY_REF_NAMES={main:'manette principale',left:'manche gauche',right:'manche droit'};
     const JOY_LOST={main:'Manette principale débranchée',left:'Manche gauche débranché',right:'Manche droit débranché'};
     const JOY_PROMPTS={'press-left':'Appuie sur la gâchette du manche GAUCHE.','press-right':'Appuie maintenant sur la gâchette du manche DROIT.',
-      'confirm-left':'Deux manches identiques : appuie sur la gâchette du manche GAUCHE pour confirmer gauche et droite.',
+      'confirm-left':'Deux manches identiques : appuie sur la gâchette du manche GAUCHE pour confirmer gauche et droite. D’ici là, ils ne pilotent pas.',
       'reconnect-left':'Manche gauche introuvable : bouge-le ou rebranche-le.','reconnect-right':'Manche droit introuvable : bouge-le ou rebranche-le.'};
     // HID usages 0x30-0x39 in the order Chromium numbers the axes (usage - 0x30).
     const HID_AXES=['X','Y','Z','Rx','Ry','Rz · torsion','curseur · molette des gaz','cadran','roue','chapeau'];
@@ -1719,7 +1719,9 @@
         if(r.changed){save();joySync();if(r.events.some(e=>e==='identified'||e==='confirmed'||e==='swapped'))toast(`Manches identifiés : gauche n° ${r.left}, droit n° ${r.right}.`);}
       }
       joy.live=J.freshStep(joy.fresh,pads);joy.res=J.resolveDevices(joyProfile,pads,joy.roles);
-      joy.frame=J.joyFrame(joy.state,joyProfile,pads,joy.res,joy.live);
+      // Two identical sticks whose left and right are not confirmed yet drive nothing until the confirming press.
+      const live=J.rolesLive(joy.live,joy.rolesInfo,joyProfile,joy.res);joy.unconfirmed=live!==joy.live;
+      joy.frame=J.joyFrame(joy.state,joyProfile,pads,joy.res,live);
       if(joy.learn)joyLearnStep();
       joy.active=running&&joyProfile.useHotas;
       if(joy.active)joyFlight();
@@ -1800,6 +1802,7 @@
       const b=joyProfile.axes[n],where=b.device&&b.axis>=0?`${JOY_REF_NAMES[b.device]}, axe ${b.axis}`:'non lié';
       if(!a)return where;
       if(a.status==='missing')return `${where} : introuvable`;
+      if(a.status==='stale'&&joy.unconfirmed&&(b.device==='left'||b.device==='right'))return `${where} : en attente de la confirmation gauche et droite`;
       if(a.status==='stale')return `${where} : pas encore de signal`;
       if(a.status==='unbound')return a.value?`boutons ${joyNum(a.value)}`:where;
       return `${where} : brut ${a.raw===null?'—':joyNum(a.raw,3)} → ${joyNum(a.value)}`;
@@ -1816,7 +1819,7 @@
           box.append(row);joy.rows.set(p.index,{head,axes,buttons,main});}}
       for(const p of pads){const v=joy.rows.get(p.index);if(!v)continue;const tags=[];if(v.main)v.main.hidden=J.sameModel(joyProfile.devices.main,p);
         if(J.isVirtual(p))tags.push('virtuelle (vJoy)');if(p.mapping==='standard')tags.push('manette de jeu standard : non prise en charge ici');
-        for(const r of J.REFS)if(joy.res[r].includes(p.index))tags.push(JOY_REF_NAMES[r]);
+        for(const r of J.REFS)if(joy.res[r].includes(p.index))tags.push(JOY_REF_NAMES[r]+(joy.unconfirmed&&r!=='main'?' (proposé, à confirmer)':''));
         tags.push(joy.live.has(p.index)?'reçoit':'pas encore de signal');if(J.hatMute(joy.fresh,p.index))tags.push('chapeau muet');
         v.head.textContent=`n° ${p.index} · ${p.name||'manette sans nom'}${p.vendor?` · ${J.gameIdentifier(p).slice(0,9)}`:''} · ${tags.join(' · ')}`;
         const hat=J.decodeHat(p.axes[9]),on=p.buttons.map((b,i)=>b?i:-1).filter(i=>i>=0);

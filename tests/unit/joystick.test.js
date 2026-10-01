@@ -209,6 +209,73 @@ test('roles: next launch, the saved slots are a proposal; the first press confir
   assert.equal(J.rolesStep(r, devices, snap(...twins()), false).phase, 'ready');
 });
 
+test('roles: two identical sticks fly nothing before the confirming press (confirm each launch, plan JD2)', () => {
+  // Saved proposal: left = slot 0, right = slot 1; the stick in slot 1 is really the left one.
+  const profile = profileWith((p) => {
+    p.devices.left = { vendor: '044f', product: 'b10a', name: 'T.16000M', slotHint: 0, hatAxis: 9 };
+    p.devices.right = { vendor: '044f', product: 'b10a', name: 'T.16000M', slotHint: 1, hatAxis: 9 };
+    Object.assign(p.axes.Pitch, { device: 'right', axis: 1 });
+    Object.assign(p.axes.Throttle, { device: 'left', axis: 6 });
+    p.actions.fire = [
+      { device: 'right', button: 0 },
+      { device: 'left', button: 0 },
+    ];
+    p.actions.flares = [{ device: 'left', button: 2 }];
+  });
+  const roles = J.createRoles();
+  const fresh = J.createFreshness();
+  const state = J.createJoyState();
+  const [a, b] = twins();
+  const step = (confirm = true) => {
+    const s = snap(a, b);
+    const info = J.rolesStep(roles, profile.devices, s, confirm);
+    if (info.consumed !== null) J.latchButtons(state);
+    const live = J.freshStep(fresh, s);
+    const res = J.resolveDevices(profile, s, roles);
+    const flying = J.rolesLive(live, info, profile, res);
+    return { info, live, flying, f: J.joyFrame(state, profile, s, res, flying) };
+  };
+  // Both sticks report, fully deflected, flares held on the proposed left one: nothing flies, the lever holds.
+  for (let i = 0; i < 3; i++) {
+    G.report(a, { axes: { 6: 0.8, 9: G.HAT_CENTRED }, press: [2] });
+    G.report(b, { axes: { 1: -1, 9: G.HAT_CENTRED } });
+    const { info, live, flying, f } = step();
+    assert.deepEqual([info.phase, info.prompt, info.left, info.right], ['provisional', 'confirm-left', 0, 1]);
+    assert.deepEqual([[...live].sort(), [...flying]], [[0, 1], []], 'reported, but held');
+    assert.deepEqual(
+      [f.cmd.pitch, f.cmd.lever, f.axes.Pitch.status, f.axes.Throttle.status],
+      [0, null, 'stale', 'stale'],
+    );
+    assert.deepEqual([[...f.held], f.pressed], [[], []]);
+  }
+  // The trigger of the stick in slot 1 swaps the proposal; that press is consumed (never fires), then the sticks fly.
+  G.report(b, { press: [0] });
+  let out = step();
+  assert.deepEqual([out.info.phase, out.info.left, out.info.right, out.info.consumed], ['ready', 1, 0, 1]);
+  assert.equal(out.flying, out.live, 'confirmed: the live set as it is');
+  assert.deepEqual([out.f.cmd.pitch, out.f.cmd.lever], [0, J.axisValue(0, profile.axes.Throttle)], 'swapped roles');
+  assert.deepEqual([...out.f.held], [], 'the confirming press is latched: it never fires');
+  G.report(a, { axes: { 1: -1 }, release: [2] });
+  G.report(b, { axes: { 6: 0.8 }, release: [0] });
+  out = step();
+  assert.deepEqual(
+    [out.f.cmd.pitch, out.f.cmd.lever],
+    [J.axisValue(-1, profile.axes.Pitch), J.axisValue(0.8, profile.axes.Throttle)],
+  );
+  G.report(a, { press: [0] });
+  assert.deepEqual([...step().f.held], ['fire']);
+  // Without « confirm each launch », or once confirmed, the live set is used as it is.
+  const info = { phase: 'provisional', confirmed: false };
+  const res = { main: [0], left: [0], right: [1] };
+  const live = new Set([0, 1]);
+  assert.equal(J.rolesLive(live, info, { ...profile, confirmRoles: false }, res), live);
+  assert.equal(J.rolesLive(live, { ...info, confirmed: true }, profile, res), live);
+  assert.equal(J.rolesLive(live, null, profile, res), live, 'roles not in use');
+  // Two different models are told apart by their ids: nothing to confirm.
+  const mixed = { ...profile, devices: { ...profile.devices, right: { ...profile.devices.right, product: '5678' } } };
+  assert.equal(J.rolesLive(live, info, mixed, res), live);
+});
+
 test('roles: a stick lost in flight frees its role; back alone, it takes the free role by elimination', () => {
   const r = J.createRoles();
   const devices = { main: null, left: null, right: null };

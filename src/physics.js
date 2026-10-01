@@ -414,6 +414,15 @@
     const role=k=>match==='role'?(r&&r[k]!==null&&usable.some(p=>p.index===r[k])?[r[k]]:[]):d[k]?pick(of(d[k])):[];
     return {main:pick(main),left:role('left'),right:role('right')};
   }
+  // The live set a flight frame uses (joyFrame): two identical sticks whose roles are only proposed (saved slots, or one
+  // stick found alone at launch) while "confirm each launch" is on fly nothing until the confirming press, since the
+  // browser's slot order can change between launches (plan JD2): their pads count as not reported yet (axes 0, the
+  // lever held, buttons idle). info: rolesStep's answer this frame (null when the roles are not used).
+  function rolesLive(live,info,profile,res){
+    if(!info||info.confirmed||!profile.confirmRoles||profile.deviceMatch!=='role'||!sameModel(profile.devices.left,profile.devices.right))return live;
+    const held=new Set([...res.left,...res.right]);
+    return held.size?new Set([...live].filter(i=>!held.has(i))):live;
+  }
   // The references a profile uses (bound axes, Positive / Negative sources, action buttons).
   function usedRefs(profile){
     const used=new Set(),src=s=>{if(s)used.add(s.device);};
@@ -654,7 +663,7 @@
   }
   const joystick={AXES:JOY_AXES,REFS:JOY_REFS,ACTIONS:JOY_ACTIONS,GAME_ACTIONS,BOUNDS:JOY_BOUNDS,LAW:JOY_LAW,VJOY,HAT_DIRS,
     parseGamepadId,parseGameIdentifier,gameIdentifier,sameModel,isVirtual,presetHat,modelOf,snapshotPads,axisValue,decodeHat,hatHas,
-    createFreshness,freshStep,markStale,hatMute,createRoles,startIdentify,cancelIdentify,swapRoles,rolesStep,resolveDevices,usedRefs,
+    createFreshness,freshStep,markStale,hatMute,createRoles,startIdentify,cancelIdentify,swapRoles,rolesStep,resolveDevices,rolesLive,usedRefs,
     createJoyState,joyFrame,latchButtons,joystickMix,learnAxis,defaultProfile:defaultJoystickProfile,validateProfile:validateJoystickProfile,
     isDefaultProfile:isDefaultJoystickProfile,iniSection,parseStruct,parseGameJoystick,gameDevices,importGameJoystick};
   // Minigun: barrels spin up before the first round (0.35 s measured), then

@@ -11,7 +11,8 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
 - **Joysticks et HOTAS : le moteur (phase J1) et une page provisoire.** L'entraîneur peut lire des joysticks dans
   Chrome, Edge et l'application Windows : d'abord un manche virtuel vJoy (ce que le jeu lit quand un logiciel comme
   Joystick Gremlin fusionne les vrais manches et que HidHide les cache), sinon la première manette vue, ou deux manches
-  physiques identiques, gauche et droit, désignés par une pression sur une gâchette. Les six axes du fichier de réglages
+  physiques identiques, gauche et droit, désignés par une pression sur une gâchette (au lancement suivant, ils ne
+  pilotent qu'une fois gauche et droite confirmés, et cette pression ne tire pas). Les six axes du fichier de réglages
   du jeu (tangage, collectif, roulis, lacet, regard libre horizontal et vertical), chacun avec sa manette, son numéro
   d'axe, l'inversion, la sensibilité, la zone morte et les boutons des deux sens, plus les boutons Tirer, Leurres et
   Changer de vue. Valeurs par défaut publiques : celles du jeu (aucun appareil, sensibilité 1, zone morte 0,05, HOTAS
@@ -41,7 +42,8 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   supposée (son descripteur, les valeurs par défaut publiques, `axisValue`, `decodeHat` et `joystickMix` sur des
   grilles), un vol avec un manche vJoy réglé par l'import d'une section de jeu synthétique (levier, déviations
   partielles, regard sur le chapeau, boutons, débranché puis rebranché, gâchette tenue à la reprise), deux manches
-  T.16000M identiques (proposition, échange par la première gâchette, qui ne tire pas, levier tenu tant que le manche
+  T.16000M identiques (proposition qui ne pilote rien, même manches en butée, échange par la première gâchette, qui ne
+  tire pas, levier tenu tant que le manche
   rebranché n'a rien envoyé), un oracle de profils et de sections de jeu hostiles, et, sous automatisation, la vraie
   fonction `getGamepads` jamais appelée. Les autres goldens ne changent pas d'un octet ; l'enregistreur accepte des
   manettes simulées (`opts.gamepads`), changement prouvé neutre (`golden.mjs prove`). La porte complète et le test de

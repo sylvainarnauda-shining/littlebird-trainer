@@ -149,6 +149,11 @@ test('joysticks: gates G-J2 and G-J3 hold, nothing read with the HOTAS off, B0 r
   }
   assert.equal(j.runs['vjoy-b0'].events.shotsWhileLatched, 0, 'a trigger held through a resume is latched');
   assert.equal(j.runs.twins.events.shotsWhileConfirming, 0, 'the press that confirms the sticks never fires');
+  assert.equal(
+    j.runs.twins.events.flewWhileProposed,
+    0,
+    'two identical sticks fly nothing before their roles are confirmed',
+  );
   // B0 placeholders, labelled as supposed; public defaults = the game's factory values (HOTAS off, no device).
   assert.equal(j.law.descriptor.status, 'supposé');
   const d = j.law.defaults;

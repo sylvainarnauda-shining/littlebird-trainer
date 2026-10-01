@@ -124,7 +124,9 @@ dans Chrome, Edge et l'application Windows (même moteur) ; Firefox n'est pas v�
 - **Deux manches identiques sans manche virtuel.** Ils ont le même identifiant : « Identifier les manches gauche et
   droit », puis une pression sur la gâchette du manche gauche. Au lancement suivant, l'ordre n'est qu'une proposition :
   la première pression sur une gâchette la confirme ou l'inverse (option « confirmer à chaque lancement », cochée par
-  défaut). Un manche débranché en vol met la session en pause.
+  défaut). Tant que gauche et droite ne sont pas confirmés, les manches ne pilotent pas (le navigateur peut changer
+  leur ordre d'un lancement à l'autre), et la pression qui confirme ne tire pas. Un manche débranché en vol met la
+  session en pause.
 - **Axes.** Les six axes du fichier de réglages du jeu : tangage, collectif, roulis, lacet, regard libre horizontal et
   vertical, chacun avec sa manette, son numéro d'axe (celui du navigateur : X 0, Y 1, Z 2, Rx 3, Ry 4, Rz 5, curseur 6,
   chapeau 9), inversion, sensibilité et zone morte. Valeurs par défaut, celles du jeu (lues dans son fichier de

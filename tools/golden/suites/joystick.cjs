@@ -17,8 +17,9 @@
 //      alone: the collective lever, partial deflections, a twist, look on the hat, gun, flares and view on buttons,
 //      unplugged (the session pauses), plugged again, resumed with the trigger held (latched: no round until it is
 //      released);
-//    twins: two identical T.16000M sticks proposed from the saved slots, the first trigger press swaps them (that
-//      press never fires), the collective on the left stick (inverted), the left stick unplugged (pause) and back
+//    twins: two identical T.16000M sticks proposed from the saved slots fly nothing while the roles are only proposed,
+//      the first trigger press swaps them (that press never fires), the collective on the left stick (inverted), the
+//      left stick unplugged (pause) and back
 //      zero-initialised: it takes its role by elimination and the lever is held until it reports.
 //  - oracle: seeded joystick profile blocks (hostile values included) through the profile import button, and seeded
 //    game joystick sections through the joystick import (preview, then Appliquer), hashed.
@@ -221,7 +222,7 @@ const RUNS = {
   'vjoy-b0': { seedG: 143, map: 'vallee', frames: 3600, settings: { scenario: 'free', graphics: 'low' }, joystick: null,
     required: ['imported', 'shots', 'flaresUsed', 'viewChanges', 'lookFrames', 'leverFrames', 'pausedOnUnplug', 'shotsAfterRelease', 'flightDistance'], spec: () => VJOY_B0 },
   twins: { seedG: 144, map: 'vallee', frames: 2400, settings: { scenario: 'free', graphics: 'low' }, joystick: PROFILES.twins,
-    required: ['swapped', 'pausedOnUnplug', 'leverHeldFrames', 'leverFollowsFrames', 'shots', 'flightDistance'], spec: () => TWINS }
+    required: ['proposedFrames', 'swapped', 'pausedOnUnplug', 'leverHeldFrames', 'leverFollowsFrames', 'shots', 'flightDistance'], spec: () => TWINS }
 };
 
 // vjoy-b0: the import of the game section in the menu, then the stick alone.
@@ -266,7 +267,14 @@ const TWINS = {
   sticks: () => [new Stick(0, T16_ID, { hat: HAT_CENTRED, reporting: false }), new Stick(1, T16_ID, { hat: HAT_CENTRED, reporting: false })],
   async script(pl, ctx) {
     const [A, B] = ctx.sticks, ev = ctx.ev, app = () => pl.app, shots = () => app().stats.shots;
-    await pl.frames(4); B.reporting = true; await pl.frames(2); A.reporting = true; await pl.frames(4);
+    await pl.frames(4); B.reporting = true; await pl.frames(2); A.reporting = true;
+    // Both sticks report while the roles are only proposed (left = slot 0, right = slot 1): fully deflected, they fly
+    // nothing until the confirming press (the slot-0 stick's Y, inverted, would put the lever at the top; the slot-1
+    // stick's X and Y would roll and pitch).
+    A.set(1, -1); B.set(0, 1).set(1, -1); const c0 = app().flight.collective; ev.proposedFrames = 0; ev.flewWhileProposed = 0;
+    await pl.frames(30, () => { ev.proposedFrames++; if (app().flight.collective !== c0) ev.flewWhileProposed++; });
+    if (app().flight.collective !== c0) ev.flewWhileProposed++;
+    A.set(1, 0); B.set(0, 0);
     ctx.texts.push(pl.page.toast());
     // The first trigger press (the left stick, slot 1): the roles swap, and that press never fires while it is held. The
     // left stick's Y axis goes to its aft stop with it (collective lever down: the axis is inverted).
@@ -306,6 +314,7 @@ async function runs(rt, { golden, defaults, log }) {
     }
     const joystick = g ? g.meta.joystick : R.joystick, r = await fly(rt, { id, seedG: R.seedG, map: R.map, ...R.spec() }, { settings, bindings, joystick, frames, schema });
     const missing = R.required.filter(k => !((r.events[k] ?? r.coverage[k]) > 0)); if (r.events.shotsWhileLatched || r.events.shotsWhileConfirming) missing.push('a latched or consumed press fired');
+    if (r.events.flewWhileProposed) missing.push('a stick flew before its role was confirmed');
     if (!golden && missing.length) throw Error(`${id}: ${missing.join(', ')} (${JSON.stringify({ ...r.events, ...r.coverage })})`);
     log(id, JSON.stringify(r.events));
     out[id] = { meta: { seedG: R.seedG, seedT: SEED_T, map: R.map, frames: r.framesRun, menuFrames: r.menuFrames, frameMs: 10, checkpointEvery: EVERY, settings, bindings, joystick, required: R.required, probeSchema: g ? g.meta.probeSchema : r.schema },
