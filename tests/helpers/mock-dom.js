@@ -8,6 +8,8 @@
 // by key (for corrupted stores).
 // manualClock: frames are driven by the test through app.frame(now) (window.__LB_MANUAL_CLOCK__); otherwise the test
 // steps the simulation with app.step(dt) and performance.now() stays 0.
+// navigator: the page's navigator (none by default: no Gamepad API); a test scripts navigator.getGamepads with fake pads
+// (tests/helpers/gamepads.js), never the machine's.
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
@@ -19,7 +21,14 @@ const PROFILE_KEY = 'littlebird-range-v1';
 const html = fs.readFileSync(TEMPLATE, 'utf8');
 const source = fs.readFileSync(path.join(SRC, 'app.js'), 'utf8');
 
-function bootApp({ profile = null, storage = {}, manualClock = false, width = 1600, height = 900 } = {}) {
+function bootApp({
+  profile = null,
+  storage = {},
+  manualClock = false,
+  width = 1600,
+  height = 900,
+  navigator = null,
+} = {}) {
   const R = modules();
   const callbacks = {};
   const windowCallbacks = {};
@@ -54,11 +63,11 @@ function bootApp({ profile = null, storage = {}, manualClock = false, width = 16
       addEventListener(name, fn) {
         this['on' + name] = fn;
       },
-      append(c) {
-        kids.push(c);
+      append(...c) {
+        kids.push(...c);
       },
-      prepend(c) {
-        kids.unshift(c);
+      prepend(...c) {
+        kids.unshift(...c);
       },
       get lastChild() {
         return { remove: () => kids.pop() };
@@ -173,6 +182,7 @@ function bootApp({ profile = null, storage = {}, manualClock = false, width = 16
     },
   };
   if (manualClock) context.__LB_MANUAL_CLOCK__ = true;
+  if (navigator) context.navigator = navigator;
   context.window = context;
   vm.createContext(context);
   new vm.Script(source, { filename: path.join(SRC, 'app.js') }).runInContext(context);

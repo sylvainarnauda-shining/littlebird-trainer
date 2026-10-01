@@ -4,7 +4,8 @@
 //  - desktop/self-test.cjs asserts the page's pointer-lock emulation (navigator.webdriver and
 //    window.__LB_EMULATED_POINTER_LOCK__) before its first click on Start, and again right before that click;
 //  - it clicks Start once, and calls no real capture or fullscreen API;
-//  - every permission is denied while it runs (policy.permissionAllowed with selfTest), and main.cjs passes that flag;
+//  - every permission is denied while it runs (policy.permissionAllowed with selfTest), and main.cjs passes that flag,
+//    also to the page's headers (Permissions-Policy gamepad=(): the machine's joysticks are never read);
 //  - the self-test window cannot take focus, is click-through and absent from the taskbar;
 //  - its report is a new file in a real folder of the temporary folder (on POSIX, one of this user with mode 0700),
 //    never written through an existing file or link;
@@ -153,6 +154,9 @@ test('every permission is denied during a self-test, and the self-test window ca
   assert.match(main, /const flags = \{ selfTest: Boolean\(selfTest\) \}/);
   assert.match(main, /policy\.permissionAllowed\(permission, details\.requestingUrl, flags\)/);
   assert.match(main, /policy\.permissionAllowed\(permission, requestingOrigin, flags\)/);
+  // The page's response headers take the flag too: gamepad=() during a self-test (its joysticks are never read).
+  assert.match(main, /policy\.responseHeaders\(csp, flags\)/);
+  assert.match(p.responseHeaders('x', { selfTest: true })['permissions-policy'], /(?:^|, )gamepad=\(\)(?:,|$)/);
   const o = p.windowOptions({ packaged: true, selfTest: true });
   assert.deepEqual([o.focusable, o.skipTaskbar, o.webPreferences.devTools], [false, true, false]);
   const st = code('desktop/self-test.cjs');

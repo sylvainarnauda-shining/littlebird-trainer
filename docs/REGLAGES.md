@@ -110,6 +110,44 @@ seule. Il ne lit que la section des réglages utilisateur du jeu, et seulement c
 correspondant ; le texte du fichier n'est pas conservé. Un exemple synthétique se trouve dans
 `tests/fixtures/synthetic/game-settings.sample.txt`.
 
+## Manette · HOTAS (page provisoire)
+
+L'onglet Commandes a une page provisoire pour les joysticks (en attendant la page fidèle à celle du jeu). Elle marche
+dans Chrome, Edge et l'application Windows (même moteur) ; Firefox n'est pas vérifié avec ces manettes.
+
+- **Lecture.** Rien n'est lu avant un clic sur « Lire les manettes » (la lecture s'arrête quand on change d'onglet,
+  quand la fenêtre perd le focus ou que la page est cachée) ; en vol, les manettes ne sont lues que si « Utiliser le
+  HOTAS » est coché. Le navigateur ne montre une manette qu'après un geste (bouton ou axe bougé).
+- **Manette principale.** Par défaut, un manche virtuel vJoy s'il y en a un (c'est lui que le jeu lit quand un logiciel
+  comme Joystick Gremlin fusionne les vrais manches et que HidHide les cache), sinon la première manette vue ; on peut
+  aussi en choisir une. Les manettes de jeu « standard » (XInput) ne sont pas prises en charge ici.
+- **Deux manches identiques sans manche virtuel.** Ils ont le même identifiant : « Identifier les manches gauche et
+  droit », puis une pression sur la gâchette du manche gauche. Au lancement suivant, l'ordre n'est qu'une proposition :
+  la première pression sur une gâchette la confirme ou l'inverse (option « confirmer à chaque lancement », cochée par
+  défaut). Un manche débranché en vol met la session en pause.
+- **Axes.** Les six axes du fichier de réglages du jeu : tangage, collectif, roulis, lacet, regard libre horizontal et
+  vertical, chacun avec sa manette, son numéro d'axe (celui du navigateur : X 0, Y 1, Z 2, Rx 3, Ry 4, Rz 5, curseur 6,
+  chapeau 9), inversion, sensibilité et zone morte. Valeurs par défaut, celles du jeu (lues dans son fichier de
+  réglages) : aucun appareil, sensibilité 1, zone morte 0,05, sans inversion. « Détecter » lie l'axe qu'on bouge.
+- **Réponse (supposée, rien n'est encore mesuré).** La déviation commande une vitesse de rotation comme une touche
+  (déviation complète = vitesse de la touche) ; la zone morte est retirée puis le reste de la course remis à l'échelle ;
+  la sensibilité multiplie la déviation, plafonnée à la déviation complète ; le collectif suit la position du levier, et
+  les touches ne le bougent plus tant que son axe envoie des valeurs ; le regard libre suit ses axes jusqu'aux limites
+  du regard libre à la souris ; les manches s'ajoutent au clavier et à la souris, qui restent actifs (dans le jeu, ils
+  ne pilotent plus quand le HOTAS est activé, d'après des joueurs ; à vérifier). Le collectif auto-centré du jeu n'est
+  pas reproduit. Une manette qui n'a encore rien envoyé (ou dont les valeurs sont anciennes, après que la page a été
+  cachée) ne commande rien : ce qu'elle pilote reste au neutre, le levier du collectif reste où il est.
+- **Import de la configuration joystick du jeu.** Le bouton lit un fichier choisi par l'utilisateur, en lecture seule,
+  dans la page (rien n'est envoyé) : l'interrupteur HOTAS des réglages utilisateur du jeu et sa section des joysticks
+  (pour chaque axe : appareil, numéro d'axe, inversion, sensibilité, zone morte, boutons des deux sens ; les boutons
+  Tirer, Leurres et Changer de vue). Les numéros d'axe et de bouton n'ont pas de nom lisible dans le fichier : ils sont
+  lus par leur position. Un aperçu montre ce qui a été trouvé et demande ce qu'est chaque appareil du fichier (manette
+  principale, manche gauche ou droit) avant d'appliquer. Exemple synthétique :
+  `tests/fixtures/synthetic/joystick-settings.sample.txt`.
+- **Profil.** Ces réglages forment un bloc à part du profil (`joystick`, schéma 1), enregistré et exporté seulement
+  quand il diffère des valeurs par défaut ; un bloc illisible revient aux valeurs par défaut, avec un avis, et le reste
+  du profil se charge.
+
 ## Réglages retirés
 
 La vibration de la caméra et l'élargissement du champ de la vue pilote avec la vitesse (absents du jeu), les aides de

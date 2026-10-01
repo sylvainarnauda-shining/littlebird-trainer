@@ -226,6 +226,16 @@ test('page policy: taken from the page, fails closed, header-only directive adde
   assert.equal(headers['x-content-type-options'], 'nosniff');
   assert.equal(headers['referrer-policy'], 'no-referrer');
   assert.match(headers['permissions-policy'], /camera=\(\), microphone=\(\), geolocation=\(\)/);
+  // Joysticks: the page may read them in a normal run (HOTAS on, or the joystick panel's read button), never during a
+  // self-test (navigator.getGamepads then throws); WebHID, WebUSB and Web Serial stay closed in both.
+  const policyOf = (h) => Object.fromEntries(h['permissions-policy'].split(/,\s*/).map((d) => d.split('=')));
+  const normal = policyOf(p.responseHeaders('x'));
+  const selfTest = policyOf(p.responseHeaders('x', { selfTest: true }));
+  assert.equal(normal.gamepad, '(self)');
+  assert.equal(selfTest.gamepad, '()');
+  for (const d of [normal, selfTest])
+    for (const k of ['hid', 'usb', 'serial', 'bluetooth']) assert.equal(d[k], '()', k);
+  assert.deepEqual(Object.keys(normal).sort(), Object.keys(selfTest).sort());
 });
 
 test('debugging, sandbox-weakening and network-rerouting switches are refused', () => {

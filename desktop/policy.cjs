@@ -187,7 +187,10 @@ function cspFromPage(html) {
   return `${csp}; ${HEADER_ONLY_CSP}`;
 }
 
-function responseHeaders(csp) {
+// gamepad: the page reads joysticks only when the player asks (HOTAS on in flight, or the joystick panel's read
+// button); a self-test must never read the machine's joysticks, so it gets gamepad=() (navigator.getGamepads throws),
+// on top of the page's own emulation under automation. There is no Electron permission for gamepads.
+function responseHeaders(csp, { selfTest = false } = {}) {
   return {
     'content-type': 'text/html; charset=utf-8',
     'content-security-policy': csp,
@@ -197,7 +200,8 @@ function responseHeaders(csp) {
     'cross-origin-resource-policy': 'same-origin',
     'permissions-policy':
       'camera=(), microphone=(), geolocation=(), usb=(), serial=(), hid=(), bluetooth=(), payment=(), ' +
-      'display-capture=(), midi=(), clipboard-read=(), idle-detection=()',
+      'display-capture=(), midi=(), clipboard-read=(), idle-detection=(), ' +
+      (selfTest ? 'gamepad=()' : 'gamepad=(self)'),
     'cache-control': 'no-store',
   };
 }

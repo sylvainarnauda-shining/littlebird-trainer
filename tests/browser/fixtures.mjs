@@ -1,8 +1,9 @@
 // Shared fixture of the browser specs. Safety first (the maintainer's machine must never have its mouse or keyboard
 // captured by a test, even a headless one):
 //  - the run must be headless;
-//  - before any page script, the real capture APIs (pointer lock and its exit, fullscreen, keyboard lock) are replaced
-//    by traps that only count calls, so no page code can ever reach them;
+//  - before any page script, the real capture APIs (pointer lock and its exit, fullscreen, keyboard lock) and the real
+//    joystick read (Navigator.prototype.getGamepads) are replaced by traps that only count calls, so no page code can
+//    ever reach them (the page's own automation shim answers getGamepads with emulated pads only);
 //  - the page's own automation shim must then emulate the pointer lock (window.__LB_EMULATED_POINTER_LOCK__ under
 //    navigator.webdriver): openTrainer() asserts it before returning, that is before any Start click;
 //  - after each test the traps must show zero calls, the page must have thrown no error, and the page's content
@@ -37,7 +38,7 @@ function recordPolicyViolations() {
 
 function installTraps() {
   if (window.__LB_TEST_TRAPS__) return;
-  const calls = { pointerLock: 0, exitPointerLock: 0, fullscreen: 0, keyboardLock: 0 };
+  const calls = { pointerLock: 0, exitPointerLock: 0, fullscreen: 0, keyboardLock: 0, gamepads: 0 };
   Object.defineProperty(window, '__LB_TEST_TRAPS__', { value: calls });
   Element.prototype.requestPointerLock = function () {
     calls.pointerLock++;
@@ -52,6 +53,12 @@ function installTraps() {
   };
   Element.prototype.requestFullscreen = noFullscreen;
   if ('webkitRequestFullscreen' in Element.prototype) Element.prototype.webkitRequestFullscreen = noFullscreen;
+  if (typeof Navigator === 'function' && typeof Navigator.prototype.getGamepads === 'function') {
+    Navigator.prototype.getGamepads = function () {
+      calls.gamepads++;
+      return [];
+    };
+  }
   if (navigator.keyboard && typeof navigator.keyboard.lock === 'function') {
     navigator.keyboard.lock = () => {
       calls.keyboardLock++;
@@ -92,6 +99,7 @@ export const test = base.extend({
         exitPointerLock: 0,
         fullscreen: 0,
         keyboardLock: 0,
+        gamepads: 0,
       });
     expect(errors, 'no uncaught page error').toEqual([]);
     const refused = await page
@@ -135,7 +143,7 @@ export async function assertEmulatedPointerLock(page) {
   expect(state, 'pointer lock emulated in the page under automation').toEqual({
     webdriver: true,
     emulated: true,
-    traps: { pointerLock: 0, exitPointerLock: 0, fullscreen: 0, keyboardLock: 0 },
+    traps: { pointerLock: 0, exitPointerLock: 0, fullscreen: 0, keyboardLock: 0, gamepads: 0 },
   });
 }
 

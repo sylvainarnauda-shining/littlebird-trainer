@@ -73,7 +73,7 @@ async function start() {
   protocol.handle(policy.SCHEME, (request) => {
     const file = policy.pageFor(request.method, request.url);
     if (!file) return new Response('Not found', { status: 404, headers: { 'content-type': 'text/plain' } });
-    return new Response(html, { status: 200, headers: policy.responseHeaders(csp) });
+    return new Response(html, { status: 200, headers: policy.responseHeaders(csp, flags) });
   });
   ses.webRequest.onBeforeRequest((details, callback) =>
     callback({ cancel: !policy.requestAllowed(details.url, { packaged: app.isPackaged }) }),

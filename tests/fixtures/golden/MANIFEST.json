@@ -23,7 +23,7 @@
   {
    "file": "meta.json",
    "bytes": 8505,
-   "sha256": "91e744859315ca9edd731c5045411950841c51f610a9dc894bf15b25a67ea480"
+   "sha256": "6ad3d13fc75a729205ee9aa82f8d2f560833fc43d8e4ed535f197f033f5db2a3"
   },
   {
    "file": "models.json",
@@ -52,8 +52,8 @@
   },
   {
    "file": "ui.json",
-   "bytes": 44986,
-   "sha256": "8d9095cbd5892adca3e87c454197ab2e68ce0f53cbfa012de47a5c1a82df81ab"
+   "bytes": 55436,
+   "sha256": "12b38ee64b2f92f91bba4682c9702fa979e345282b940a4b0e55189dec00fbcf"
   },
   {
    "file": "world.json",

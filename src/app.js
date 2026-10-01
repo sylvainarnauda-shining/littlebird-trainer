@@ -12,6 +12,15 @@
     Document.prototype.exitPointerLock=function(){if(locked){locked=null;changed();}};
     window.__LB_EMULATED_POINTER_LOCK__=true;
   }
+  // The same rule for the joysticks: under automation navigator.getGamepads is the page's own emulation, which returns
+  // only the pads a test puts into window.__LB_EMULATED_GAMEPADS__ (none otherwise), so that no automated run (a
+  // headless browser, the desktop app's self-test) can read the machine's real joysticks. There is no opt-out; if the
+  // emulation cannot be installed, the page reads no joystick at all under automation (joyRead).
+  let emulatedGamepads=null;
+  if(typeof navigator!=='undefined'&&navigator.webdriver===true){
+    const pads=[];emulatedGamepads=()=>pads.slice(0,8);
+    try{Object.defineProperty(navigator,'getGamepads',{configurable:true,writable:false,value:emulatedGamepads});Object.defineProperty(window,'__LB_EMULATED_GAMEPADS__',{value:pads});}catch(e){}
+  }
   const $=id=>document.getElementById(id), T=window.THREE, P=window.HeliPhysics, M=window.HeliMissiles, W=window.HeliWorld, A=window.HeliAudio, G=window.HeliGround, H=window.HeliBot;
   if(!T||!P||!M||!W||!A||!G||!H||!window.HeliModels||!window.HeliForest||!window.buildScenery) { $('saveState').textContent='Fichiers manquants : conserve le dossier complet.'; $('start').disabled=true; return; }
   // The map is chosen before the scene is built (world.js): its name on the loading screen.
@@ -35,6 +44,15 @@
     const SCENARIOS=['air','ground','mixed','free','towers','missiles','assault','match','duel'],MODE_OF=s=>['air','ground','mixed'].includes(s)?'range':s;
     let cfg={...DEFAULTS},bindings={...baseBindings},storageOK=true;
     const REVISION=16,notices=[];
+    // Joysticks (J1): the profile block profile.joystick (physics.js joystick: schema 1, validation, defaults), kept
+    // apart from cfg and bindings and stored only when it differs from the defaults, and the reading state. Nothing reads
+    // the joysticks until a session flies with the HOTAS on or the joystick panel is asked to read (joyWanted).
+    const J=P.joystick;
+    const JOY_NOTICES={invalid:'Configuration joystick illisible : réglages joystick par défaut.',schema:'Configuration joystick d’une version inconnue : réglages joystick par défaut.','duplicate-button':'Bouton de joystick utilisé pour deux actions : la seconde est ignorée.'};
+    let joyProfile=J.defaultProfile();
+    const joy={roles:J.createRoles(),fresh:J.createFreshness(),state:J.createJoyState(),pads:[],res:{main:[],left:[],right:[]},live:new Set(),frame:null,rolesInfo:null,
+      active:false,reading:false,error:'',present:new Set(),learn:null,learnBase:new Map(),stickLook:false,tick:0,prompted:'',rows:new Map(),ready:false};
+    function joyLoad(block,into){const codes=[],p=J.validateProfile(block,codes);for(const c of new Set(codes))into.push(JOY_NOTICES[c]);return p;}
     // Flight-model values of the v6 model identified on the videos. Earlier
     // revisions used another model: their values have no equivalent here.
     const FLIGHT_KEYS=['pitchRate','rollRate','yawRate','cyclicResponse','response','mouseYawBoost','mousePitchBoost','stability','altitudeHold','collectiveUpRate','collectiveDownRate','holdGain','holdDamping','collectiveAccel','collectiveDownAccel','verticalDamping','drag','quadraticDrag','bodyFlowDrag','lateralDrag','weathervane','hoverAssist'];
@@ -91,7 +109,7 @@
             :`Souris : gain${axis} 0,339 au lieu de 0,271 (mesure corrigée) : à réglages égaux, un même geste tourne 25 % de plus.${f?` L’ajustement fin ×${String(f).replace('.',',')} reste appliqué en plus.`:''}`);}}
       return data;
     }
-    try { const saved=JSON.parse(localStorage.getItem(STORE)); if(saved){cfg=sanitize(upgradedSettings(saved));bindings=validBindings(saved.bindings);} }catch(e){storageOK=false;}
+    try { const saved=JSON.parse(localStorage.getItem(STORE)); if(saved){cfg=sanitize(upgradedSettings(saved));bindings=validBindings(saved.bindings);joyProfile=joyLoad(saved.joystick,notices);} }catch(e){storageOK=false;}
     function sanitize(data){
       const out={...DEFAULTS}; if(!data||typeof data!=='object')return out;
       for(const k of Object.keys(out)) {
@@ -135,7 +153,9 @@
       for(const k of Object.keys(out))if(!saved(k)){if(used.has(out[k]))out[k]='Unbound';else used.add(out[k]);}
       return out;
     }
-    function save(){try{localStorage.setItem(STORE,JSON.stringify({version:1,tuningRevision:REVISION,settings:cfg,bindings}));$('saveState').textContent='Profil sauvegardé sur ce navigateur';}catch(e){$('saveState').textContent='Sauvegarde indisponible — exporte le profil';}}
+    // The stored and exported profile: the joystick block only when it differs from the defaults (same bytes otherwise).
+    function profileDoc(head){const doc={...head,tuningRevision:REVISION,settings:cfg,bindings};if(!J.isDefaultProfile(joyProfile))doc.joystick=joyProfile;return doc;}
+    function save(){try{localStorage.setItem(STORE,JSON.stringify(profileDoc({version:1})));$('saveState').textContent='Profil sauvegardé sur ce navigateur';}catch(e){$('saveState').textContent='Sauvegarde indisponible — exporte le profil';}}
     let toastTimeout;
     function toast(text){$('toast').textContent=text;$('toast').classList.add('visible');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('toast').classList.remove('visible'),3200);}
     // ---- Renderer, light and atmosphere ----
@@ -328,7 +348,7 @@
       let nearest=null,dist=Infinity;for(const m of defense.missiles){const d=m.position.distanceTo(flight.position);if(d<dist){dist=d;nearest=m;}}
       // Rotor load: lever relative to hover thrust (v13 leverHover), so the rotor sound keeps its v12 level in hover.
       sfx.update({running,alive:heliAlive,volume:cfg.volume,mix:{engine:cfg.volEngine,weapons:cfg.volWeapons,alerts:cfg.volAlerts},collective:flight.collective-(cfg.leverHover||0),speed:flight.velocity.length(),spin:gun.spin,
-        firing:running&&heliAlive&&!!down('fire')&&(run.unlimitedAmmo||ammo>0),beepOn,toneHz:cfg.aaToneHz,missileDistance:nearest?dist:null,missilePan:nearest?panOf(nearest.position):0,
+        firing:running&&heliAlive&&!!downOrJoy('fire')&&(run.unlimitedAmmo||ammo>0),beepOn,toneHz:cfg.aaToneHz,missileDistance:nearest?dist:null,missilePan:nearest?panOf(nearest.position):0,
         // v12: the game's mix differs between the pilot view and the chase view (measured on the recordings).
         view:view==='cockpit'&&hasSession&&heliAlive?'cockpit':'chase',
         // Enemy helicopters: rotor and minigun, delayed and filtered with the distance.
@@ -838,7 +858,8 @@
       if(l.kind!=='manpads'||!l.camp.structures.some(s=>s.alive))return;
       const a=Math.random()*6.28,s=battle.addSoldier(l.camp.x+Math.cos(a)*70,l.camp.z+Math.sin(a)*70,l.camp);armVerba(s,2);s.target=V3(l.camp.x,0,l.camp.z);
     }
-    function clearInputs(){keySet.clear();P.resetInput(mouse);freeLookHeld=false;lookLatch=false;flareRequest=false;gun.reset();roundsFiring=0;updateAudio();}
+    // Joystick: commands dropped until the next read, buttons still held ignored until released (latchButtons).
+    function clearInputs(){keySet.clear();P.resetInput(mouse);freeLookHeld=false;lookLatch=false;flareRequest=false;gun.reset();roundsFiring=0;joy.active=false;joy.stickLook=false;J.latchButtons(joy.state);updateAudio();}
     function enableCompatibility(){
       if(!running||document.pointerLockElement)return;
       compatInput=true;skipMouse=true;P.resetInput(mouse);virtualAnchor=null;lastPointer=null;
@@ -884,6 +905,7 @@
       pickLight();
       initAudio();save();updateCamera();lock();
       feed(MODE_INFO[mode].start,false,true);feed(`${W.name} · ${W.LIGHTS[lightName].label}`,false,true);
+      joyStart();
     }
     // Screens: 'menu' (modes/controls/settings tabs), 'pause', 'results', 'shop' or null (flying).
     function showScreen(name){for(const id of ['menu','pause','results','shop','loading'])$(id).classList.toggle('hidden',id!==name);}
@@ -925,6 +947,10 @@
       $('resultDetail').textContent=`${stats.hits} impacts. Suivi : ${time?Math.round(stats.tracked/time*100):0} % du temps avec une cible à moins de 2,5° du nez. Les projectiles encore en vol à la fin ne sont pas comptés comme impacts.`;
     }
     const down=a=>keySet.has(bindings[a])?1:0;
+    // Keys or joystick buttons (an action held on either); only used while the joystick is active, so that without it the
+    // input path keeps the keys' own function.
+    const downOrJoy=a=>down(a)||joyHeld(a);
+    function joyHeld(a){return joy.active&&joy.frame&&joy.state.held.has(a)?1:0;}
     function fireRound(){
       const side=stats.shots%2?1:-1;
       const p=new T.Vector3(side*1.45,-.38,-2.1).applyQuaternion(flight.quaternion).add(flight.position);
@@ -1037,7 +1063,9 @@
         if(fuel<=0&&!fuelOut){fuelOut=true;toast('Panne sèche : plus de puissance, pose-toi en planant');feed('PANNE SÈCHE',true);}else if(fuel>.02)fuelOut=false;
         // Keys and mouse through the shared input path (physics.js inputStep): measured rate law, or the v12
         // virtual stick (amplified small movements, saturating at the key rates) and the compatibility mode.
-        flight.cfg=cfg;const input=P.inputStep(mouse,cfg,down,dt,fuelOut,compatInput);
+        flight.cfg=cfg;const input=P.inputStep(mouse,cfg,joy.active?downOrJoy:down,dt,fuelOut,compatInput);
+        // Joystick (HOTAS on, read this frame): its commands added to the keys and mouse (physics.js joystickMix).
+        if(joy.active)J.joystickMix(input,joy.frame.cmd,fuelOut);
         flight.step(dt,input);
         // Sweep the fuselage, tail and rotor rim between physics steps.
         for(const [x,y,z,r] of [[0,0,0,1.15],[0,1.2,4.5,.5],[4.7,1.9,0,.3],[-4.7,1.9,0,.3],[0,1.9,-4.7,.3],[0,1.9,4.7,.3]]){
@@ -1075,7 +1103,7 @@
       }
       const forward=new T.Vector3(0,0,-1).applyQuaternion(flight.quaternion);
       if(targets.some(t=>t.active&&forward.dot(t.group.position.clone().sub(flight.position).normalize())>Math.cos(2.5*Math.PI/180)))stats.tracked+=dt;
-      gun.cfg=cfg;const canFire=heliAlive&&!!down('fire')&&(run.unlimitedAmmo||ammo>0);const rounds=gun.step(dt,heliAlive&&!!down('fire'));roundsFiring=rounds&&canFire?.12:Math.max(0,roundsFiring-dt);
+      gun.cfg=cfg;const canFire=heliAlive&&!!downOrJoy('fire')&&(run.unlimitedAmmo||ammo>0);const rounds=gun.step(dt,heliAlive&&!!downOrJoy('fire'));roundsFiring=rounds&&canFire?.12:Math.max(0,roundsFiring-dt);
       if(canFire)for(let r=0;r<rounds&&(run.unlimitedAmmo||ammo>0);r++)fireRound();
       for(let i=bullets.length-1;i>=0;i--){
         const b=bullets[i];b.previous.copy(b.p);b.v.y-=9.81*dt;b.p.addScaledVector(b.v,dt);b.age+=dt;let remove=false;
@@ -1209,7 +1237,8 @@
       if(!hasSession){camera.position.set(-9,4.2,146);camera.lookAt(0,1.4,128);own.group.position.set(W.PAD.x,1.25,W.PAD.z);followShadow(camera.position);camera.updateMatrixWorld(true);return;}
       // Releasing free look (assumed; no source found and absent from the reference recordings, not measured yet): the
       // pilot view snaps back, the chase view eases back with 0.25 s (chosen).
-      if(!freeLookHeld&&dt){if(view==='cockpit'){lookYaw=0;lookPitch=0;}else{const k=1-Math.exp(-dt/.25);lookYaw-=lookYaw*k;lookPitch-=lookPitch*k;}}
+      // Look axes of a joystick (joy.stickLook) hold the view like free look.
+      if(!freeLookHeld&&!joy.stickLook&&dt){if(view==='cockpit'){lookYaw=0;lookPitch=0;}else{const k=1-Math.exp(-dt/.25);lookYaw-=lookYaw*k;lookPitch-=lookPitch*k;}}
       if(!heliAlive&&dt){
         // After a loss the camera backs away from the wreck and keeps it in view.
         const back=camera.position.clone().sub(at.p);back.y=Math.max(back.y,2);back.setLength(Math.min(70,back.length()+dt*22));
@@ -1553,6 +1582,8 @@
     // window.__LB_MANUAL_CLOCK__ (tests only): frames are driven by the test through the exposed frame(now).
     function animate(now){
       if(!window.__LB_MANUAL_CLOCK__)requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.1);last=now;renderer.info?.reset?.();if(dt>0)fps+=(1/dt-fps)*.05;
+      // Joysticks: one read per rendered frame (the frame's steps run back to back), only when wanted.
+      if(joyWanted())joyPoll();
       // Rate law: the frame's pointer movement becomes the rate held over this frame's n steps, divided by their
       // simulated time n/120 s (kept for the next frame if this one runs no step).
       if(running){accumulator+=dt;let n=0;for(let a=accumulator;a>=1/120;a-=1/120)n++;P.frameStart(mouse,cfg,dt,n);while(accumulator>=1/120&&running){step(1/120);accumulator-=1/120;}}
@@ -1598,7 +1629,7 @@
       document.querySelectorAll('.opt[data-for]').forEach(el=>el.hidden=!el.dataset.for.split(' ').includes(mode));
       document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===cfg.scenario));
     }
-    function selectTab(tab){menuTab=tab;document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.id===tab));$('pageTitle').textContent={modes:'MODES DE JEU',controls:'COMMANDES',settings:'RÉGLAGES',about:'À PROPOS'}[tab];renderBindings();}
+    function selectTab(tab){menuTab=tab;document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.id===tab));$('pageTitle').textContent={modes:'MODES DE JEU',controls:'COMMANDES',settings:'RÉGLAGES',about:'À PROPOS'}[tab];renderBindings();if(tab!=='controls')joyStop();}
     function renderBindings(){
       $('bindings').replaceChildren();for(const [action,label] of Object.entries(labels)){const div=document.createElement('div');div.className='binding';const span=document.createElement('span');span.textContent=label;const button=document.createElement('button');button.textContent=names[bindings[action]]||bindings[action].replace('Key','').replace('Unbound','Non assigné');button.onclick=()=>{capturing=action;renderBindings();toast('Appuie sur une touche ou un bouton de souris. Échap annule.');};if(capturing===action){button.textContent='En attente…';button.classList.add('listening');}div.append(span,button);$('bindings').append(div);}
     }
@@ -1611,7 +1642,7 @@
     }
     function syncUI(){
       for(const [key,val] of Object.entries(cfg)){const el=$(key);if(!el)continue;if(el.type==='checkbox')el.checked=val;else el.value=val;const output=el.parentElement.querySelector('output');if(output)output.textContent=Number(val).toLocaleString('fr-FR',{maximumFractionDigits:Math.abs(val)>0&&Math.abs(val)<.01?5:3})+' '+(el.dataset.unit||'');}
-      $('modeLabel').textContent=(MODE_INFO[MODE_OF(cfg.scenario)]||MODE_INFO.range).title;selectMode(MODE_OF(cfg.scenario));renderBindings();
+      $('modeLabel').textContent=(MODE_INFO[MODE_OF(cfg.scenario)]||MODE_INFO.range).title;selectMode(MODE_OF(cfg.scenario));renderBindings();joySync();
     }
     function markExerciseDirty(){exerciseDirty=true;$('resume').hidden=true;}
     const EXERCISE_KEYS=['trajectory','duration','airHealth','groundHealth','baseHealth','indestructible','aaLaunchers','aaObjective','aaEverywhere','flareCharges','flareUnlimited','camps','infantryPerCamp','convoy','enemyFire','difficulty','unlimitedAmmo','duelBots','duelStart','duelRespawn','duelHealth','rpgPerCamp','aaRockets','ciwsCount','duelEnemy'];
@@ -1631,7 +1662,7 @@
     document.querySelectorAll('[data-scenario]').forEach(b=>b.onclick=()=>{cfg.scenario=b.dataset.scenario;cfg.rangeType=b.dataset.scenario;selectMode('range');markExerciseDirty();save();});
     $('start').onclick=start;$('retry').onclick=start;$('resume').onclick=resume;$('menuButton').onclick=pause;$('resultSettings').onclick=()=>openMenu('modes');
     $('pauseResume').onclick=resume;$('pauseRestart').onclick=start;$('pauseModes').onclick=()=>openMenu('modes');$('pauseSettings').onclick=()=>openMenu('settings');
-    $('defaults').onclick=()=>{cfg={...DEFAULTS};bindings={...baseBindings};flight.cfg=cfg;markExerciseDirty();syncUI();save();toast('Réglages initiaux restaurés.');};
+    $('defaults').onclick=()=>{cfg={...DEFAULTS};bindings={...baseBindings};joyProfile=J.defaultProfile();joy.roles=J.createRoles();flight.cfg=cfg;markExerciseDirty();syncUI();save();toast('Réglages initiaux restaurés.');};
     $('demanding').onclick=()=>{for(const key of [...FLIGHT_KEYS,...V13_KEYS,'spinUp','cameraMotion','speedFov','chaseSpeedView'])cfg[key]=DEFAULTS[key];flight.cfg=cfg;P.resetInput(mouse);syncUI();save();toast('Modèle de vol mesuré rétabli (v6 + v13 : loi et gain de la souris (0,339), lacet, collectif en stationnaire, vue poursuite). Touches, sensibilités, champs de vision, cibles et dégâts conservés.');};
     // Wardogs settings file (%LOCALAPPDATA%\Wardogs\Saved\Config\WindowsClient\GameUserSettings.ini):
     // helicopter mouse settings and vehicle fields of view, read locally, nothing is written back. Only the lines of the
@@ -1651,8 +1682,215 @@
       try{if(file.size>400000)throw Error('fichier trop volumineux');const r=importGameSettings(await file.text());if(!r.found.length)throw Error('aucun réglage d’hélicoptère trouvé');
         cfg=sanitize(cfg);flight.cfg=cfg;syncUI();save();toast(`Réglages du jeu importés : ${r.found.join(', ')}.${r.warn}`);}
       catch(err){toast('Import refusé : '+err.message);}e.target.value='';};
-    $('export').onclick=()=>{const blob=new Blob([JSON.stringify({format:'littlebird-trainer-profile',version:1,tuningRevision:REVISION,settings:cfg,bindings},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='little-bird-profil.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-    $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>100000)throw Error('Fichier trop volumineux');const parsed=JSON.parse(await file.text());if(parsed.version!==1||!parsed.settings||!parsed.bindings)throw Error('Format non reconnu');const next=sanitize(upgradedSettings(parsed)),nextBindings=validBindings(parsed.bindings);cfg=next;bindings=nextBindings;flight.cfg=cfg;markExerciseDirty();syncUI();save();toast('Profil importé.'+(notices.length?' '+notices.splice(0).join(' '):''));}catch(err){toast('Import refusé : '+err.message);}e.target.value='';};
+    $('export').onclick=()=>{const blob=new Blob([JSON.stringify(profileDoc({format:'littlebird-trainer-profile',version:1}),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='little-bird-profil.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+    $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>100000)throw Error('Fichier trop volumineux');const parsed=JSON.parse(await file.text());if(parsed.version!==1||!parsed.settings||!parsed.bindings)throw Error('Format non reconnu');const next=sanitize(upgradedSettings(parsed)),nextBindings=validBindings(parsed.bindings),nextJoy=joyLoad(parsed.joystick,notices);cfg=next;bindings=nextBindings;joyProfile=nextJoy;joy.roles=J.createRoles();flight.cfg=cfg;markExerciseDirty();syncUI();save();toast('Profil importé.'+(notices.length?' '+notices.splice(0).join(' '):''));}catch(err){toast('Import refusé : '+err.message);}e.target.value='';};
+    // ---- Joysticks (J1). One read per rendered frame, only while a session flies with the HOTAS on or while the panel
+    // reads after a click on « Lire les manettes » (stopped when the tab, the window or the page is left, and at the start
+    // of a session). physics.js (joystick) gives the roles, the freshness, the devices and the frame's commands; here: the
+    // read itself, the pause when a device in use is lost, the button actions, the look axes and the panel of the
+    // Commandes tab (provisional, until the game-faithful HOTAS page).
+    const JOY_ROWS=['Roll','Pitch','Yaw','Throttle','LookYaw','LookPitch'];   // the order of the game's HOTAS page (videos)
+    const JOY_NAMES={Roll:'Roulis',Pitch:'Tangage',Yaw:'Lacet',Throttle:'Collectif',LookYaw:'Regard libre horizontal',LookPitch:'Regard libre vertical'};
+    const JOY_REF_NAMES={main:'manette principale',left:'manche gauche',right:'manche droit'};
+    const JOY_LOST={main:'Manette principale débranchée',left:'Manche gauche débranché',right:'Manche droit débranché'};
+    const JOY_PROMPTS={'press-left':'Appuie sur la gâchette du manche GAUCHE.','press-right':'Appuie maintenant sur la gâchette du manche DROIT.',
+      'confirm-left':'Deux manches identiques : appuie sur la gâchette du manche GAUCHE pour confirmer gauche et droite.',
+      'reconnect-left':'Manche gauche introuvable : bouge-le ou rebranche-le.','reconnect-right':'Manche droit introuvable : bouge-le ou rebranche-le.'};
+    // HID usages 0x30-0x39 in the order Chromium numbers the axes (usage - 0x30).
+    const HID_AXES=['X','Y','Z','Rx','Ry','Rz · torsion','curseur · molette des gaz','cadran','roue','chapeau'];
+    const HAT_FR={up:'haut',upRight:'haut-droite',right:'droite',downRight:'bas-droite',down:'bas',downLeft:'bas-gauche',left:'gauche',upLeft:'haut-gauche'};
+    const joyNum=(x,d=2)=>(x>0?'+':x<0?'−':'')+Math.abs(x).toFixed(d).replace('.',',');
+    const joyFmt=x=>Number(x).toLocaleString('fr-FR',{maximumFractionDigits:3});
+    function joyWanted(){return running&&joyProfile.useHotas||joy.reading;}
+    function joyRead(){
+      try{
+        if(typeof navigator==='undefined'||typeof navigator.getGamepads!=='function'){joy.error='api';return [];}
+        // Under automation only the page's own emulation answers (the shim at the top): never the machine's joysticks.
+        if(navigator.webdriver===true&&navigator.getGamepads!==emulatedGamepads){joy.error='api';return [];}
+        const list=navigator.getGamepads();joy.error='';return J.snapshotPads(list);
+      }catch(e){joy.error='blocked';return [];}   // Permissions-Policy gamepad=() (the desktop self-test): SecurityError
+    }
+    function joyRolesWanted(){return !!joy.roles.identify||joyProfile.deviceMatch==='role'&&[...J.usedRefs(joyProfile)].some(r=>r!=='main');}
+    function joyPoll(){
+      const pads=joyRead();joy.pads=pads;joy.rolesInfo=null;
+      if(joyRolesWanted()){
+        const r=J.rolesStep(joy.roles,joyProfile.devices,pads,joyProfile.confirmRoles);joy.rolesInfo=r;
+        if(r.consumed!==null)J.latchButtons(joy.state);   // the press that identified or confirmed the sticks never fires
+        if(r.changed){save();joySync();if(r.events.some(e=>e==='identified'||e==='confirmed'||e==='swapped'))toast(`Manches identifiés : gauche n° ${r.left}, droit n° ${r.right}.`);}
+      }
+      joy.live=J.freshStep(joy.fresh,pads);joy.res=J.resolveDevices(joyProfile,pads,joy.roles);
+      joy.frame=J.joyFrame(joy.state,joyProfile,pads,joy.res,joy.live);
+      if(joy.learn)joyLearnStep();
+      joy.active=running&&joyProfile.useHotas;
+      if(joy.active)joyFlight();
+      else if(joy.reading&&(joy.tick++)%6===0)joyPanel();
+    }
+    // In flight: a device in use that was there and is gone pauses the session (as a lost pointer lock does); prompts for
+    // the two sticks; button actions as their keys (keydown below); look axes.
+    function joyFlight(){
+      const f=joy.frame;
+      for(const [ref,state] of Object.entries(f.refs)){
+        if(state==='present')joy.present.add(ref);
+        else if(joy.present.has(ref)){joy.present.delete(ref);pause();toast(`${JOY_LOST[ref]} : session en pause. Rebranche l’appareil puis reprends.`);return;}
+      }
+      const prompt=joy.rolesInfo&&joy.rolesInfo.prompt||'';
+      if(prompt!==joy.prompted){joy.prompted=prompt;if(prompt)toast(JOY_PROMPTS[prompt]);}
+      for(const a of f.pressed){
+        if(a==='flares')flareRequest=true;
+        else if(a==='freeLook')lookDown(false);
+        else if(a==='view'){view=view==='cockpit'?'chase':'cockpit';toast(view==='chase'?'Vue poursuite':'Vue pilote');}
+        else if(a==='neutral'){P.resetInput(mouse);if(compatInput)virtualAnchor=lastPointer?{...lastPointer}:null;}
+        else if(a==='shop'){openShop();if(shopOpen)return;}
+        else if(a==='reset'){start();return;}
+      }
+      for(const a of f.released)if(a==='freeLook')lookUp();
+      // Look axes (B0, SUPPOSED): the view angle follows them within the free-look limits; centred, the view comes back as
+      // when free look is released.
+      const c=f.cmd;joy.stickLook=!!(c.lookYaw||c.lookPitch);
+      if(joy.stickLook){lookYaw=c.lookYaw*J.LAW.lookYaw;lookPitch=c.lookPitch*J.LAW.lookPitch;}
+    }
+    function joyStart(){
+      joy.present.clear();joy.prompted='';joyStop();
+      if(joyProfile.useHotas&&!J.usedRefs(joyProfile).size)toast('HOTAS activé, mais aucun axe ni bouton n’est lié : Commandes › Manette · HOTAS.');
+    }
+    function joyStop(){if(!joy.reading&&!joy.learn&&!joy.roles.identify)return;joy.reading=false;joy.learn=null;J.cancelIdentify(joy.roles);joyPanel();}
+    // "Détecter": the axis moved past half its travel goes to the row being learnt, on the device reference that pad has
+    // (an identified stick first, else the main device, which becomes that pad's model when it was another one).
+    function joyLearnStep(){
+      const hit=J.learnAxis(joy.learnBase,joy.pads,joy.live);if(!hit)return;
+      const n=joy.learn,pad=joy.pads.find(p=>p.index===hit.index);joy.learn=null;
+      let ref=['left','right','main'].find(r=>joy.res[r].includes(hit.index));
+      if(!ref){if(!pad.vendor){toast('Manette sans identifiant lisible : choisis la manette principale à la main.');joyPanel();return;}joyProfile.devices.main=J.modelOf(pad);ref='main';}
+      joyProfile.axes[n].device=ref;joyProfile.axes[n].axis=hit.axis;joyChanged();
+      toast(`${JOY_NAMES[n]} : axe ${hit.axis} de « ${pad.name||'manette'} » (${JOY_REF_NAMES[ref]}).`);
+    }
+    function joyChanged(){joyProfile=J.validateProfile(joyProfile);save();joySync();}
+    function joyFill(sel,list){if(!sel||!sel.replaceChildren)return;sel.replaceChildren();for(const [v,t] of list){const o=document.createElement('option');o.value=v;o.textContent=t;sel.append(o);}}
+    const joyKey=m=>m.vendor+':'+m.product;
+    function joyModelByKey(key){
+      const pad=joy.pads.find(p=>p.mapping!=='standard'&&p.vendor&&joyKey(p)===key),m=joyProfile.devices.main;
+      if(pad)return J.modelOf(pad);if(m&&joyKey(m)===key)return m;
+      const [vendor,product]=key.split(':');return J.validateProfile({schema:1,devices:{main:{vendor,product}}}).devices.main;
+    }
+    function joyMainOptions(){
+      const sel=$('joyMain');if(!sel)return;const models=[],add=m=>{if(m&&m.vendor&&m.product&&!models.some(x=>J.sameModel(x,m)))models.push(m);};
+      add(joyProfile.devices.main);for(const p of joy.pads)if(p.mapping!=='standard')add(p);
+      const key=models.map(joyKey).join(',');
+      if(sel.joyKey!==key){sel.joyKey=key;joyFill(sel,[['auto','Automatique : vJoy d’abord, sinon la première manette vue'],...models.map(m=>[joyKey(m),`${m.name||'Manette'} (${J.gameIdentifier(m).slice(0,9)})`])]);}
+      sel.value=joyProfile.devices.main?joyKey(joyProfile.devices.main):'auto';
+    }
+    function joySlider(id,v,unit){const el=$(id);el.value=v;const o=el.parentElement&&el.parentElement.querySelector?el.parentElement.querySelector('output'):null;if(o)o.textContent=joyFmt(v)+(unit?' '+unit:'');}
+    function joySync(){
+      if(!joy.ready)return;const p=joyProfile;
+      $('joyUseHotas').checked=p.useHotas;$('joyConfirmRoles').checked=p.confirmRoles;$('joyDeviceMatch').value=p.deviceMatch;joyMainOptions();
+      for(const n of J.AXES){const b=p.axes[n];$(`joy${n}Device`).value=b.device||'';$(`joy${n}Axis`).value=String(b.axis);$(`joy${n}Invert`).checked=b.invert;
+        joySlider(`joy${n}Sens`,b.sensitivity,'×');joySlider(`joy${n}Dz`,b.deadZone,'');}
+      joyPanel();
+    }
+    function joyStatusText(){
+      if(!joy.reading)return joyProfile.useHotas?'Lecture arrêtée. En vol, les manettes liées sont lues tant que le HOTAS est activé.':'Lecture arrêtée.';
+      if(joy.error==='blocked')return 'Lecture refusée par la politique de la page : aucune manette n’est accessible ici.';
+      if(joy.error==='api')return 'Ce navigateur ne donne pas accès aux manettes : utilise Chrome, Edge ou l’application de bureau.';
+      if(joy.rolesInfo&&joy.rolesInfo.prompt)return JOY_PROMPTS[joy.rolesInfo.prompt];
+      if(joy.learn)return `${JOY_NAMES[joy.learn]} : bouge l’axe voulu jusqu’en butée (un nouveau clic sur le bouton annule).`;
+      if(!joy.pads.length)return 'Lecture en cours. Bouge un manche ou appuie sur un bouton : le navigateur ne montre une manette qu’après un geste.';
+      return `Lecture en cours : ${joy.pads.length} manette${joy.pads.length>1?'s':''}. Les valeurs ci-dessous sont celles que l’entraîneur reçoit.`;
+    }
+    function joyAxisText(n,a){
+      const b=joyProfile.axes[n],where=b.device&&b.axis>=0?`${JOY_REF_NAMES[b.device]}, axe ${b.axis}`:'non lié';
+      if(!a)return where;
+      if(a.status==='missing')return `${where} : introuvable`;
+      if(a.status==='stale')return `${where} : pas encore de signal`;
+      if(a.status==='unbound')return a.value?`boutons ${joyNum(a.value)}`:where;
+      return `${where} : brut ${a.raw===null?'—':joyNum(a.raw,3)} → ${joyNum(a.value)}`;
+    }
+    // Test view: every pad seen (name, identifier, tags), all its axes and the buttons held, numbered from 0 as in the
+    // game's settings file. Rows are rebuilt only when the set of pads changes (a click is never lost in a rebuild).
+    function joyDevicesView(){
+      const box=$('joyDevices');if(!box||!box.replaceChildren)return;
+      const pads=joy.reading?joy.pads:[],key=pads.map(p=>p.index+'|'+p.id).join(';');
+      if(box.joyKey!==key){box.joyKey=key;box.replaceChildren();joy.rows=new Map();
+        for(const p of pads){const row=document.createElement('div'),head=document.createElement('div'),axes=document.createElement('div'),buttons=document.createElement('div');row.className='joy-device';row.append(head,axes,buttons);let main=null;
+          if(p.mapping!=='standard'&&p.vendor){const b=document.createElement('button'),model=J.modelOf(p);main=b;b.textContent='En faire la manette principale';
+            b.onclick=()=>{joyProfile.devices.main=model;joyChanged();toast(`Manette principale : ${model.name||'manette'} (${J.gameIdentifier(model).slice(0,9)}).`);};row.append(b);}
+          box.append(row);joy.rows.set(p.index,{head,axes,buttons,main});}}
+      for(const p of pads){const v=joy.rows.get(p.index);if(!v)continue;const tags=[];if(v.main)v.main.hidden=J.sameModel(joyProfile.devices.main,p);
+        if(J.isVirtual(p))tags.push('virtuelle (vJoy)');if(p.mapping==='standard')tags.push('manette de jeu standard : non prise en charge ici');
+        for(const r of J.REFS)if(joy.res[r].includes(p.index))tags.push(JOY_REF_NAMES[r]);
+        tags.push(joy.live.has(p.index)?'reçoit':'pas encore de signal');if(J.hatMute(joy.fresh,p.index))tags.push('chapeau muet');
+        v.head.textContent=`n° ${p.index} · ${p.name||'manette sans nom'}${p.vendor?` · ${J.gameIdentifier(p).slice(0,9)}`:''} · ${tags.join(' · ')}`;
+        const hat=J.decodeHat(p.axes[9]),on=p.buttons.map((b,i)=>b?i:-1).filter(i=>i>=0);
+        v.axes.textContent='Axes : '+p.axes.map((x,i)=>`${i} ${Math.abs(x)>1.05?'centré':joyNum(x)}`).join(' · ')+(hat?` · chapeau ${HAT_FR[hat]}`:'');
+        v.buttons.textContent=`Boutons appuyés (numéros du jeu, à partir de 0) : ${on.length?on.join(', '):'aucun'}`;}
+    }
+    function joyPanel(){
+      if(!joy.ready)return;
+      $('joyRead').textContent=joy.reading?'Arrêter la lecture':'Lire les manettes';$('joyStatus').textContent=joyStatusText();
+      joyMainOptions();joyDevicesView();
+      for(const n of J.AXES){const a=joy.reading&&joy.frame?joy.frame.axes[n]:null,t=$(`joy${n}Live`),m=$(`joy${n}Meter`),l=$(`joy${n}Learn`),v=a?a.value:0;
+        if(t)t.textContent=joyAxisText(n,a);
+        if(m&&m.style){m.style.left=(50+Math.min(0,v)*50)+'%';m.style.width=(Math.abs(v)*50)+'%';}
+        if(l)l.textContent=joy.learn===n?'Bouge l’axe…':'Détecter';}
+    }
+    // Import of the game's joystick section: the file the player picks is read here, in the page, and sent nowhere; a
+    // preview lists what was found and asks which device of this PC each device of the file is.
+    function joyPreviewClose(){const box=$('joyPreview');if(box){box.hidden=true;if(box.replaceChildren)box.replaceChildren();}}
+    function joyPreview(parsed){
+      const box=$('joyPreview');if(!box||!box.replaceChildren)return;box.replaceChildren();box.hidden=false;
+      const line=text=>{const d=document.createElement('div');d.textContent=text;box.append(d);return d;};
+      const dev=d=>d?`${d.name||'manette'} (${J.gameIdentifier(d).slice(0,9)})`:'aucune manette';
+      const src=s=>!s?'':s.button>=0?`bouton ${s.button} de ${dev(s.device)}`:s.hat>=0&&s.dir?`chapeau ${s.hat} ${HAT_FR[s.dir]||s.dir} de ${dev(s.device)}`:'';
+      line('Configuration joystick lue dans le fichier du jeu (rien n’est modifié dans le jeu) :').className='joy-tag';
+      if(parsed.useHotas!==null)line(`HOTAS dans le jeu : ${parsed.useHotas?'activé. D’après des joueurs, la souris et le clavier ne pilotent alors plus l’hélicoptère ; l’entraîneur les garde actifs tant que ce n’est pas vérifié (supposé).':'désactivé.'}`);
+      for(const n of JOY_ROWS){const a=parsed.axes[n];if(!a)continue;
+        const parts=[a.device&&a.axis>=0?`${dev(a.device)}, axe ${a.axis}`:'aucun axe'];
+        if(a.invert)parts.push('inversé');if(a.sensitivity!==null)parts.push('sensibilité '+joyFmt(a.sensitivity));if(a.deadZone!==null)parts.push('zone morte '+joyFmt(a.deadZone));
+        const plus=src(a.positive),minus=src(a.negative);if(plus)parts.push('sens + : '+plus);if(minus)parts.push('sens − : '+minus);
+        line(`${JOY_NAMES[n]} : ${parts.join(', ')}.`);}
+      const kept=parsed.actions.filter(x=>x.action),other=parsed.actions.filter(x=>!x.action);
+      if(kept.length)line('Boutons : '+kept.map(x=>`${labels[x.action]} = bouton ${x.button} de ${dev(x.device)}`).join(' ; ')+'.');
+      if(other.length)line('Actions du jeu sans équivalent dans l’entraîneur, ignorées : '+other.map(x=>x.gameAction).join(', ')+'.');
+      if(parsed.selfCentering)line('Collectif auto-centré activé dans le jeu : non reproduit (non mesuré).');
+      for(const note of parsed.notes)line(note.code==='positional'?'Les numéros d’axe, de bouton et de chapeau sont lus par leur position : leur champ n’a pas de nom lisible dans le fichier du jeu.':note.code==='unreadable'?`${note.name} : ligne illisible, ignorée.`:'Une ligne trop longue a été ignorée.');
+      // One question per device the file names (the game's identifier has no instance: two identical sticks look alike).
+      const choice=new Map();
+      J.gameDevices(parsed).forEach((d,i)=>{const label=document.createElement('label'),sel=document.createElement('select'),key=joyKey(d);label.textContent=`${dev(d)} est : `;
+        joyFill(sel,[['main','la manette principale'],['left','le manche gauche'],['right','le manche droit']]);sel.value=J.REFS[Math.min(i,2)];choice.set(key,sel.value);
+        sel.addEventListener('input',()=>choice.set(key,sel.value));label.append(sel);box.append(label);});
+      const row=document.createElement('div'),apply=document.createElement('button'),cancel=document.createElement('button');row.className='actions';apply.textContent='Appliquer';cancel.textContent='Annuler';
+      apply.onclick=()=>{const r=J.importGameJoystick(parsed,joyProfile,m=>choice.get(joyKey(m)));
+        if(r.conflict.length){toast('Deux appareils du fichier sur la même manette : choisis un rôle différent pour chacun.');return;}
+        joyProfile=r.profile;joy.roles=J.createRoles();joyPreviewClose();save();joySync();
+        toast(`Configuration joystick du jeu appliquée : HOTAS ${joyProfile.useHotas?'activé':'désactivé'}, ${J.AXES.filter(n=>joyProfile.axes[n].device&&joyProfile.axes[n].axis>=0).length} axes et ${Object.keys(joyProfile.actions).length} boutons liés.`);};
+      cancel.onclick=joyPreviewClose;row.append(apply,cancel);box.append(row);
+    }
+    function joyInit(){
+      if(!$('joyUseHotas')||!$('joyPreview'))return;
+      for(const n of J.AXES){
+        joyFill($(`joy${n}Device`),[['','Aucune'],['main','Manette principale'],['left','Manche gauche'],['right','Manche droit']]);
+        joyFill($(`joy${n}Axis`),[['-1','Aucun'],...Array.from({length:J.BOUNDS.axis+1},(_,i)=>[String(i),`Axe ${i}${HID_AXES[i]?' · '+HID_AXES[i]:''}`])]);
+        const b=()=>joyProfile.axes[n],on=(id,fn)=>$(id).addEventListener('input',fn);
+        on(`joy${n}Device`,()=>{const v=$(`joy${n}Device`).value;b().device=J.REFS.includes(v)?v:null;joyChanged();});
+        on(`joy${n}Axis`,()=>{const v=parseInt($(`joy${n}Axis`).value,10);if(Number.isInteger(v))b().axis=v;joyChanged();});
+        on(`joy${n}Invert`,()=>{b().invert=!!$(`joy${n}Invert`).checked;joyChanged();});
+        on(`joy${n}Sens`,()=>{b().sensitivity=Number($(`joy${n}Sens`).value);joyChanged();});
+        on(`joy${n}Dz`,()=>{b().deadZone=Number($(`joy${n}Dz`).value);joyChanged();});
+        $(`joy${n}Learn`).onclick=()=>{joy.learn=joy.learn===n?null:n;joy.learnBase=new Map();if(joy.learn){joy.reading=true;joy.tick=0;}joyPanel();};
+      }
+      $('joyUseHotas').addEventListener('input',()=>{joyProfile.useHotas=!!$('joyUseHotas').checked;joyChanged();
+        toast(joyProfile.useHotas?'HOTAS activé : en vol, l’entraîneur lit les manettes liées ici.':'HOTAS désactivé : aucune manette n’est lue en vol.');});
+      $('joyConfirmRoles').addEventListener('input',()=>{joyProfile.confirmRoles=!!$('joyConfirmRoles').checked;joyChanged();});
+      $('joyDeviceMatch').addEventListener('input',()=>{joyProfile.deviceMatch=$('joyDeviceMatch').value;joy.roles=J.createRoles();joyChanged();});
+      $('joyMain').addEventListener('input',()=>{const v=$('joyMain').value;joyProfile.devices.main=v==='auto'?null:joyModelByKey(v);joyChanged();});
+      $('joyRead').onclick=()=>{if(joy.reading)joyStop();else{joy.reading=true;joy.tick=0;joyPanel();}};
+      $('joyIdentify').onclick=()=>{J.startIdentify(joy.roles);joy.reading=true;joy.tick=0;joyPanel();};
+      $('joySwap').onclick=()=>{J.swapRoles(joy.roles,joyProfile.devices);joyChanged();toast('Manches gauche et droit inversés.');};
+      $('importJoystick').onchange=async e=>{const file=e.target.files[0];if(!file)return;
+        try{if(file.size>400000)throw Error('too-large');const parsed=J.parseGameJoystick(await file.text());if(!parsed.found&&parsed.useHotas===null)throw Error('none');joyPreview(parsed);}
+        catch(err){toast('Import refusé : '+({'too-large':'fichier trop volumineux',none:'aucune configuration joystick dans ce fichier'}[err.message]||'fichier illisible')+'.');}
+        e.target.value='';};
+      joy.ready=true;
+    }
     document.addEventListener('keydown',e=>{
       if(capture(e.code)){e.preventDefault();return;}
       if(shopOpen){if(e.code==='Escape'||e.code===bindings.shop){e.preventDefault();closeShop();}return;}
@@ -1693,8 +1931,9 @@
     document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement){compatInput=false;$('mouseMode').hidden=true;skipMouse=true;P.resetInput(mouse);}else if(running&&!compatInput)pause();});
     document.addEventListener('pointerlockerror',enableCompatibility);
     $('world').addEventListener('mouseleave',()=>{if(compatInput){clearInputs();skipMouse=true;virtualAnchor=null;}});
-    document.addEventListener('visibilitychange',()=>{if(document.hidden&&running)pause();});
-    window.addEventListener('blur',()=>{if(running)pause();else clearInputs();});window.addEventListener('resize',resize);
+    // Joysticks: Chromium stops refreshing a hidden page's pads; shown again, their values are stale until a new report.
+    document.addEventListener('visibilitychange',()=>{if(document.hidden&&running)pause();if(document.hidden)joyStop();else J.markStale(joy.fresh);});
+    window.addEventListener('blur',()=>{if(running)pause();else clearInputs();joyStop();});window.addEventListener('resize',resize);
     // In a browser tab, Ctrl+W closes the tab (Ctrl+Shift+W the window) and no page can cancel that shortcut, while the
     // game's default keys put collective down on Left Ctrl and pitch down on W. While a session is in progress (flying
     // or paused, not over) the page asks the browser to confirm leaving (chosen). The desktop app has no such shortcut
@@ -1723,7 +1962,7 @@
     if($('mapRandomEach'))$('mapRandomEach').addEventListener('input',()=>{try{localStorage.setItem(W.STORE_KEY,JSON.stringify({id:W.id,random:$('mapRandomEach').checked}));}catch(e){}toast($('mapRandomEach').checked?'Une nouvelle carte sera générée à chaque chargement de la page.':'La carte actuelle sera gardée au prochain chargement.');});
     if($('lighting'))$('lighting').addEventListener('input',()=>{if(!hasSession)pickLight();});
     try{if(history.replaceState&&location.protocol!=='about:')history.replaceState(null,'','#carte='+W.id);}catch(e){}
-    buildMinimap();syncUI();renderMapCard();resize();createTargets();if(!window.__LB_MANUAL_CLOCK__)requestAnimationFrame(animate);$('start').disabled=false;showScreen('menu');selectTab('modes');$('saveState').textContent='Prêt — sauvegarde locale automatique';
+    buildMinimap();joyInit();syncUI();renderMapCard();resize();createTargets();if(!window.__LB_MANUAL_CLOCK__)requestAnimationFrame(animate);$('start').disabled=false;showScreen('menu');selectTab('modes');$('saveState').textContent='Prêt — sauvegarde locale automatique';
     if(!storageOK)$('saveState').textContent='Stockage indisponible — utilise l’export de profil';
     if(notices.length){toast(notices.splice(0).join(' '));save();}
     // Read-only diagnostic state for verification; no telemetry leaves this computer.

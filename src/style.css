@@ -144,3 +144,20 @@ details.advanced{border:1px solid var(--line);border-radius:var(--radius);paddin
 .map-card .wide{grid-column:1 / -1}
 .map-card .check.wide{margin-top:0}
 @media(max-width:640px){.map-card{grid-template-columns:1fr}.map-card canvas{width:100%;height:auto;aspect-ratio:1}}
+/* Joystick panel of the Commandes tab (provisional HOTAS page): one row per axis, a live meter of the processed value */
+.joy-panel{grid-column:1 / -1;min-width:0;overflow-wrap:anywhere}.joy-panel label,.joy-panel select{min-width:0}
+.joy-grid{margin-top:12px}
+.joy-axes{display:grid;gap:8px;margin-top:12px}
+.joy-axis{display:grid;grid-template-columns:150px repeat(2,minmax(0,1fr)) auto repeat(2,minmax(0,1.1fr)) auto minmax(0,1.6fr);gap:8px 14px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:8px;font-size:13px}
+.joy-axis .check{margin-top:0}.joy-axis button{padding:7px 10px;font-size:12px}
+.joy-name{align-self:center}.joy-badge{font-size:11px;color:var(--muted);border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:0 5px}
+.joy-live{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.joy-meter{display:block;position:relative;height:6px;margin-bottom:5px;background:var(--fill-2);border-radius:var(--radius-sm);overflow:hidden}
+.joy-meter span{position:absolute;top:0;bottom:0;left:50%;width:0;background:var(--accent)}
+.joy-devices{display:grid;gap:6px;margin-top:10px;font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.joy-device{display:grid;gap:3px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 10px;background:var(--surface-3)}
+.joy-device button{justify-self:start;margin-top:4px;padding:5px 10px;font-size:12px}
+.joy-preview{display:grid;gap:5px;margin-top:10px;border:1px solid var(--accent-line);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--ink-3)}
+.joy-preview[hidden]{display:none}.joy-tag{color:var(--accent)}
+@media(max-width:1000px){.joy-axis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.joy-axis{grid-template-columns:minmax(0,1fr)}}

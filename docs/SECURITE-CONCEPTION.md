@@ -15,24 +15,30 @@ Pour signaler une faille : [`SECURITY.md`](../SECURITY.md).
 - Sous automatisation (`navigator.webdriver`), la page simule la capture de la souris : un test ne capture jamais la
   souris de la machine. `scripts/build.mjs` refuse un `app.js` sans cette simulation (vérifiée dans le code lui-même,
   hors commentaires et chaînes, quand `acorn`, dépendance de développement, est installé).
+- Joysticks : la page ne les lit que sur demande (bouton « Lire les manettes », ou en vol avec le HOTAS activé), en un
+  seul endroit du code. Sous automatisation, `navigator.getGamepads` est remplacé par une simulation qui ne rend que les
+  manettes qu'un test y met : aucun test ne lit les manettes de la machine (les specs du navigateur piègent en plus la
+  vraie fonction et vérifient qu'elle n'est jamais appelée, `tests/build/browser-safety.test.js`). Pas de WebHID, de
+  WebUSB, de Web Serial ni de vibration.
 
 ## L'application Windows
 
 Electron 44.5.1 (Chromium 152), épinglé. Le processus principal (`desktop/main.cjs`) ne fait que brancher des règles
 pures, testées sans Electron (`desktop/policy.cjs`, `tests/desktop/policy.test.js`) :
 
-| Règle                                                                                                                                                                                                 | Où                                          |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| Page sans Node.js : `sandbox`, `contextIsolation`, `nodeIntegration` désactivé, pas de script de préchargement, pas d'IPC                                                                             | `windowOptions`                             |
-| Une seule origine, `app://littlebird`, qui ne sert que la page (et sa CSP en en-tête, avec `frame-ancestors 'none'`)                                                                                  | `pageFor`, `responseHeaders`, `cspFromPage` |
-| Démarrage refusé si la CSP de la page sort d'une liste exacte : directives connues et uniques, scripts et styles par empreinte seulement, tout le reste `'none'`                                      | `cspFromPage`                               |
-| Toute requête qui n'est pas l'application est annulée (aucun réseau) ; WebRTC limité au mandataire (aucun configuré)                                                                                  | `requestAllowed`, `main.cjs`                |
-| Navigation vers l'extérieur, nouvelles fenêtres et `<webview>` refusées ; seule l'adresse exacte de la page Releases (lien « À propos ») va au navigateur par défaut, jamais en auto-test             | `isAppUrl`, `externalAllowed`               |
-| Permissions : seulement le verrouillage du pointeur et le plein écran, depuis l'application                                                                                                           | `permissionAllowed`                         |
-| Téléchargements : seulement l'export du profil (`little-bird-*.json`), par la boîte « Enregistrer sous »                                                                                              | `downloadAllowed`                           |
-| Commutateurs refusés (sortie immédiate) : débogage, commandes lancées devant un processus de Chromium (`--gpu-launcher`…), bac à sable, fonctionnalités, journaux et profil ailleurs, réseau redirigé | `refusedSwitch`                             |
-| Auto-test seulement avec `--lb-self-test=<nonce>` **et** la variable d'environnement `LB_SELF_TEST` égale au nonce                                                                                    | `selfTestArgs`                              |
-| Pas de barre de menus (Alt reste la touche du regard libre), pas d'outils de développement une fois empaqueté ; la fenêtre se ferme sans demande de confirmation de la page                           | `main.cjs`                                  |
+| Règle                                                                                                                                                                                                   | Où                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Page sans Node.js : `sandbox`, `contextIsolation`, `nodeIntegration` désactivé, pas de script de préchargement, pas d'IPC                                                                               | `windowOptions`                             |
+| Une seule origine, `app://littlebird`, qui ne sert que la page (et sa CSP en en-tête, avec `frame-ancestors 'none'`)                                                                                    | `pageFor`, `responseHeaders`, `cspFromPage` |
+| Démarrage refusé si la CSP de la page sort d'une liste exacte : directives connues et uniques, scripts et styles par empreinte seulement, tout le reste `'none'`                                        | `cspFromPage`                               |
+| Toute requête qui n'est pas l'application est annulée (aucun réseau) ; WebRTC limité au mandataire (aucun configuré)                                                                                    | `requestAllowed`, `main.cjs`                |
+| Navigation vers l'extérieur, nouvelles fenêtres et `<webview>` refusées ; seule l'adresse exacte de la page Releases (lien « À propos ») va au navigateur par défaut, jamais en auto-test               | `isAppUrl`, `externalAllowed`               |
+| Permissions : seulement le verrouillage du pointeur et le plein écran, depuis l'application                                                                                                             | `permissionAllowed`                         |
+| Politique de permissions de la page : caméra, micro, HID, USB, port série, Bluetooth… fermés ; joysticks `gamepad=(self)`, et `gamepad=()` pendant l'auto-test (les manettes de la machine jamais lues) | `responseHeaders`                           |
+| Téléchargements : seulement l'export du profil (`little-bird-*.json`), par la boîte « Enregistrer sous »                                                                                                | `downloadAllowed`                           |
+| Commutateurs refusés (sortie immédiate) : débogage, commandes lancées devant un processus de Chromium (`--gpu-launcher`…), bac à sable, fonctionnalités, journaux et profil ailleurs, réseau redirigé   | `refusedSwitch`                             |
+| Auto-test seulement avec `--lb-self-test=<nonce>` **et** la variable d'environnement `LB_SELF_TEST` égale au nonce                                                                                      | `selfTestArgs`                              |
+| Pas de barre de menus (Alt reste la touche du regard libre), pas d'outils de développement une fois empaqueté ; la fenêtre se ferme sans demande de confirmation de la page                             | `main.cjs`                                  |
 
 **Fusibles d'Electron** (écrits dans l'exécutable après l'empaquetage, `build/fuses.cjs`, relus par
 `scripts/check-fuses.mjs`) : l'exécutable ne peut pas servir d'interpréteur Node.js (`ELECTRON_RUN_AS_NODE`,

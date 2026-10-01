@@ -112,8 +112,11 @@
       const c=this.cfg; this.time+=dt;
       // 1. Collective lever. Released in flight: automatic hold on vertical
       // speed and acceleration (identified law). On the ground: idle (-1).
+      // A joystick axis bound to the collective (joystickMix) gives the lever position itself: input.lever, or null to
+      // keep the lever where it is until that stick has reported; the keys then do not move it (law L, SUPPOSED).
       const command=input.collective||0;
-      if(command>0) this.collective=Math.min(1,this.collective+c.collectiveUpRate*dt);
+      if(input.lever!==undefined){if(input.lever!==null)this.collective=clamp(input.lever,-1,1);}
+      else if(command>0) this.collective=Math.min(1,this.collective+c.collectiveUpRate*dt);
       else if(command<0) this.collective=Math.max(-1,this.collective-c.collectiveDownRate*dt);
       else if(this.onGround) this.collective=Math.max(-1,this.collective-c.collectiveDownRate*dt);
       else if(c.altitudeHold) this.collective=clamp(this.collective-(c.holdGain*this.velocity.y+c.holdDamping*this.verticalAccel)*dt,-1,1);
@@ -222,6 +225,431 @@
     else if(!compat){s.mousePitch*=Math.exp(-cfg.mouseReturn*dt);s.mouseYaw*=Math.exp(-cfg.mouseReturn*dt);}
     return input;
   }
+  // ---- Joystick input path (J1). Pure functions of the pads one frame read (navigator.getGamepads(), copied by
+  // snapshotPads), of the player's joystick profile and of a small state: no DOM, no clock, no Math.pow. app.js polls
+  // once per rendered frame, and only while a session flies with the HOTAS on or while the joystick test view of the
+  // menu reads; the keyboard and mouse path above stays as it is, and joystickMix touches an input field only for a
+  // non-zero stick command (or a bound collective axis), so that keys and mouse fly bit for bit the same without a stick.
+  // Devices: 'main' is the one device the game reads (a virtual device such as vJoy fed by a remapper, a single stick,
+  // any HID joystick); 'left' and 'right' are two physical sticks, told apart by a trigger press (two identical sticks
+  // have the same Gamepad id and no serial number). Response laws: baseline B0, every part SUPPOSED until measured in
+  // the game (shown "supposé" in the page): the processed deflection goes into the key channel (rate command, full
+  // deflection = the key rate), dead zone rescaled over the half axis, sensitivity as a gain then a clamp, the
+  // collective axis gives the lever position (law L), the look axes give the view angle within the free-look limits,
+  // stick commands are added to the keys and mouse and clamped to +-1 (sumClamp).
+  // Signs: the game's convention (+ = nose up, right bank, nose right, collective up, look right, look up) up to the
+  // bridge at the end of joyFrame; the trainer's roll and yaw are +1 = LEFT (inputStep), and its free look yaw too.
+  const JOY_AXES=['Pitch','Throttle','Roll','Yaw','LookYaw','LookPitch'];   // the game's settings file order (read)
+  const JOY_REFS=['main','left','right'];
+  // Trainer actions a joystick button may drive (the key-binding actions of app.js).
+  const JOY_ACTIONS=['fire','flares','freeLook','view','shop','reset','neutral','collectiveUp','collectiveDown','pitchUp','pitchDown','yawLeft','yawRight','rollLeft','rollRight'];
+  // Action names of the game's joystick section -> trainer action (read in a game settings file; the game's other
+  // actions have no trainer counterpart and are listed by the import preview).
+  const GAME_ACTIONS={Fire:'fire',Flares:'flares',ToggleCameraMode:'view'};
+  // Bounds (chosen until the game's slider ranges are captured); Chromium exposes at most 16 axes and 128 buttons.
+  const JOY_BOUNDS={sensitivity:[.1,3],deadZone:[0,.95],axis:15,button:127,slot:7,name:64,pads:8};
+  // B0 (SUPPOSED, zero fitted parameter): the free-look limits are the mouse free look's (app.js, chosen).
+  const JOY_LAW={status:'supposé',deadZone:'scaled',reference:'half',stick:'rate',collective:'absolute',look:'absolute',mix:'sumClamp',merge:'largest',lookYaw:2.6,lookPitch:1.1};
+  // Factory values read in the game's settings file: no device, sensitivity 1.0, dead zone 0.05, no inversion; the
+  // unassigned axes keep indices 2 (collective) and 5 (yaw); Pitch 1 / Roll 0 (the classic X / Y template) assumed.
+  const JOY_AXIS_INDEX={Pitch:1,Throttle:2,Roll:0,Yaw:5,LookYaw:-1,LookPitch:-1};
+  // vJoy's virtual device (read: the vJoy project's HID vendor and product) is the main device when none is named.
+  const VJOY={vendor:'1234',product:'bead'};
+  // Thrustmaster T.16000M FCS (USB 044F:B10A; B10B = the left-handed identity of its TARGET software): hat switch on
+  // axis 9 (HID usage 0x39 - 0x30, read in Chromium's source); its zero-initialised hat tells a stick that has not
+  // reported yet (freshness).
+  const HAT_PRESETS=[{vendor:'044f',products:['b10a','b10b'],hat:9}];
+  const HAT_DIRS=['up','upRight','right','downRight','down','downLeft','left','upLeft'];
+  const HAT_HAS={up:['upLeft','up','upRight'],right:['upRight','right','downRight'],down:['downRight','down','downLeft'],left:['downLeft','left','upLeft']};
+  // Freshness fallback: after this many reports with the hat still at exactly 0 (Chromium's sanitiser may keep a hat at
+  // 0 for ever), the timestamp rule applies and the pad is reported with a mute hat (chosen).
+  const HAT_MUTE=8;
+  const hex4=h=>h.toLowerCase().padStart(4,'0');
+  const cleanName=n=>String(n==null?'':n).replace(/[^\x20-\x7e\u00a0-\u024f]/g,'').trim().slice(0,JOY_BOUNDS.name);
+  // Chromium: "Name (Vendor: 044f Product: b10a)" (standard pads: "Name (STANDARD GAMEPAD Vendor: 045e Product: 028e)");
+  // Firefox: "44f-b10a-Name". Neither carries a serial number.
+  function parseGamepadId(id){
+    const s=String(id==null?'':id).slice(0,200),open=s.lastIndexOf('(');
+    const m=open>=0?/(?:^|\s)Vendor: ([0-9a-f]{1,4}) Product: ([0-9a-f]{1,4})\)\s*$/i.exec(s.slice(open+1)):null;
+    if(m)return {name:cleanName(s.slice(0,open)),vendor:hex4(m[1]),product:hex4(m[2]),format:'chromium'};
+    const f=/^([0-9a-f]{1,4})-([0-9a-f]{1,4})-/i.exec(s);
+    if(f)return {name:cleanName(s.slice(f[0].length)),vendor:hex4(f[1]),product:hex4(f[2]),format:'firefox'};
+    return {name:cleanName(s),vendor:null,product:null,format:'unknown'};
+  }
+  // The game's DeviceIdentifier "VVVV:PPPP:Name" (no instance either); "" = no device.
+  function parseGameIdentifier(s){
+    const m=/^([0-9a-f]{4}):([0-9a-f]{4}):([^"\r\n]{0,64})$/i.exec(String(s==null?'':s));
+    return m?{vendor:m[1].toLowerCase(),product:m[2].toLowerCase(),name:cleanName(m[3])}:null;
+  }
+  const gameIdentifier=d=>d&&d.vendor&&d.product?`${d.vendor.toUpperCase()}:${d.product.toUpperCase()}:${d.name||''}`:'';
+  const sameModel=(a,b)=>!!(a&&b&&a.vendor&&a.vendor===b.vendor&&a.product===b.product);
+  const isVirtual=p=>sameModel(p,VJOY);
+  // Axis of a pad's hat switch for the freshness rule: the presets only (another device may have no hat at all).
+  function presetHat(p){const h=HAT_PRESETS.find(x=>x.vendor===p.vendor&&x.products.includes(p.product));return h&&p.axes.length>h.hat?h.hat:-1;}
+  // A device model of the profile, from a pad or from the game's identifier: Chromium puts any HID hat on axis 9.
+  const modelOf=p=>({vendor:p.vendor,product:p.product,name:cleanName(p.name),slotHint:Number.isInteger(p.index)&&p.index>=0&&p.index<=JOY_BOUNDS.slot?p.index:0,hatAxis:9});
+  // navigator.getGamepads() -> plain copies (another browser may hand out live objects): at most 8 pads, 16 axes, 128
+  // buttons; a non-finite value reads 0; disconnected entries are skipped.
+  function snapshotPads(list){
+    const out=[],n=list&&typeof list.length==='number'?Math.min(list.length,16):0;
+    for(let i=0;i<n&&out.length<JOY_BOUNDS.pads;i++){
+      const g=list[i];if(!g||typeof g!=='object'||g.connected===false)continue;
+      const d=parseGamepadId(g.id),axes=[],buttons=[],ga=g.axes||[],gb=g.buttons||[];
+      for(let k=0;k<Math.min(ga.length|0,16);k++){const v=ga[k];axes.push(typeof v==='number'&&Number.isFinite(v)?v:0);}
+      for(let k=0;k<Math.min(gb.length|0,128);k++){const b=gb[k];buttons.push(b&&typeof b==='object'?!!b.pressed:!!b);}
+      out.push({index:Number.isInteger(g.index)?g.index:i,id:String(g.id==null?'':g.id).slice(0,200),name:d.name,vendor:d.vendor,product:d.product,format:d.format,
+        mapping:String(g.mapping||'').slice(0,20),timestamp:Number.isFinite(g.timestamp)?g.timestamp:0,axes,buttons});
+    }
+    return out;
+  }
+  // ---- Axis processing (B0, SUPPOSED order: invert, dead zone, sensitivity as a gain, clamp) ----
+  // Exactly +0 inside the dead zone (a centred stick adds nothing), exactly +-1 at the stops. A value beyond 1.05 is a
+  // hat's null state (9/7 or 23/7), not an axis position: it reads 0; a rounding just past +-1 is the stop.
+  const AXIS_LIMIT=1.05;
+  function axisValue(raw,b){
+    let v=typeof raw==='number'&&Math.abs(raw)<=AXIS_LIMIT?clamp(raw,-1,1):0;
+    if(b.invert)v=-v;
+    const dz=Number.isFinite(b.deadZone)?clamp(b.deadZone,0,JOY_BOUNDS.deadZone[1]):0,a=Math.abs(v);
+    if(a<=dz)return 0;
+    const m=Math.min(1,(a-dz)/(1-dz)*(b.sensitivity>0?b.sensitivity:1));
+    return v<0?-m:m;
+  }
+  // Hat axis value -> direction, or null: centred (above 1: 1.2857 or 3.2857), not reported yet (exactly 0) or invalid.
+  // Directions read 2k/7 - 1 for k = 0 (up) to 7 (up-left), clockwise.
+  function decodeHat(v){
+    if(typeof v!=='number'||!Number.isFinite(v)||v===0||v>1.05||v<-1.05)return null;
+    const k=Math.round((v+1)*3.5);
+    return k>=0&&k<=7&&Math.abs(v-(2*k/7-1))<.05?HAT_DIRS[k]:null;
+  }
+  const hatHas=(dir,want)=>!!dir&&Object.hasOwn(HAT_HAS,want)&&HAT_HAS[want].includes(dir);
+  // ---- Freshness: until a pad has reported, Chromium shows zeros (a throttle wheel at mid-travel, a hat at exactly 0,
+  // which no hat state gives); after the page was hidden its values stay stale until its timestamp changes. A preset
+  // device (hat known) is live once its hat is no longer exactly 0; any other device once its timestamp has changed
+  // since it was first seen. markStale (page shown again): stale until the timestamp changes.
+  function createFreshness(){return new Map();}
+  function freshStep(f,pads){
+    const live=new Set();
+    for(const p of pads){
+      let s=f.get(p.index);
+      if(!s||s.id!==p.id){s={id:p.id,t:p.timestamp,changes:0,stale:false,mute:false};f.set(p.index,s);}
+      else if(p.timestamp!==s.t){s.t=p.timestamp;s.changes++;s.stale=false;}
+      const hat=presetHat(p);let ok;
+      if(hat>=0&&!s.mute){ok=p.axes[hat]!==0;if(!ok&&s.changes>=HAT_MUTE)s.mute=true;}
+      if(hat<0||s.mute)ok=s.changes>0;
+      if(ok&&!s.stale)live.add(p.index);
+    }
+    for(const i of [...f.keys()])if(!pads.some(p=>p.index===i))f.delete(i);
+    return live;
+  }
+  function markStale(f){for(const s of f.values())s.stale=true;return f;}
+  const hatMute=(f,index)=>!!(f.get(index)&&f.get(index).mute);
+  // ---- Roles of two physical sticks (players without a virtual device). Identification: the first pad pressed takes
+  // the role asked for ('left' first); with exactly one other pad of the same model, that one takes the other role,
+  // so one press identifies a pair. Next launch: the saved slots are only a proposal; with twins the first trigger press
+  // confirms or swaps it (confirm option). A stick that comes back alone takes the free role by elimination. The press
+  // used for identification or confirmation is reported in 'consumed' (it must not fire).
+  function createRoles(){return {left:null,right:null,confirmed:false,identify:null,prev:new Map()};}
+  function startIdentify(r){r.identify='left';r.left=null;r.right=null;r.confirmed=false;return r;}
+  function cancelIdentify(r){r.identify=null;return r;}
+  function swapRoles(r,devices){
+    [r.left,r.right]=[r.right,r.left];[devices.left,devices.right]=[devices.right,devices.left];
+    for(const role of ['left','right'])if(devices[role]&&r[role]!==null)devices[role]={...devices[role],slotHint:r[role]};
+    r.confirmed=r.left!==null&&r.right!==null;return r;
+  }
+  function rolesStep(r,devices,pads,confirm=true){
+    const usable=pads.filter(p=>p.mapping!=='standard'),idx=usable.map(p=>p.index),events=[],edges=[];
+    for(const p of usable){const was=r.prev.get(p.index);if(was&&p.buttons.some((b,i)=>b&&!was[i]))edges.push(p.index);r.prev.set(p.index,p.buttons.slice());}
+    for(const i of [...r.prev.keys()])if(!idx.includes(i))r.prev.delete(i);
+    const out=(phase,extra={})=>({phase,left:r.left,right:r.right,confirmed:r.confirmed,prompt:null,consumed:null,events,changed:false,...extra});
+    for(const role of ['left','right'])if(r[role]!==null&&!idx.includes(r[role])){events.push('lost-'+role);r[role]=null;}
+    const padAt=i=>usable.find(p=>p.index===i);
+    if(r.identify){
+      const role=r.identify,other=role==='left'?'right':'left',hit=edges.find(i=>i!==r[other]);
+      if(hit===undefined)return out('identify',{prompt:'press-'+role});
+      const p=padAt(hit);r[role]=hit;devices[role]=modelOf(p);
+      if(role==='left'){
+        const twins=usable.filter(q=>q.index!==hit&&sameModel(q,p));
+        if(twins.length!==1){r.identify='right';events.push('left-identified');return out('identify',{prompt:'press-right',consumed:hit,changed:true});}
+        r.right=twins[0].index;devices.right=modelOf(twins[0]);
+      }
+      r.identify=null;r.confirmed=true;events.push('identified');return out('ready',{consumed:hit,changed:true});
+    }
+    if(!devices.left&&!devices.right)return out('none');
+    const twins=sameModel(devices.left,devices.right);
+    for(const role of ['left','right']){
+      const other=role==='left'?'right':'left';
+      if(r[role]!==null||!devices[role])continue;
+      const free=usable.filter(p=>sameModel(p,devices[role])&&p.index!==r[other]);
+      if(!free.length)continue;
+      if(free.length===1&&(!twins||r[other]!==null)){r[role]=free[0].index;events.push('found-'+role);continue;}
+      // Several candidates (twins, or more pads of that model): the saved slot is a presumption only.
+      const hint=free.find(p=>p.index===devices[role].slotHint)||(twins&&r[other]===null&&free.length<2?null:free[0]);
+      if(hint){r[role]=hint.index;r.confirmed=false;events.push('proposed-'+role);}
+    }
+    const want=['left','right'].filter(role=>devices[role]),vacant=want.find(role=>r[role]===null);
+    if(vacant)return out('missing',{prompt:'reconnect-'+vacant});
+    if(twins&&confirm&&!r.confirmed){
+      const hit=edges.find(i=>i===r.left||i===r.right);
+      if(hit===undefined)return out('provisional',{prompt:'confirm-left'});
+      if(hit===r.right){[r.left,r.right]=[r.right,r.left];events.push('swapped');}else events.push('confirmed');
+      r.confirmed=true;
+      for(const role of want)devices[role]={...devices[role],slotHint:r[role]};
+      return out('ready',{consumed:hit,changed:true});
+    }
+    r.confirmed=true;
+    let changed=false;
+    for(const role of want)if(devices[role].slotHint!==r[role]&&r[role]<=JOY_BOUNDS.slot){devices[role]={...devices[role],slotHint:r[role]};changed=true;}
+    return out('ready',{changed});
+  }
+  // The pads each device reference stands for (indices, lowest first). main: the model the profile names (an imported
+  // game file names one), or with none named a vJoy device, else every joystick the page sees. deviceMatch (how the
+  // game treats several pads of one model, to be measured): 'role' (default) = the first pad for main, the identified
+  // roles for left and right; 'first' = the first pad of each model, roles ignored; 'any' = every pad of the model,
+  // merged by joyFrame. Gamepads with the standard mapping (XInput pads) are not joysticks here.
+  function resolveDevices(profile,pads,r){
+    const usable=pads.filter(p=>p.mapping!=='standard').sort((a,b)=>a.index-b.index),d=profile.devices,match=profile.deviceMatch;
+    const of=m=>usable.filter(p=>sameModel(p,m)).map(p=>p.index),pick=list=>match==='any'?list:list.slice(0,1);
+    let main=d.main?of(d.main):usable.filter(isVirtual).map(p=>p.index);
+    if(!d.main&&!main.length)main=usable.map(p=>p.index);
+    const role=k=>match==='role'?(r&&r[k]!==null&&usable.some(p=>p.index===r[k])?[r[k]]:[]):d[k]?pick(of(d[k])):[];
+    return {main:pick(main),left:role('left'),right:role('right')};
+  }
+  // The references a profile uses (bound axes, Positive / Negative sources, action buttons).
+  function usedRefs(profile){
+    const used=new Set(),src=s=>{if(s)used.add(s.device);};
+    for(const n of JOY_AXES){const b=profile.axes[n];if(b.device&&b.axis>=0)used.add(b.device);src(b.positive);src(b.negative);}
+    for(const a of Object.keys(profile.actions))for(const s of profile.actions[a])src(s);
+    return used;
+  }
+  // ---- One frame: the six axes processed (B0), the commands in the trainer's convention, the actions held by buttons,
+  // and those newly pressed or released. res: resolveDevices; live: freshStep. An axis whose device has no pad reads 0
+  // ('missing'); one whose pad has not reported reads 0 too ('stale'): what it drives is held. The collective: a bound
+  // axis gives the lever position while its pad is live (lever), keeps the lever where it is while it is stale (null),
+  // and leaves the keys in charge while its device is absent (undefined); Positive / Negative buttons alone act like the
+  // collective keys.
+  function createJoyState(){return {held:new Set(),latched:new Set(),latchNext:false};}
+  const flip=x=>x===0?0:-x;
+  function joyFrame(state,profile,pads,res,live){
+    const byIndex=new Map(pads.map(p=>[p.index,p])),padsOf=ref=>(res[ref]||[]).map(i=>byIndex.get(i)).filter(Boolean);
+    const srcOn=s=>{if(!s)return 0;const m=profile.devices[s.device],hat=m&&Number.isInteger(m.hatAxis)?m.hatAxis:9;
+      for(const p of padsOf(s.device)){if(!live.has(p.index))continue;if(Number.isInteger(s.button)?!!p.buttons[s.button]:hatHas(decodeHat(p.axes[hat]),s.dir))return 1;}return 0;};
+    const axes={};
+    for(const name of JOY_AXES){
+      const b=profile.axes[name],bound=!!b.device&&b.axis>=0;let v=0,raw=null,pad=null,status='unbound';
+      if(bound){
+        const ps=padsOf(b.device),fresh=ps.filter(p=>live.has(p.index));
+        status=!ps.length?'missing':!fresh.length?'stale':'live';
+        // Several pads ('any'): the largest processed deflection wins (merge rule SUPPOSED).
+        for(const p of fresh){const u=axisValue(p.axes[b.axis],b);if(raw===null||Math.abs(u)>Math.abs(v)){v=u;raw=p.axes[b.axis]===undefined?null:p.axes[b.axis];pad=p.index;}}
+      }
+      const pn=srcOn(b.positive)-srcOn(b.negative);
+      if(pn)v=clamp(v+pn,-1,1);
+      axes[name]={status,raw,value:v,pad};
+    }
+    const cmd={pitch:axes.Pitch.value,roll:flip(axes.Roll.value),yaw:flip(axes.Yaw.value),collective:0,lever:undefined,lookYaw:flip(axes.LookYaw.value),lookPitch:axes.LookPitch.value};
+    const th=axes.Throttle;
+    if(th.status==='live')cmd.lever=th.value;else if(th.status==='stale')cmd.lever=null;else cmd.collective=th.value;
+    const refs={};for(const ref of usedRefs(profile))refs[ref]=padsOf(ref).length?'present':'missing';
+    const raw=new Set();
+    for(const a of JOY_ACTIONS){const list=Object.hasOwn(profile.actions,a)?profile.actions[a]:null;if(list&&list.some(s=>srcOn(s)))raw.add(a);}
+    if(state.latchNext){state.latched=new Set(raw);state.latchNext=false;}
+    for(const a of [...state.latched])if(!raw.has(a))state.latched.delete(a);
+    const held=new Set([...raw].filter(a=>!state.latched.has(a))),pressed=[...held].filter(a=>!state.held.has(a)),released=[...state.held].filter(a=>!held.has(a));
+    state.held=held;
+    return {cmd,axes,refs,held,pressed,released};
+  }
+  // After a pause, at every resume and after a press used to identify the sticks: the buttons still held are ignored until
+  // released (no restart, view change or burst on resume). Axes are positions: they apply at once.
+  function latchButtons(state){state.latchNext=true;return state;}
+  // One physics step (sumClamp, SUPPOSED): the stick commands added to the input of inputStep, each only when non-zero
+  // (a centred stick leaves every field untouched, -0 included), clamped to +-1. A bound collective axis sets the lever
+  // (Flight.step). Out of fuel the collective stays at -1, as with the keys.
+  function joystickMix(input,cmd,fuelOut=false){
+    if(cmd.pitch)input.pitch=clamp(input.pitch+cmd.pitch,-1,1);
+    if(cmd.roll)input.roll=clamp(input.roll+cmd.roll,-1,1);
+    if(cmd.yaw)input.yaw=clamp(input.yaw+cmd.yaw,-1,1);
+    if(!fuelOut){if(cmd.lever!==undefined)input.lever=cmd.lever;else if(cmd.collective)input.collective=clamp(input.collective+cmd.collective,-1,1);}
+    return input;
+  }
+  // "Move the axis you want": the axis of a live pad that moved more than half its travel since that pad was first seen
+  // during the learning (base: Map filled here), the largest move first; null while none did. Hat null states (above 1)
+  // are not axis positions.
+  function learnAxis(base,pads,live){
+    let best=null;
+    for(const p of pads){
+      if(p.mapping==='standard'||!live.has(p.index))continue;
+      const b=base.get(p.index);
+      if(!b||b.id!==p.id){base.set(p.index,{id:p.id,axes:p.axes.slice()});continue;}
+      p.axes.forEach((v,i)=>{const w=b.axes[i];if(w===undefined||Math.abs(v)>AXIS_LIMIT||Math.abs(w)>AXIS_LIMIT)return;const d=Math.abs(v-w);if(d>.5&&(!best||d>best.delta))best={index:p.index,axis:i,delta:d};});
+    }
+    return best;
+  }
+  // ---- Profile block profile.joystick (schema 1), stored apart from settings and bindings and written only when it
+  // differs from the defaults (a player without a joystick keeps byte-identical saves and exports). Public defaults =
+  // the game's factory values: HOTAS off, no device.
+  function defaultJoystickProfile(){
+    const axes={};for(const n of JOY_AXES)axes[n]={device:null,axis:JOY_AXIS_INDEX[n],invert:false,sensitivity:1,deadZone:.05,positive:null,negative:null};
+    return {schema:1,useHotas:false,deviceMatch:'role',confirmRoles:true,devices:{main:null,left:null,right:null},axes,actions:{}};
+  }
+  const own=(o,k)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.hasOwn(o,k)?o[k]:undefined;
+  const intIn=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi;
+  const numIn=(v,[lo,hi],d)=>typeof v==='number'&&Number.isFinite(v)?clamp(v,lo,hi):d;
+  function validDevice(d){
+    const vendor=own(d,'vendor'),product=own(d,'product');
+    if(typeof vendor!=='string'||!/^[0-9a-f]{4}$/.test(vendor)||typeof product!=='string'||!/^[0-9a-f]{4}$/.test(product))return null;
+    const slot=own(d,'slotHint'),hat=own(d,'hatAxis');
+    return {vendor,product,name:cleanName(typeof own(d,'name')==='string'?own(d,'name'):''),slotHint:intIn(slot,0,JOY_BOUNDS.slot)?slot:0,hatAxis:intIn(hat,-1,JOY_BOUNDS.axis)?hat:9};
+  }
+  function validSource(s){
+    const device=own(s,'device'),button=own(s,'button'),dir=own(s,'dir');
+    if(!JOY_REFS.includes(device))return null;
+    if(intIn(button,0,JOY_BOUNDS.button))return {device,button};
+    if(typeof dir==='string'&&Object.hasOwn(HAT_HAS,dir))return {device,dir};
+    return null;
+  }
+  const sourceKey=s=>s.device+':'+(Number.isInteger(s.button)?'b'+s.button:'h'+s.dir);
+  // Own keys only, enums, integer ranges, clamps; one button serves one action (a later duplicate is dropped), two
+  // sources per action at most. codes receives 'invalid', 'schema' or 'duplicate-button'; an absent block (undefined or
+  // null) gives the defaults with no code.
+  function validateJoystickProfile(x,codes=[]){
+    const out=defaultJoystickProfile();
+    if(x===undefined||x===null)return out;
+    if(typeof x!=='object'||Array.isArray(x)){codes.push('invalid');return out;}
+    if(own(x,'schema')!==1){codes.push('schema');return out;}
+    if(typeof own(x,'useHotas')==='boolean')out.useHotas=own(x,'useHotas');
+    if(typeof own(x,'confirmRoles')==='boolean')out.confirmRoles=own(x,'confirmRoles');
+    if(['role','first','any'].includes(own(x,'deviceMatch')))out.deviceMatch=own(x,'deviceMatch');
+    for(const ref of JOY_REFS)out.devices[ref]=validDevice(own(own(x,'devices'),ref));
+    for(const name of JOY_AXES){
+      const b=own(own(x,'axes'),name),d=out.axes[name];
+      if(!b||typeof b!=='object'||Array.isArray(b))continue;
+      d.device=JOY_REFS.includes(own(b,'device'))?own(b,'device'):null;
+      if(intIn(own(b,'axis'),-1,JOY_BOUNDS.axis))d.axis=own(b,'axis');
+      if(typeof own(b,'invert')==='boolean')d.invert=own(b,'invert');
+      d.sensitivity=numIn(own(b,'sensitivity'),JOY_BOUNDS.sensitivity,d.sensitivity);
+      d.deadZone=numIn(own(b,'deadZone'),JOY_BOUNDS.deadZone,d.deadZone);
+      d.positive=validSource(own(b,'positive'));d.negative=validSource(own(b,'negative'));
+    }
+    const seen=new Set();let dup=false;
+    for(const a of JOY_ACTIONS){
+      const list=own(own(x,'actions'),a);if(!Array.isArray(list))continue;
+      const kept=[];
+      for(const s of list.slice(0,2).map(validSource)){if(!s)continue;const k=sourceKey(s);if(seen.has(k)){dup=true;continue;}seen.add(k);kept.push(s);}
+      if(kept.length)out.actions[a]=kept;
+    }
+    if(dup)codes.push('duplicate-button');
+    return out;
+  }
+  const isDefaultJoystickProfile=p=>JSON.stringify(p)===JSON.stringify(defaultJoystickProfile());
+  // ---- The game's joystick section ([/Script/WDJoystick.WDJoystickSettings]) and its HOTAS switch. Only the named
+  // fields are interpreted (DeviceIdentifier, bInvert, Sensitivity, DeadZone, Positive, Negative, Action, Binding); the
+  // axis, button and hat indices have no readable name in the file and are read by position (the first and second
+  // integers after DeviceIdentifier), which the import preview says. Nothing is ever written back. Limits: 400 kB,
+  // lines of 20 000 characters, structures 6 deep, 4 000 fields per line, strings of 200 characters.
+  function iniSection(lines,name){
+    const head=lines.findIndex(l=>l.trim()==='['+name+']');if(head<0)return null;
+    const body=lines.slice(head+1),end=body.findIndex(l=>/^\s*\[/.test(l));
+    return end<0?body:body.slice(0,end);
+  }
+  function parseStruct(s){
+    let i=0,depth=0,fields=0;
+    const value=()=>{
+      if(s[i]==='(')return struct();
+      if(s[i]==='"'){const j=s.indexOf('"',i+1);if(j<0)throw Error('unterminated string');const t=s.slice(i+1,j);if(t.length>200)throw Error('string too long');i=j+1;return t;}
+      let j=i;while(j<s.length&&s[j]!==','&&s[j]!==')')j++;
+      const t=s.slice(i,j).trim();i=j;if(t.length>200)throw Error('value too long');return t;
+    };
+    const struct=()=>{
+      if(s[i]!=='(')throw Error('"(" expected');if(++depth>6)throw Error('too deep');i++;
+      const out=[];
+      while(i<s.length&&s[i]!==')'){
+        const m=/^([A-Za-z_][A-Za-z0-9_]{0,63})=/.exec(s.slice(i,i+72));let name=null;
+        if(m){name=m[1];i+=m[0].length;}
+        out.push([name,value()]);
+        if(++fields>4000)throw Error('too many fields');
+        if(s[i]===',')i++;else if(s[i]!==')')throw Error('unexpected character');
+      }
+      if(s[i]!==')')throw Error('unterminated structure');i++;depth--;return out;
+    };
+    const r=struct();if(s.slice(i).trim())throw Error('trailing text');return r;
+  }
+  const field=(f,n)=>{const e=f.find(([k])=>k===n);return e?e[1]:undefined;};
+  const isInt=v=>typeof v==='string'&&/^-?\d{1,4}$/.test(v);
+  // The integer fields right after DeviceIdentifier, in order (unnamed fields: positional).
+  const intsAfter=(f,n)=>{const out=[];for(let i=f.findIndex(([k])=>k===n)+1;i>0&&i<f.length&&isInt(f[i][1]);i++)out.push(parseInt(f[i][1],10));return out;};
+  function gameSource(g){
+    if(!Array.isArray(g))return null;
+    const device=parseGameIdentifier(field(g,'DeviceIdentifier'));if(!device)return null;
+    const [button=-1,hat=-1]=intsAfter(g,'DeviceIdentifier'),token=g.find(([k,v])=>k!=='DeviceIdentifier'&&typeof v==='string'&&/^(Up|Right|Down|Left)$/.test(v));
+    return {device,button,hat,dir:token?token[1].toLowerCase():null};
+  }
+  // -> {found, useHotas, selfCentering, axes: {Name: {device, axis, invert, sensitivity, deadZone, positive, negative}},
+  //    actions: [{gameAction, action, device, button}], notes: [{code, name}]}. Throws 'too-large' over 400 kB.
+  function parseGameJoystick(text){
+    const t=String(text);if(t.length>400000)throw Error('too-large');
+    const lines=t.replace(/^\uFEFF/,'').split(/\r?\n/),out={found:false,useHotas:null,selfCentering:null,axes:{},actions:[],notes:[]};
+    const user=iniSection(lines,'/Script/WDGame.WDUserSettings');
+    if(user)for(const l of user){const m=/^(bUseHOTASHelicopters|bCollectiveSelfCentering)=(True|False)\s*$/.exec(l);if(m)out[m[1]==='bUseHOTASHelicopters'?'useHotas':'selfCentering']=m[2]==='True';}
+    const sec=iniSection(lines,'/Script/WDJoystick.WDJoystickSettings');
+    if(!sec)return out;
+    out.found=true;let positional=false;
+    for(const line of sec){
+      if(line.length>20000){out.notes.push({code:'line-too-long',name:null});continue;}
+      const m=/^\+?([A-Za-z]{1,32})=(.*)$/.exec(line);if(!m)continue;
+      const key=m[1];if(!JOY_AXES.includes(key)&&key!=='ActionBindings')continue;
+      let f;try{f=parseStruct(m[2].trim());}catch(e){out.notes.push({code:'unreadable',name:key});continue;}
+      if(key==='ActionBindings'){
+        const action=field(f,'Action'),b=field(f,'Binding');if(typeof action!=='string'||!Array.isArray(b))continue;
+        const device=parseGameIdentifier(field(b,'DeviceIdentifier')),[button=-1]=intsAfter(b,'DeviceIdentifier');positional=true;
+        out.actions.push({gameAction:action.slice(0,40),action:Object.hasOwn(GAME_ACTIONS,action)?GAME_ACTIONS[action]:null,device,button});
+        continue;
+      }
+      const num=n=>{const v=parseFloat(field(f,n));return Number.isFinite(v)?v:null;},bool=n=>{const v=field(f,n);return v==='True'?true:v==='False'?false:null;};
+      const [axis=null]=intsAfter(f,'DeviceIdentifier');if(axis!==null)positional=true;
+      out.axes[key]={device:parseGameIdentifier(field(f,'DeviceIdentifier')),axis,invert:bool('bInvert'),sensitivity:num('Sensitivity'),deadZone:num('DeadZone'),positive:gameSource(field(f,'Positive')),negative:gameSource(field(f,'Negative'))};
+    }
+    if(positional)out.notes.push({code:'positional',name:null});
+    return out;
+  }
+  // The distinct devices a parsed section names (the import asks what each one is: main device, left or right stick).
+  function gameDevices(parsed){
+    const list=[],add=d=>{if(d&&!list.some(x=>sameModel(x,d)))list.push(d);};
+    for(const n of JOY_AXES){const a=parsed.axes[n];if(!a)continue;add(a.device);if(a.positive)add(a.positive.device);if(a.negative)add(a.negative.device);}
+    for(const x of parsed.actions)add(x.device);
+    return list;
+  }
+  // Parsed section -> next profile. refOf(model) answers 'main' | 'left' | 'right' | null (the player's answer for each
+  // device of gameDevices). The import mirrors the game: the axes it lists, its HOTAS switch, and its button actions
+  // (the actions it does not list are cleared). Two devices given the same reference are refused ('conflict').
+  function importGameJoystick(parsed,profile,refOf){
+    const next=JSON.parse(JSON.stringify(profile)),skipped=[],conflict=[],given=new Map();
+    const ref=d=>{if(!d)return null;const r=refOf(d);if(!JOY_REFS.includes(r))return null;const prev=given.get(r);
+      if(prev&&!sameModel(prev,d)){if(!conflict.includes(r))conflict.push(r);return null;}
+      given.set(r,d);const old=sameModel(next.devices[r],d)?next.devices[r]:null;
+      next.devices[r]={...modelOf({...d,index:0}),slotHint:old?old.slotHint:0,hatAxis:old?old.hatAxis:9};return r;};
+    const source=g=>{if(!g)return null;const r=ref(g.device);if(!r)return null;if(g.button>=0&&g.button<=JOY_BOUNDS.button)return {device:r,button:g.button};return g.hat>=0&&g.dir?{device:r,dir:g.dir}:null;};
+    if(parsed.useHotas!==null)next.useHotas=parsed.useHotas;
+    for(const n of JOY_AXES){
+      const a=parsed.axes[n];if(!a)continue;const b=next.axes[n];
+      if(a.axis!==null&&a.axis>=-1&&a.axis<=JOY_BOUNDS.axis)b.axis=a.axis;
+      if(a.invert!==null)b.invert=a.invert;
+      if(a.sensitivity!==null)b.sensitivity=clamp(a.sensitivity,...JOY_BOUNDS.sensitivity);
+      if(a.deadZone!==null)b.deadZone=clamp(a.deadZone,...JOY_BOUNDS.deadZone);
+      b.device=ref(a.device);b.positive=source(a.positive);b.negative=source(a.negative);
+    }
+    if(parsed.found)next.actions={};
+    for(const x of parsed.actions){
+      if(!x.action){skipped.push(x.gameAction);continue;}
+      const r=ref(x.device);if(!r||x.button<0||x.button>JOY_BOUNDS.button)continue;
+      next.actions[x.action]=[{device:r,button:x.button}];
+    }
+    const codes=[];return {profile:validateJoystickProfile(next,codes),skipped,conflict,codes};
+  }
+  const joystick={AXES:JOY_AXES,REFS:JOY_REFS,ACTIONS:JOY_ACTIONS,GAME_ACTIONS,BOUNDS:JOY_BOUNDS,LAW:JOY_LAW,VJOY,HAT_DIRS,
+    parseGamepadId,parseGameIdentifier,gameIdentifier,sameModel,isVirtual,presetHat,modelOf,snapshotPads,axisValue,decodeHat,hatHas,
+    createFreshness,freshStep,markStale,hatMute,createRoles,startIdentify,cancelIdentify,swapRoles,rolesStep,resolveDevices,usedRefs,
+    createJoyState,joyFrame,latchButtons,joystickMix,learnAxis,defaultProfile:defaultJoystickProfile,validateProfile:validateJoystickProfile,
+    isDefaultProfile:isDefaultJoystickProfile,iniSection,parseStruct,parseGameJoystick,gameDevices,importGameJoystick};
   // Minigun: barrels spin up before the first round (0.35 s measured), then
   // fire at the set rate while held; they spin down twice as slowly.
   class Minigun {
@@ -325,6 +753,6 @@
     }
   }
   const api={Flight,Minigun,defaults,terrain,sweptSphere,sweptMesh,clamp,segmentBox,ObstacleField,EvasiveMotion,OBSERVED_HITS,hitDamage,G,
-    attitudeOf,createInputState,resetInput,mouseMove,mouseStick,frameStart,inputStep};
+    attitudeOf,createInputState,resetInput,mouseMove,mouseStick,frameStart,inputStep,joystick};
   if(typeof module!=='undefined') module.exports=api; else root.HeliPhysics=api;
 })(typeof window!=='undefined'?window:globalThis);
