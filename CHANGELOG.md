@@ -94,6 +94,15 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   simulation coupée). Specs du navigateur pour la carte « Manette · HOTAS » avec des manettes simulées ; chaque spec
   vérifie la simulation de `getGamepads` avant tout départ ; l'auto-test de l'application Windows la vérifie aussi,
   avec `gamepad=()`, avant de cliquer sur « Démarrer ».
+- **Enregistreur : générateur de la suite `settings` figé (menus 1.0, phase M0).** Les profils tirés par l'oracle des
+  réglages ne dépendent plus de la page : leurs bornes (min, max et pas des 71 curseurs) et leurs énumérations
+  (scénarios, choix des sélecteurs, noms des éclairages) sont des constantes de l'enregistreur, copiées de la page
+  actuelle. Quand les menus 1.0 changeront une borne, les profils tirés ne bougeront donc pas : seul ce que le code en
+  fait changera, et le diff de l'oracle restera lisible. L'oracle hache aussi les blocs `prefs` et `secondary` du
+  profil, seulement si le runtime les expose sur son crochet de test et s'ils diffèrent d'une page neuve (aucun runtime
+  ne les expose encore). Des tests figent la forme de ces constantes (elles nomment de vrais réglages) et la règle des
+  blocs. Changement de l'enregistreur seul, prouvé neutre (`golden.mjs prove`, puis `--adopt`) : tous les goldens sont
+  identiques octet pour octet ; seules les empreintes de l'enregistreur, dans `meta.json` et `MANIFEST.json`, changent.
 
 ## [0.9.0] — 2026-10-01
 
