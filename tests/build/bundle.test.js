@@ -1,6 +1,6 @@
 'use strict';
 // The built page (scripts/build.mjs): self-contained (no external script or stylesheet), the error handler and the
-// twelve scripts inlined in order and all parseable, each inline body equal to its source file (LF), the automation
+// scripts inlined in order and all parseable, each inline body equal to its source file (LF), the automation
 // pointer-lock shim present (the build refuses an app.js without it), the key page elements present, no network API or
 // dynamic code in the game's own scripts, and the test hooks only read by the page, never defined by it.
 const { test } = require('node:test');
@@ -11,35 +11,26 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { pathToFileURL } = require('node:url');
 const { ROOT, SRC } = require('../helpers/paths');
-const { scriptBodies } = require('../helpers/html');
+const { scriptBodies, templateScriptFiles } = require('../helpers/html');
 
 const importBuild = () => import(pathToFileURL(path.join(ROOT, 'scripts', 'build.mjs')).href);
-const GAME = [
-  'core/pow.js',
-  'world.js',
-  'physics.js',
-  'forest.js',
-  'scenery.js',
-  'missiles.js',
-  'audio.js',
-  'models.js',
-  'ground.js',
-  'bot.js',
-  'app.js',
-];
+// The game's scripts as the template names them (everything after three.js): a script added to the template is read by
+// every check below, none keeps its own copy of the list.
+const GAME = templateScriptFiles(fs.readFileSync(path.join(SRC, 'index.template.html'), 'utf8')).slice(1);
 const lf = (s) => s.replace(/\r\n?/g, '\n');
 
-test('the page is self-contained: 13 inline scripts, all parseable, each equal to its source; styles inlined', async () => {
+test('the page is self-contained: every inline script parseable and equal to its source; styles inlined', async () => {
   const { buildPage, SCRIPTS } = await importBuild();
   const html = buildPage(SRC);
   assert.ok(!/<script\s+src=|<link[^>]+stylesheet/i.test(html), 'no external script or stylesheet');
   const scripts = scriptBodies(html);
-  assert.equal(
-    scripts.length,
-    13,
-    'error handler, three.js, pow, world, physics, forest, scenery, missiles, audio, models, ground, bot, app',
+  assert.equal(scripts.length, SCRIPTS.length + 1, 'the error handler, then one script per file of the build');
+  assert.deepEqual(
+    SCRIPTS,
+    ['vendor/three.min.js', ...GAME],
+    'the build inlines the scripts of the template, in order',
   );
-  assert.deepEqual(SCRIPTS, ['vendor/three.min.js', ...GAME], 'the deterministic pow right after three.js');
+  assert.deepEqual(SCRIPTS.slice(0, 2), ['vendor/three.min.js', 'core/pow.js'], 'the pow right after three.js');
   for (const [i, body] of scripts.entries()) new vm.Script(body, { filename: 'inline-' + i + '.js' });
   SCRIPTS.forEach((f, i) => {
     const expected = '\n' + lf(fs.readFileSync(path.join(SRC, f), 'utf8')).replace(/<\/script/gi, '<\\/script') + '\n';

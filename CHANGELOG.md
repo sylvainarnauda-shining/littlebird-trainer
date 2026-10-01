@@ -94,6 +94,34 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   simulation coupée). Specs du navigateur pour la carte « Manette · HOTAS » avec des manettes simulées ; chaque spec
   vérifie la simulation de `getGamepads` avant tout départ ; l'auto-test de l'application Windows la vérifie aussi,
   avec `gamepad=()`, avant de cliquer sur « Démarrer ».
+- **Enregistreur : générateur de la suite `settings` figé (menus 1.0, phase M0).** Les profils tirés par l'oracle des
+  réglages ne dépendent plus de la page : leurs bornes (min, max et pas des 71 curseurs) et leurs énumérations
+  (scénarios, choix des sélecteurs, noms des éclairages) sont des constantes de l'enregistreur, copiées de la page
+  actuelle. Quand les menus 1.0 changeront une borne, les profils tirés ne bougeront donc pas : seul ce que le code en
+  fait changera, et le diff de l'oracle restera lisible. L'oracle hache aussi les blocs `prefs` et `secondary` du
+  profil, seulement si le runtime les expose sur son crochet de test et s'ils diffèrent d'une page neuve (aucun runtime
+  ne les expose encore). Des tests figent la forme de ces constantes (elles nomment de vrais réglages) et la règle des
+  blocs. Changement de l'enregistreur seul, prouvé neutre (`golden.mjs prove`, puis `--adopt`) : tous les goldens sont
+  identiques octet pour octet ; seules les empreintes de l'enregistreur, dans `meta.json` et `MANIFEST.json`, changent.
+- **Enregistreur et outils : les listes de scripts viennent du gabarit de la page (menus 1.0, phase M0b).**
+  L'enregistreur des goldens, `golden.mjs`, le test de mutation, la porte G1 (`ast-identity.mjs`), `verify-build.mjs`
+  et trois tests de la page construite codaient chacun la liste, ou le nombre (13), des scripts de la page : y ajouter
+  un script, comme le feront les menus 1.0 (`settings-data.js`, `settings.js`, `menus.js`), les aurait fait échouer
+  ou aurait laissé le nouveau script hors de leurs contrôles. L'enregistreur lit maintenant les balises `<script>` du
+  gabarit (nouveau module `tools/golden/template.cjs`) : three.js, `core/pow.js`, les modules du jeu, les trois
+  scripts des menus, facultatifs et chacun à sa place, puis `app.js`. Tout autre script, ou un autre ordre, arrête
+  l'enregistrement comme avant. `golden.mjs` extrait d'un commit le gabarit, puis les fichiers qu'il nomme (un commit
+  antérieur aux menus se lit sans eux, un fichier nommé mais absent est refusé) ; le test de mutation et `ast-identity`
+  prennent les fichiers du gabarit. `verify-build.mjs` attend un script en ligne de plus que `SCRIPTS` (celui des
+  erreurs) au lieu de 13 ; les tests `csp` et `bundle` et la spec CSP du navigateur en déduisent leurs nombres, et
+  `bundle.test.js` lit la liste des scripts dans le gabarit, si bien que les contrôles de sécurité (aucune API réseau,
+  aucun crochet de test défini par la page) couvrent un script ajouté. Tests : le gabarit avec et sans les scripts des
+  menus et les formes refusées, le démarrage d'une page avec eux, l'extraction d'un commit sans eux, avec eux, et d'un
+  commit incohérent (dépôt temporaire), le nombre de scripts de `verify-build.mjs` dans les deux sens, les fichiers
+  comparés par défaut par `ast-identity`. Changement de l'enregistreur seul, prouvé neutre (`golden.mjs prove`, puis
+  `--adopt`) : tous les goldens sont identiques octet pour octet ; seules les empreintes de l'enregistreur, dans
+  `meta.json` et `MANIFEST.json`, changent. `baseline.test.js` lit toujours 13 fichiers dans `meta.json` jusqu'à la
+  première mise à jour des goldens.
 
 ## [0.9.0] — 2026-10-01
 

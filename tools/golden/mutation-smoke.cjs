@@ -18,12 +18,13 @@
 //   getGamepads switched off with the read guard (the page would read the machine's joysticks: the user-safety
 //   invariant).
 const fs = require('node:fs'), path = require('node:path'), { spawn } = require('node:child_process');
+const { runtimeScripts } = require('./template.cjs');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const abs = k => arg(k) && path.resolve(arg(k));
 const src = abs('src'), template = abs('template'), inputs = abs('inputs'), golden = abs('golden'), privateGolden = abs('private-golden'), scratch = abs('scratch');
 const jobs = +arg('jobs', 4), only = arg('only') ? arg('only').split(',') : null;
 const nextUp = x => { const b = new DataView(new ArrayBuffer(8)); b.setFloat64(0, x); b.setBigUint64(0, b.getBigUint64(0) + 1n); return b.getFloat64(0); };
-const RUNTIME = ['core/pow.js', 'world.js', 'physics.js', 'forest.js', 'scenery.js', 'missiles.js', 'audio.js', 'models.js', 'ground.js', 'bot.js', 'app.js', 'vendor/three.min.js'];
+const RUNTIME = runtimeScripts(fs.readFileSync(template, 'utf8')).files;   // the scripts the template names (a runtime without the menus' scripts is copied without them)
 const ALLS = 'flight,sessions,world,audio,hud,settings,models,ui,modules,hookapi,joystick';
 const AD = ['missiles', 'match', 'missiles-destroy'];   // the air-defence sessions (declared scope of R5.7)
 

@@ -3,9 +3,11 @@
 // masked for a wording step, every changed string listed; the page template compared as markup.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const { ROOT } = require('../helpers/paths');
+const { ROOT, SRC } = require('../helpers/paths');
+const { templateScriptFiles } = require('../helpers/html');
 
 const load = () => import(pathToFileURL(path.join(ROOT, 'scripts', 'ast-identity.mjs')).href);
 
@@ -56,4 +58,14 @@ test('template: markup strict, text and wording attributes masked and listed', a
     !compareTemplates(a, b.replace('var x = 1', 'var x = 2'), { maskStrings: true }).identical,
     'inline script strict',
   );
+});
+
+test('the files compared by default are the scripts the template names, three.js apart', async () => {
+  const { RUNTIME, TEMPLATE } = await load();
+  const named = templateScriptFiles(fs.readFileSync(path.join(SRC, TEMPLATE), 'utf8'));
+  assert.deepEqual(
+    RUNTIME,
+    named.filter((f) => f !== 'vendor/three.min.js'),
+  );
+  assert.ok(RUNTIME.includes('app.js') && RUNTIME.includes('core/pow.js'));
 });

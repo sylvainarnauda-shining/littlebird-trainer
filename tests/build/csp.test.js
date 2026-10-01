@@ -1,6 +1,6 @@
 'use strict';
-// The page policy of the build (docs/SECURITE-CONCEPTION.md): the exact Content-Security-Policy string with the sha256 of each of the
-// 13 inline scripts and of the stylesheet, placed right after the charset; everything else closed; verify-build
+// The page policy of the build (docs/SECURITE-CONCEPTION.md): the exact Content-Security-Policy string with the sha256 of each
+// inline script and of the stylesheet, placed right after the charset; everything else closed; verify-build
 // accepts the page and refuses a tampered one; the build refuses external references, inline handlers, javascript:
 // URLs, style attributes and a three.js that is not the pinned file; two builds are identical.
 const { test } = require('node:test');
@@ -37,12 +37,12 @@ const editFile = (dir, f, from, to) => {
   fs.writeFileSync(p, text.replace(from, to));
 };
 
-test('the exact policy: 13 script hashes and 1 style hash of the page blocks, in order; everything else closed', async () => {
-  const { buildPage } = await load('build.mjs');
+test('the exact policy: one hash per inline script and 1 style hash of the page blocks, in order; everything else closed', async () => {
+  const { buildPage, SCRIPTS } = await load('build.mjs');
   const html = buildPage(SRC);
   const scripts = scriptBodies(html);
   const styles = styleBodies(html);
-  assert.equal(scripts.length, 13);
+  assert.equal(scripts.length, SCRIPTS.length + 1, 'the error handler, then one script per file of the build');
   assert.equal(styles.length, 1);
   const expected =
     "default-src 'none'; script-src " +
@@ -99,6 +99,36 @@ test('verify-build refuses a tampered page', async () => {
   }
 });
 
+// The number of inline scripts is the error handler plus the build's list, not a constant: a script added to the list
+// (the menus' scripts will be) changes what the page must hold, in both directions.
+test("verify-build expects as many inline scripts as the build's list names, and one more for the error handler", async () => {
+  const { buildPage, pinnedThree, SCRIPTS } = await load('build.mjs');
+  const { verifyPage } = await load('verify-build.mjs');
+  const { inlineBlocks, cspPolicy } = await load('page-policy.mjs');
+  const html = buildPage(SRC);
+  const csp = /<meta http-equiv="Content-Security-Policy" content="([^"]*)">/.exec(html)[1];
+  const end = html.lastIndexOf('</script>') + '</script>'.length;
+  const longer = html.slice(0, end) + '<script>\nvar added = 1;\n</script>' + html.slice(end);
+  const longerPage = longer.replace(csp, () => cspPolicy(inlineBlocks(longer)));
+  const named = [...SCRIPTS, 'added.js'];
+  const problems = (page, scripts, srcDir) =>
+    verifyPage(page, { threeSha256: pinnedThree(), srcDir, scripts }).problems;
+  await withSource(
+    (dir) => fs.writeFileSync(path.join(dir, 'added.js'), 'var added = 1;'),
+    (dir) => {
+      assert.deepEqual(problems(html, SCRIPTS, dir), [], 'the page of the build, the list of the build');
+      assert.deepEqual(problems(longerPage, named, dir), [], 'one more script in the page, one more in the list');
+      assert.deepEqual(problems(longerPage, SCRIPTS, dir), [
+        `${SCRIPTS.length + 1} inline scripts expected, found ${SCRIPTS.length + 2}`,
+      ]);
+      assert.deepEqual(problems(html, named, dir), [
+        `${named.length + 1} inline scripts expected, found ${SCRIPTS.length + 1}`,
+        'added.js is not inlined unchanged',
+      ]);
+    },
+  );
+});
+
 test('the build refuses inline handlers, javascript: URLs, style attributes, external references and a changed three.js', async () => {
   const { buildPage } = await load('build.mjs');
   const T = 'index.template.html';
@@ -138,7 +168,7 @@ test('inline blocks are read in every form HTML accepts: any letter case, attrib
 
 // Markup around which HTML delimits the blocks otherwise than the block expressions: each case swaps the template's
 // inline script for markup that the expressions read as one script holding an image with a handler, where HTML reads
-// the image as markup. The thirteen scripts are all still read, and the policy is recomputed from what the checker
+// the image as markup. Every script is still read, and the policy is recomputed from what the checker
 // reads, as by someone who writes the whole page: only the markup check can refuse it (the hash-only policy, the
 // rebuild comparison of the command line and check-asar's reference page are further guards, not exercised here).
 test('verify-build refuses markup where HTML would delimit the blocks otherwise, even with the policy recomputed', async () => {
@@ -164,7 +194,7 @@ test('verify-build refuses markup where HTML would delimit the blocks otherwise,
   };
   for (const [name, [markup, message]] of Object.entries(cases)) {
     const page = resign(html.replace(inline, () => markup));
-    assert.equal(scriptBodies(page).length, 13, name + ': thirteen scripts read');
+    assert.equal(scriptBodies(page).length, SCRIPTS.length + 1, name + ': every script read');
     assert.ok(
       scriptBodies(page).some((b) => b.includes(img)),
       name + ': the image is read as script',

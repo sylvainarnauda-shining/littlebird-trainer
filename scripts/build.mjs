@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Builds the self-contained page dist/web/index.html from src/ (zero dependencies): the template with style.css and
-// the twelve scripts inlined in the template's order, every input normalised to LF, then a Content-Security-Policy
-// meta tag that allows exactly the page's own inline blocks by their sha256 (13 scripts, 1 stylesheet) and nothing
-// else: no network, no eval, no external resource (scripts/page-policy.mjs). The policy is also written beside the page
-// (csp.txt), and scripts/verify-build.mjs checks the result before anything is written.
+// the scripts of SCRIPTS inlined in the template's order, every input normalised to LF, then a Content-Security-Policy
+// meta tag that allows exactly the page's own inline blocks by their sha256 (the error handler and one per script, 1
+// stylesheet) and nothing else: no network, no eval, no external resource (scripts/page-policy.mjs). The policy is
+// also written beside the page (csp.txt), and scripts/verify-build.mjs checks the result before anything is written.
 // The version the page shows is package.json's: the template's {{version}} placeholders (menu header, "À propos" tab)
 // are replaced with it in the markup, before the scripts are inlined (they stay byte for byte their source files). No
 // source file holds a copy of the version (tests/build/version.test.js).
@@ -154,7 +154,7 @@ function main() {
   console.log(
     `Built ${path.relative(ROOT, out).replace(/\\/g, '/')} (version ${packageVersion()}): ` +
       `${Buffer.byteLength(html)} bytes, sha256 ${hex(html)}. ` +
-      'CSP: 13 script hashes, 1 style hash, everything else closed; no external request.',
+      `CSP: ${SCRIPTS.length + 1} script hashes, 1 style hash, everything else closed; no external request.`,
   );
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main();

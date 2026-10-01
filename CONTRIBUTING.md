@@ -105,6 +105,11 @@ contrôles de fidélité (`tests/fidelity/`, index `tests/fidelity/INDEX.json`).
   faire passer un refactor.
 - **Un changement de l'enregistreur** (`tools/golden/`) est prouvé neutre : `node scripts/golden.mjs prove`, puis
   `--adopt` ; la CI refait la preuve.
+- **Un script de plus dans la page** se nomme dans le gabarit (`src/index.template.html`, à sa place) et dans `SCRIPTS` de
+  `scripts/build.mjs` ; le nombre de scripts en ligne de la page, `scripts/verify-build.mjs` et les tests s'en déduisent.
+  L'enregistreur lit les fichiers que le gabarit nomme (`tools/golden/template.cjs`) : les trois scripts des menus
+  (`settings-data.js`, `settings.js`, `menus.js`) y sont déjà connus, facultatifs, entre `bot.js` et `app.js`, et un
+  runtime sans eux s'enregistre comme avant. Tout autre script est un changement de l'enregistreur, prouvé neutre.
 - Les bandes de fidélité ne sont jamais élargies pour faire passer un changement.
 
 ## Calculs identiques sur toutes les plateformes
