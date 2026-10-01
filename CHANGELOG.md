@@ -34,6 +34,47 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   de vol, des sessions, du monde, du son, du HUD, des réglages, des modèles, des modules et du contrat de test sont
   identiques ; seul le golden de l'interface change (inventaire des nouveaux réglages et textes de la carte). Détail :
   `docs/REGLAGES.md`.
+- **Cabine un peu plus ronde vue de dessus** (demande du 01/10 : la cabine paraissait « compactée sur les côtés »). Mesuré
+  sur 12 images de la vue poursuite des enregistrements de référence, caméras recalées, le contour de la cabine trouvé
+  par deux détecteurs et comparé à la silhouette exacte de l'entraîneur dans les mêmes caméras. De derrière et de bas (5
+  images), la cabine du jeu a déjà la largeur de celle de l'entraîneur, à 1 cm près par côté jusqu'à 60 % de sa hauteur.
+  De derrière et de dessus (caméra 5,6 à 8,3 m plus haut, 5 images des deux enregistrements), elle est 9,5 cm plus large,
+  surtout vers l'avant : ses flancs restent presque parallèles le long des portes, là où l'œuf de la v13 se resserrait.
+  La cabine est donc élargie seulement devant sa section la plus large, progressivement, jusqu'à +12 % en avant de
+  z −1,6 m : 1,46 m au plus large (1,43 m avant), 1,40 m au montant avant des portes (1,25 m avant), largeur sur hauteur
+  0,755 au lieu de 0,72. Hauteur, longueur, arrière de la cabine, capot, poutre, queue, patins, armes et tous les repères
+  mesurés (F37) ne bougent pas ; la vue pilote non plus (le cockpit est un modèle à part, et l'extérieur y est caché).
+  Écart de largeur du contour, jeu moins entraîneur : de dessus et de derrière +9,5 → +2,6 cm, de derrière
+  −5,2 → −5,4 cm ; écart moyen du contour sur les 12 images 3,95 → 2,91 px. Une section plus large ou plus ronde,
+  essayée, rendait la vue de derrière 7 à 17 cm plus large que le jeu. Le changement se voit de dessus, de trois-quarts
+  et de face (silhouette +0,9 à +2,9 %), à peine dans la vue poursuite par défaut : sur un écran 1920 × 1080, le contour
+  bouge de 4 px au plus en stationnaire (+0,9 %), de 3 px à 140 km/h (+0,6 %) et de 1 px à 250 km/h (+0,2 %), car en
+  vol le nez baissé montre moins le dessus de la cabine et l'empennage passe devant. Ce qui change dans les goldens :
+  - modèles : les empreintes des 6 hélicoptères (le sien, la cible aérienne, les trois bots à miniguns, le bot à
+    roquettes), avec les mêmes nombres d'objets, de sommets et de triangles ; véhicules, fantassins, poste SAM, canon
+    CIWS, structures et cockpit identiques ;
+  - monde : l'empreinte de la scène de démarrage des 11 cartes et des 3 autres démarrages (l'hélicoptère y est) ;
+    terrain, forêt, cockpit et canevas identiques ;
+  - sessions : les scènes de départ et de fin des 14 scénarios. Comme les tirs touchent le maillage réel de
+    l'hélicoptère (`sweptMesh`), les points d'impact sur l'avant de la cabine (effets d'impact) bougent dans 7
+    scénarios : `air`, `mixed`, `duel`, `air-cross`, `duel-behind`, `duel-random` et `match`. Dans `duel-random`, le
+    journal du son, cumulatif, diffère aussi du point de contrôle 8 à la fin, avec le même nombre d'opérations. Les
+    nombres échantillonnés ne changent pas, sauf dans 3 scénarios où un impact gagné, perdu ou décalé, suivi du tirage
+    des dégâts (aléa à graine), fait diverger la suite (la couverture et les taux d'exercice restent au-dessus de leurs
+    seuils) :
+    - tir aérien (`air`) : un impact de plus au point de contrôle 27 sur 61, puis les cibles et, à partir du point 31,
+      la trajectoire divergent ; à la fin 851 tirs et 110 impacts au lieu de 829 et 117, 8 cibles abattues dans les
+      deux cas ;
+    - match (`match`) : à partir du point 47 ; à la fin 285 tirs et 22 impacts au lieu de 281 et 21, 14 impacts reçus
+      au lieu de 11, canon CIWS 406 tirs et 0 impact au lieu de 413 et 1, santé 90 au lieu de 80 ; même score (510),
+      mêmes morts (3) ;
+    - duel par l'arrière (`duel-behind`) : les impacts bougent au point 15, puis le pilote de test tire une fois de
+      moins (95 tirs au lieu de 96 à l'image 1700, mêmes 14 impacts). L'ennemi est abattu entre les images 1600 et 1700
+      dans les deux cas, mais son épave touche le sol 5 images plus tard (fin de partie à l'image 2181 au lieu
+      de 2176) ; la partie rejouée repart plus tard (entre les images 2300 et 2400 au lieu d'avant 2200) et diverge
+      entièrement : à l'image 4000, 67 tirs et 12 impacts au lieu de 134 et 8, 99 tirs du bot au lieu de 39, 36 points
+      de contrôle actifs au lieu de 39 ;
+  - inchangés : vol, parité (G5), son, HUD, réglages, interface, modules, API de test.
 
 ### Tests et outils
 

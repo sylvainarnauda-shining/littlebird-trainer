@@ -25,6 +25,40 @@ des miniguns plus gros, pieds de pales plus longs.
 
 Le contrôle F37 vérifie les repères mesurés.
 
+## Rondeur de la cabine
+
+Après la v13, la cabine paraissait « compactée sur les côtés ». Son contour a été relevé ligne par ligne sur 12 images
+recalées (deux détecteurs indépendants, une ligne gardée seulement s'ils s'accordent à 1,6 px près) et comparé à la
+silhouette exacte de l'entraîneur dans la même caméra :
+
+- de derrière et de bas (5 images), le jeu a la largeur de la cabine de l'entraîneur, à 1 cm près par côté jusqu'à
+  60 % de sa hauteur ; le contour de l'entraîneur est même 5 cm plus large, à cause des cadres de portes en tube, qui
+  dépassent de 3,8 cm par côté et que le jeu n'a pas ;
+- de derrière et de dessus (caméra 5,6 à 8,3 m plus haut, 5 images des deux enregistrements), le jeu est 9,5 cm plus
+  large : 8,8 cm par côté vers l'avant de la cabine, 3,8 cm au milieu des portes, rien à sa section la plus large.
+
+La cabine du jeu n'est donc pas plus ronde en section : vue de dessus, elle garde des flancs presque parallèles le long
+des portes, là où l'œuf de l'entraîneur se resserrait vers l'avant. Une section plus large ou plus ronde, essayée,
+éloignait la vue de derrière du jeu (7 à 17 cm trop large). La cabine est élargie seulement devant sa section la plus
+large, progressivement, jusqu'à +12 % : 1,46 m au plus large au lieu de 1,43 m, 1,40 m au montant avant des portes au
+lieu de 1,25 m. La hauteur, la longueur, l'arrière et les repères mesurés ne bougent pas. Le contrôle F37 vérifie ces largeurs.
+
+| Écart du contour (jeu − entraîneur)      | avant   | après   |
+| ---------------------------------------- | ------- | ------- |
+| Largeur, de derrière et de dessus        | +9,5 cm | +2,6 cm |
+| Largeur, de derrière                     | −5,2 cm | −5,4 cm |
+| Écart moyen du contour sur les 12 images | 3,95 px | 2,91 px |
+
+L'appareil réel (MD 500E et 530F) a un fuselage de 1,40 m de large, 1,45 à 1,50 m selon d'autres fiches
+(`SOURCES.md`) : l'ancienne et la nouvelle largeur restent dans cette fourchette.
+
+Ce qui se voit : de dessus, de trois-quarts arrière et de face, la silhouette grandit de 0,9 à 2,9 %. Dans la vue
+poursuite par défaut (écran 1920 × 1080), le contour ne bouge que de 4 px au plus en stationnaire (silhouette +0,9 %),
+de 3 px à 140 km/h en palier (+0,6 %) et de 1 px à 250 km/h (+0,2 %, vue élargie) : en vol, le nez baissé (2,7° et 8,4°,
+l'assiette du vol en palier du modèle de vol, G tan θ = 0,0003 V²) montre moins le dessus de la cabine, et l'empennage
+horizontal passe devant elle. C'est ce que donne la mesure : vue de derrière à la hauteur normale de la caméra, la
+cabine du jeu n'est pas plus large que celle de l'entraîneur ; elle ne l'est que vue de plus haut.
+
 ## Matière
 
 Après la forme, l'hélicoptère restait « crayeux » : gris, pâle, sans contraste. La répartition des luminosités de la
@@ -77,7 +111,9 @@ bonne dans 5 : l'amélioration est **réelle mais modeste**.
 - La texture : taches et coulures dans l'entraîneur, panneaux et joints dans le jeu ; la tête de rotor reste
   simplifiée.
 - L'avant et les flancs n'ont jamais été vus : il faudrait un tour lent de l'hélicoptère posé, en passant face au
-  soleil, pour les régler.
+  soleil, pour les régler. La forme de la cabine devant le montant avant des portes est prolongée, pas mesurée.
+- Les cadres de portes en tube dépassent de la cabine (environ 3 cm par côté vus de derrière) ; le jeu n'en montre
+  pas. Les enfoncer réduisait l'écart de derrière mais élargissait celui de dessus.
 
 Les bases communautaires ne listent que deux habillages d'hélicoptère, tous deux pour le MH-6 non armé : l'AH-6M des
 enregistrements porte la peinture d'origine.

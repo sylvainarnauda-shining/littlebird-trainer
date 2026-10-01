@@ -173,6 +173,39 @@ test('F37 measured features: cowl aft face at z 1.215 with a dark recess, boom t
   }
 });
 
+test('F37 cabin plan measured from above-behind: fuller ahead of the widest section, unchanged behind it', () => {
+  // The lower shell 0.5 m below the cabin axis (y 0.308; under the door openings, above the weapon plank), from both
+  // sides: the half-widths of models.js FWD (widest 1.46 m at z -0.9 on the axis, 1.40 m at the A-post). v13's egg at
+  // this height: 0.512 / 0.600 / 0.616 / 0.583 m at z -1.45 / -0.9 / -0.4 / 0.15.
+  const g = Models.helicopter().group;
+  g.updateMatrixWorld(true);
+  const objs = [];
+  g.traverse((o) => {
+    if (o.isMesh && o.visible && o.material.visible !== false && !(o.material.transparent && o.material.opacity < 0.5))
+      objs.push(o);
+  });
+  const rc = new T.Raycaster();
+  const half = (z) =>
+    [1, -1].map((s) => {
+      rc.set(v(3 * s, 0.308 - 0.5, z), v(-s, 0, 0));
+      const hit = rc.intersectObjects(objs, false)[0];
+      assert.ok(hit && hit.object.material.userData.part === 'paint', 'cabin shell at z ' + z);
+      return Math.abs(hit.point.x);
+    });
+  for (const [z, want] of [
+    [-1.45, 0.569],
+    [-0.9, 0.627],
+    [-0.4, 0.616],
+    [0.15, 0.583],
+  ]) {
+    const [r, l] = half(z);
+    assert.ok(
+      Math.abs(r - want) < 0.003 && Math.abs(l - want) < 0.003,
+      `half-width at z ${z}: ${r.toFixed(4)} / ${l.toFixed(4)}`,
+    );
+  }
+});
+
 test('helicopter-only light terms: occlusion baked per vertex on the patched parts, shader terms on them only; cost within budget', () => {
   const h = Models.helicopter();
   const g = h.group;
