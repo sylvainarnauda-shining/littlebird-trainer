@@ -34,7 +34,14 @@ test('the CI scope (the tests whose title does not end with @gpu) keeps the brow
       (/ @gpu$/.test(m[1]) ? tagged : ci).push(m[1]);
     assert.ok(!/@gpu(?!')/.test(text.replace(/^\s*\/\/.*$/gm, '')), f + ': @gpu only at the end of a title');
   }
-  for (const want of [/^G5: /, /^boots with the pointer lock emulated/, /^beforeunload: /, /^export \(revision 16\)/])
+  for (const want of [
+    /^G5: /,
+    /^boots with the pointer lock emulated/,
+    /^beforeunload: /,
+    /^export \(revision 16\)/,
+    /^getGamepads is the page emulation under WebDriver/,
+    /^HOTAS on: an emulated vJoy stick/,
+  ])
     assert.ok(
       ci.some((t) => want.test(t)),
       'in the CI scope: ' + want,
@@ -65,6 +72,12 @@ test('every spec uses the safety fixture; Start only through start(); no real ca
   const fixture = fs.readFileSync(path.join(ROOT, 'tests', 'browser', 'fixtures.mjs'), 'utf8');
   assert.match(fixture, /addInitScript\(installTraps\)/, 'traps installed before any page script');
   assert.match(fixture, /emulated: window\.__LB_EMULATED_POINTER_LOCK__ === true/);
+  // The joystick read is asserted emulated at the same time, so before any Start click too.
+  assert.match(
+    fixture,
+    /gamepadsEmulated:\s*Object\.getOwnPropertyDescriptor\(navigator, 'getGamepads'\)\?\.writable === false &&\s*Array\.isArray\(window\.__LB_EMULATED_GAMEPADS__\)/,
+  );
+  assert.match(fixture, /emulated: true,\s*gamepadsEmulated: true,/);
   assert.match(
     fixture,
     /await assertEmulatedPointerLock\(page\);\s*await page\.locator\('#start'\)\.click\(\);/,

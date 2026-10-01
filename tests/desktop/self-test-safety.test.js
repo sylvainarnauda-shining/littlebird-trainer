@@ -41,6 +41,28 @@ test('self-test.cjs: the emulation is asserted before Start is clicked, and agai
     assert.ok(!src.includes(banned), banned);
 });
 
+test('self-test.cjs: the joystick read is checked emulated and refused by the page policy before Start, never called', () => {
+  const src = code('desktop/self-test.cjs');
+  const at = src.indexOf("document.getElementById('start').click()");
+  const check = src.indexOf("Object.getOwnPropertyDescriptor(navigator, 'getGamepads')");
+  assert.ok(check > 0 && check < at, 'checked before Start is clicked');
+  assert.match(src, /writable === false && typeof d\.value === 'function' && Array\.isArray\(list\)/);
+  assert.match(src, /fp\.allowsFeature\('gamepad'\)/);
+  assert.match(
+    src,
+    /if \(!pads\.emulated \|\| pads\.pads !== 0 \|\| pads\.policyAllows === true\)\s*return finish\(/,
+    'a page that could read the joysticks stops the self-test before Start',
+  );
+  assert.ok(!/getGamepads\s*\(/.test(src), 'the self-test never calls getGamepads');
+  // The self-test's headers refuse the Gamepad API (a normal run allows it for the page only), and no permission of the
+  // shell stands for it.
+  const policyOf = (h) => Object.fromEntries(h['permissions-policy'].split(/,\s*/).map((d) => d.split('=')));
+  assert.equal(policyOf(p.responseHeaders('x', { selfTest: true })).gamepad, '()');
+  assert.equal(policyOf(p.responseHeaders('x')).gamepad, '(self)');
+  for (const selfTest of [true, false])
+    assert.equal(p.permissionAllowed('gamepad', 'app://littlebird/index.html', { selfTest }), false);
+});
+
 test('self-test.cjs: a session flies until it has simulated 2 s over 20 drawn frames, whatever the machine speed', async () => {
   const st = require(path.join(ROOT, 'desktop', 'self-test.cjs'));
   assert.deepEqual(st.SESSION, { simulated: 2, frames: 20, wallMs: 180000 });

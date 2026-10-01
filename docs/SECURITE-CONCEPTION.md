@@ -19,7 +19,11 @@ Pour signaler une faille : [`SECURITY.md`](../SECURITY.md).
   seul endroit du code. Sous automatisation, `navigator.getGamepads` est remplacé par une simulation qui ne rend que les
   manettes qu'un test y met : aucun test ne lit les manettes de la machine (les specs du navigateur piègent en plus la
   vraie fonction et vérifient qu'elle n'est jamais appelée, `tests/build/browser-safety.test.js`). Pas de WebHID, de
-  WebUSB, de Web Serial ni de vibration.
+  WebUSB, de Web Serial ni de vibration. Le golden des joysticks (`tests/fixtures/golden/joystick.json`) le vérifie
+  aussi : une page sous automatisation dont la vraie fonction rendrait une manette ne l'appelle jamais, et avec le HOTAS
+  désactivé la page ne lit aucune manette, menu compris. L'auto-test de l'application Windows vérifie, avant de cliquer
+  sur « Démarrer », que `getGamepads` est la simulation (sans l'appeler) et que la politique de la page refuse l'API
+  des manettes.
 
 ## L'application Windows
 

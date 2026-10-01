@@ -5,7 +5,8 @@
 //    joystick read (Navigator.prototype.getGamepads) are replaced by traps that only count calls, so no page code can
 //    ever reach them (the page's own automation shim answers getGamepads with emulated pads only);
 //  - the page's own automation shim must then emulate the pointer lock (window.__LB_EMULATED_POINTER_LOCK__ under
-//    navigator.webdriver): openTrainer() asserts it before returning, that is before any Start click;
+//    navigator.webdriver) and the joystick read (a non-writable navigator.getGamepads fed by
+//    window.__LB_EMULATED_GAMEPADS__): openTrainer() asserts both before returning, that is before any Start click;
 //  - after each test the traps must show zero calls, the page must have thrown no error, and the page's content
 //    security policy must have refused nothing (no `securitypolicyviolation` event since the last page load).
 // Sessions are reproducible: Math.random is seeded in the page, and with manualClock the frames are driven by the test
@@ -133,16 +134,21 @@ export async function openTrainer(page, { profile = null, hash = '', manualClock
   await assertEmulatedPointerLock(page);
 }
 
-// The page runs under WebDriver and emulates the pointer lock itself; nothing reached a real capture API.
+// The page runs under WebDriver and emulates the pointer lock and the joystick read itself; nothing reached a real
+// capture API or the real joystick read.
 export async function assertEmulatedPointerLock(page) {
   const state = await page.evaluate(() => ({
     webdriver: navigator.webdriver,
     emulated: window.__LB_EMULATED_POINTER_LOCK__ === true,
+    gamepadsEmulated:
+      Object.getOwnPropertyDescriptor(navigator, 'getGamepads')?.writable === false &&
+      Array.isArray(window.__LB_EMULATED_GAMEPADS__),
     traps: { ...window.__LB_TEST_TRAPS__ },
   }));
-  expect(state, 'pointer lock emulated in the page under automation').toEqual({
+  expect(state, 'pointer lock and joystick read emulated in the page under automation').toEqual({
     webdriver: true,
     emulated: true,
+    gamepadsEmulated: true,
     traps: { pointerLock: 0, exitPointerLock: 0, fullscreen: 0, keyboardLock: 0, gamepads: 0 },
   });
 }
