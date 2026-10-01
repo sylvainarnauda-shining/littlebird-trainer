@@ -91,21 +91,26 @@ test('recorder: the template scripts are found as HTML finds them; a form the bu
 // The files the recorder reads are the ones the template names, in its order: a runtime without the menus' scripts (the
 // one the goldens name) and one with them are both read, so that adding them breaks no recording. These tests start from
 // the template without the menus' scripts, whichever of them the real one names by now. The folder holds the real
-// runtime files, plus a stub for each of the menus' scripts that only records that it ran.
+// three.js and core/pow.js (the recorder checks their revision and their API) and a stub for every other script, the
+// game's own included, that only records that it ran: what these tests pin is the loading, so no change to a script
+// of the game can break them (app.js will need the menus' globals, the stub does not).
 const BASE = templateWithMenus(fs.readFileSync(TEMPLATE, 'utf8'));
 const NAMED = templateScriptFiles(BASE);
+const GAME = NAMED.slice(2); // after three.js and core/pow.js: the nine modules, then app.js
 const withMenus = (files) => templateWithMenus(fs.readFileSync(TEMPLATE, 'utf8'), files);
+// What a stub runs: it notes its name; app.js, the one script that hands the page to the harness, does that too.
+const stub = (f) =>
+  `(window.__ran = window.__ran || []).push('${f}');` + (f === 'app.js' ? 'window.__LB_EXPOSE__({});' : '');
 
 let runtimeDir;
 let templates = 0;
 before(() => {
   runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lb-runtime-'));
-  for (const f of NAMED) {
+  for (const f of NAMED.slice(0, 2)) {
     fs.mkdirSync(path.dirname(path.join(runtimeDir, f)), { recursive: true });
     fs.copyFileSync(path.join(SRC, f), path.join(runtimeDir, f));
   }
-  for (const f of MENUS)
-    fs.writeFileSync(path.join(runtimeDir, f), `(window.__ran = window.__ran || []).push('${f}');`);
+  for (const f of [...GAME, ...MENUS]) fs.writeFileSync(path.join(runtimeDir, f), stub(f));
 });
 after(() => fs.rmSync(runtimeDir, { recursive: true, force: true }));
 const templateFile = (html) => {
@@ -116,7 +121,7 @@ const templateFile = (html) => {
 
 test("recorder: it reads the files the template names, the menus' scripts only when it names them", () => {
   const { loadRuntime, makeModuleRealm } = require(path.join(RECORDER, 'harness.cjs'));
-  const modules = NAMED.slice(2, -1);
+  const modules = GAME.slice(0, -1);
   // The folder holds the menus' scripts and the template does not name them: they are not read.
   const plain = loadRuntime({ src: runtimeDir, template: templateFile(BASE) });
   assert.deepEqual(Object.keys(plain.manifest), [...NAMED, 'index.template.html']);
@@ -160,11 +165,11 @@ test('recorder: the template must hold three.js, the core scripts and the game s
   }
 });
 
-test("recorder: a page boots with the menus' scripts, which run in the template's order", async () => {
+test("recorder: a page boots with the menus' scripts, every script running in the template's order", async () => {
   const { loadRuntime, createPage } = require(path.join(RECORDER, 'harness.cjs'));
   const rt = loadRuntime({ src: runtimeDir, template: templateFile(withMenus(MENUS)) });
   const page = await createPage(rt, { audio: false });
-  assert.deepEqual(Array.from(page.window.__ran), MENUS);
+  assert.deepEqual(Array.from(page.window.__ran), [...GAME.slice(0, -1), ...MENUS, 'app.js']);
 });
 
 test('sessions: every required coverage counter above zero and the exercise ratios met (G2b)', () => {
