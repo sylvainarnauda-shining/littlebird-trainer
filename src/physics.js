@@ -427,12 +427,13 @@
   // axis gives the lever position while its pad is live (lever), keeps the lever where it is while it is stale (null),
   // and leaves the keys in charge while its device is absent (undefined); Positive / Negative buttons alone act like the
   // collective keys.
-  function createJoyState(){return {held:new Set(),latched:new Set(),latchNext:false};}
+  function createJoyState(){return {held:new Set(),latched:new Set(),latchNext:false,pending:new Set()};}
   const flip=x=>x===0?0:-x;
   function joyFrame(state,profile,pads,res,live){
     const byIndex=new Map(pads.map(p=>[p.index,p])),padsOf=ref=>(res[ref]||[]).map(i=>byIndex.get(i)).filter(Boolean);
-    const srcOn=s=>{if(!s)return 0;const m=profile.devices[s.device],hat=m&&Number.isInteger(m.hatAxis)?m.hatAxis:9;
-      for(const p of padsOf(s.device)){if(!live.has(p.index))continue;if(Number.isInteger(s.button)?!!p.buttons[s.button]:hatHas(decodeHat(p.axes[hat]),s.dir))return 1;}return 0;};
+    const hatOf=s=>{const m=profile.devices[s.device];return m&&Number.isInteger(m.hatAxis)?m.hatAxis:9;};
+    const srcHeld=(s,p)=>Number.isInteger(s.button)?!!p.buttons[s.button]:hatHas(decodeHat(p.axes[hatOf(s)]),s.dir);
+    const srcOn=s=>{if(!s)return 0;for(const p of padsOf(s.device))if(live.has(p.index)&&srcHeld(s,p))return 1;return 0;};
     const axes={};
     for(const name of JOY_AXES){
       const b=profile.axes[name],bound=!!b.device&&b.axis>=0;let v=0,raw=null,pad=null,status='unbound';
@@ -450,16 +451,22 @@
     const th=axes.Throttle;
     if(th.status==='live')cmd.lever=th.value;else if(th.status==='stale')cmd.lever=null;else cmd.collective=th.value;
     const refs={};for(const ref of usedRefs(profile))refs[ref]=padsOf(ref).length?'present':'missing';
-    const raw=new Set();
-    for(const a of JOY_ACTIONS){const list=Object.hasOwn(profile.actions,a)?profile.actions[a]:null;if(list&&list.some(s=>srcOn(s)))raw.add(a);}
-    if(state.latchNext){state.latched=new Set(raw);state.latchNext=false;}
+    // Actions held, and the live pads that hold each one. A latch (latchButtons) takes the actions held on the live pads
+    // at once, and those of a pad that is not live yet (plugged again before a resume, stale after the page was hidden)
+    // on its first live frame, since its held buttons show only then: they must not fire either.
+    const raw=new Set(),on=new Map();
+    for(const a of JOY_ACTIONS){const list=Object.hasOwn(profile.actions,a)?profile.actions[a]:null;if(!list)continue;
+      for(const s of list)for(const p of padsOf(s.device))if(live.has(p.index)&&srcHeld(s,p)){raw.add(a);if(!on.has(a))on.set(a,new Set());on.get(a).add(p.index);}}
+    if(state.latchNext){state.latched=new Set(raw);state.latchNext=false;state.pending=new Set(pads.filter(p=>!live.has(p.index)).map(p=>p.index));}
+    else for(const i of [...state.pending]){if(byIndex.has(i)&&!live.has(i))continue;state.pending.delete(i);for(const [a,ps] of on)if(ps.has(i))state.latched.add(a);}
     for(const a of [...state.latched])if(!raw.has(a))state.latched.delete(a);
     const held=new Set([...raw].filter(a=>!state.latched.has(a))),pressed=[...held].filter(a=>!state.held.has(a)),released=[...state.held].filter(a=>!held.has(a));
     state.held=held;
     return {cmd,axes,refs,held,pressed,released};
   }
   // After a pause, at every resume and after a press used to identify the sticks: the buttons still held are ignored until
-  // released (no restart, view change or burst on resume). Axes are positions: they apply at once.
+  // released (no restart, view change or burst on resume), those of a pad that has not reported yet included (joyFrame).
+  // Axes are positions: they apply at once.
   function latchButtons(state){state.latchNext=true;return state;}
   // One physics step (sumClamp, SUPPOSED): the stick commands added to the input of inputStep, each only when non-zero
   // (a centred stick leaves every field untouched, -0 included), clamped to +-1. A bound collective axis sets the lever

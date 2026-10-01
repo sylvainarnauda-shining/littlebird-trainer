@@ -20,7 +20,8 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   collectif = position du levier, regard libre = angle de vue, manches ajoutés au clavier et à la souris. Rien n'est lu
   avant que le joueur le demande (« Lire les manettes », ou en vol avec le HOTAS activé) ; une manette qui n'a encore
   rien envoyé ne commande rien ; un appareil débranché en vol met la session en pause ; un bouton encore tenu à la
-  reprise est ignoré jusqu'à son relâchement. Nouvelle carte « Manette · HOTAS (page provisoire) » dans l'onglet
+  reprise est ignoré jusqu'à son relâchement, y compris sur une manette qui n'envoie ses valeurs qu'après la reprise
+  (rebranchée, ou après une page masquée). Nouvelle carte « Manette · HOTAS (page provisoire) » dans l'onglet
   Commandes, avec un test des axes en direct et l'import de la section joystick du fichier de réglages du jeu (aperçu,
   puis question sur chaque appareil ; le fichier est lu dans la page, rien n'est envoyé). Les réglages forment un bloc
   `joystick` du profil (schéma 1), enregistré et exporté seulement quand il diffère des valeurs par défaut. Sécurité :

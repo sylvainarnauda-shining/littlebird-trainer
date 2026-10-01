@@ -336,6 +336,56 @@ test('joyFrame: signs bridged to the trainer (roll and yaw +1 = left), collectiv
   assert.deepEqual([f.axes.Throttle.status, f.cmd.lever, f.refs.main], ['missing', undefined, 'missing']);
 });
 
+test('joyFrame: a latch also covers a pad that reports only after it (stale after a hidden page, plugged again)', () => {
+  const profile = vjoyProfile();
+  const state = J.createJoyState();
+  const fresh = J.createFreshness();
+  const v = G.pad({ id: G.VJOY_ID });
+  G.report(v);
+  frameOf(state, profile, [v], undefined, fresh);
+  assert.deepEqual([...frameOf(state, profile, [v], undefined, fresh).held], [], 'live, nothing held');
+  // The page was hidden: the values are stale until the next report. The trigger is held across the resume; the frame
+  // of the latch still shows the stale state, the next report shows the trigger: it is latched then, not fired.
+  J.markStale(fresh);
+  v.buttons[3] = { pressed: true, touched: true, value: 1 };
+  J.latchButtons(state);
+  let f = frameOf(state, profile, [v], undefined, fresh);
+  assert.deepEqual([[...f.held], f.pressed], [[], []]);
+  G.report(v);
+  f = frameOf(state, profile, [v], undefined, fresh);
+  assert.deepEqual([[...f.held], f.pressed], [[], []], 'held through the resume: latched on the first report');
+  G.report(v, { release: [3] });
+  frameOf(state, profile, [v], undefined, fresh);
+  G.report(v, { press: [3] });
+  assert.deepEqual([...frameOf(state, profile, [v], undefined, fresh).held], ['fire'], 'pressed again: it fires');
+  // Plugged again (a new freshness entry: not live until it reports), trigger held: the same.
+  const back = J.createFreshness();
+  J.latchButtons(state);
+  assert.deepEqual([...frameOf(state, profile, [v], undefined, back).held], []);
+  G.report(v);
+  assert.deepEqual([...frameOf(state, profile, [v], undefined, back).held], [], 'latched on its first live frame');
+  // Two pads of the main device ('any'), one that never reports: the other one's latch ends at its release as usual.
+  const two = profileWith((p) => {
+    p.deviceMatch = 'any';
+    p.devices.main = J.modelOf(snap(G.pad({ id: G.VJOY_ID }))[0]);
+    p.actions.fire = [{ device: 'main', button: 3 }];
+  });
+  const a = G.pad({ index: 0, id: G.VJOY_ID });
+  const b = G.pad({ index: 1, id: G.VJOY_ID });
+  const st = J.createJoyState();
+  const fr = J.createFreshness();
+  frameOf(st, two, [a, b], undefined, fr);
+  G.report(a);
+  frameOf(st, two, [a, b], undefined, fr);
+  J.latchButtons(st);
+  G.report(a, { press: [3] });
+  assert.deepEqual([...frameOf(st, two, [a, b], undefined, fr).held], [], 'latched');
+  G.report(a, { release: [3] });
+  frameOf(st, two, [a, b], undefined, fr);
+  G.report(a, { press: [3] });
+  assert.deepEqual([...frameOf(st, two, [a, b], undefined, fr).held], ['fire'], 'the silent pad holds nothing back');
+});
+
 test('joyFrame: Positive / Negative buttons alone act like the collective keys; any = largest deflection', () => {
   const profile = profileWith((p) => {
     p.axes.Throttle.positive = { device: 'main', button: 0 };
