@@ -10,5 +10,8 @@ const STYLE_BLOCK = /<style(?=[\t\n\f\r />])[^>]*>([\s\S]*?)<\/style(?=[\t\n\f\r
 
 const scriptBodies = (html) => [...html.matchAll(SCRIPT_BLOCK)].map((m) => m[1]);
 const styleBodies = (html) => [...html.matchAll(STYLE_BLOCK)].map((m) => m[1]);
+// The files named by the external <script src="…"></script> tags of the page template, in order: the scripts that the
+// build inlines (the template's one inline script, the error handler, has no file).
+const templateScriptFiles = (template) => [...template.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
 
-module.exports = { scriptBodies, styleBodies };
+module.exports = { scriptBodies, styleBodies, templateScriptFiles };

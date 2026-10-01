@@ -37,7 +37,12 @@ test('the page runs every screen and mode under its CSP: no violation, no consol
     [...document.querySelectorAll('meta[http-equiv="Content-Security-Policy"]')].map((m) => m.content),
   );
   expect(meta).toEqual([policy]);
-  expect(policy).toMatch(/^default-src 'none'; script-src ('sha256-[A-Za-z0-9+/]+=*' ?){13}; style-src 'sha256-/);
+  // One hash per script element of the page (the count is the page's, not a constant of this spec).
+  const scripts = await page.evaluate(() => document.scripts.length);
+  expect(scripts).toBeGreaterThan(1);
+  expect(policy).toMatch(
+    new RegExp(`^default-src 'none'; script-src ('sha256-[A-Za-z0-9+/]+=*' ?){${scripts}}; style-src 'sha256-`),
+  );
 
   // WebGL2 draws; the menu tabs and panels.
   await seconds(page, 0.2);
