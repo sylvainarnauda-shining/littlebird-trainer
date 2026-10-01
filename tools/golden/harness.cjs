@@ -23,6 +23,10 @@
 //    With opts.automation the harness instead presents itself as a WebDriver-controlled browser (navigator.webdriver,
 //    window.Element and window.Document on a private set of DOM classes) whose "real" lock, fullscreen and keyboard
 //    lock are traps that only count calls: the app's own automation shim must take over the lock (hookapi suite).
+//  - Joysticks: none, unless opts.gamepads scripts them (joystick suite): navigator.getGamepads() then answers from that
+//    list of plain pad objects, which the script changes between frames, and counts its calls; under opts.automation it
+//    is the "real" API, which the app's automation shim must shadow with its own emulation. Without opts.gamepads the
+//    page's navigator has no getGamepads, as before. Nothing here can reach a real joystick (Node has no Gamepad API).
 //  - No GPU, no network, no file access from the page; canvases record their calls into hashes (dom.cjs); Web Audio
 //    records its graph and schedule (webaudio.cjs).
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm'), crypto = require('node:crypto');
@@ -119,8 +123,20 @@ class GoldenRenderer {
   }
 }
 
+// Scripted joysticks (opts.gamepads, an array of plain pads {index, id, mapping, connected, timestamp, axes, buttons}
+// that the script changes between frames): getGamepads() answers four slots as Chromium 152 does, null where no pad is,
+// and counts its calls. In a normal page it is the navigator's own (counters.gamepadReads). Under opts.automation it
+// stands for the browser's API, on the navigator's prototype as in a browser (counters.realGamepadReads): the app's
+// automation shim must shadow it with its emulation (window.__LB_EMULATED_GAMEPADS__), so a real read is a failure.
+function scriptedGamepads(nav, o, counters) {
+  const slots = () => { const s = [null, null, null, null]; for (const p of o.gamepads) if (p && Number.isInteger(p.index) && p.index >= 0 && p.index < 4) s[p.index] = p; return s; };
+  if (o.automation) { counters.realGamepadReads = 0; Object.setPrototypeOf(nav, { getGamepads() { counters.realGamepadReads++; return slots(); } }); }
+  else { counters.gamepadReads = 0; nav.getGamepads = () => { counters.gamepadReads++; return slots(); }; }
+}
+
 // One page load. opts: seedG, seedT, storage {key: string}, hash ('#carte=gen-12'), width, height, dpr, audio (bool),
-// frameMs (10 = 100 Hz), clock0 (ms), automation (bool: see the header).
+// frameMs (10 = 100 Hz), clock0 (ms), automation (bool: see the header), gamepads (scripted joysticks: see
+// scriptedGamepads).
 async function createPage(rt, opts = {}) {
   const o = { seedG: 20260929, seedT: 160, storage: {}, hash: '', width: 1920, height: 1080, dpr: 1, audio: true, frameMs: 10, clock0: 1000, automation: false, ...opts };
   const counters = { gameDraws: 0, threeDraws: 0, timersRun: 0, frames: 0, locks: 0, reloads: 0, alerts: 0, realLockCalls: 0, realExitCalls: 0, fullscreenCalls: 0, keyboardLockCalls: 0 };
@@ -141,6 +157,7 @@ async function createPage(rt, opts = {}) {
     D.Document.prototype.exitPointerLock = function () { counters.realExitCalls++; };
     win.navigator.keyboard = { lock() { counters.keyboardLockCalls++; return Promise.resolve(); }, unlock() {} };
   }
+  if (o.gamepads) scriptedGamepads(win.navigator, o, counters);
   win.innerWidth = o.width; win.innerHeight = o.height; win.outerWidth = o.width; win.outerHeight = o.height; win.devicePixelRatio = o.dpr; win.screen = { width: o.width, height: o.height };
   win.performance = { now: () => page.clockMs, timeOrigin: 0 };
   win.setTimeout = (fn, ms = 0, ...args) => { const id = page.timerSeq++; page.timers.push({ id, due: page.clockMs + Math.max(0, +ms || 0), fn, args }); return id; };
