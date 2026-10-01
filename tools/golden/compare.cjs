@@ -1,7 +1,8 @@
 'use strict';
 // Compares a fresh recording with a golden: data only (meta.node, the source manifest and other meta are reported,
-// not compared). Prints the first difference of each suite as a JSON path; for session checkpoints, the first
-// checkpoint that differs and the groups that differ in it; for the HUD, the first frame that differs.
+// not compared). Prints the first difference of each suite as a JSON path; for session checkpoints (and the joystick
+// suite's runs), the first checkpoint that differs and the groups that differ in it; for the HUD, the first frame that
+// differs.
 // Three classes of fields:
 //   strict: everything not listed below;
 //   wording (probe.cjs WORDING groups; the keys text, textHex, fixedText, toastHex, labelHash; the results cards' text):
@@ -78,6 +79,29 @@ function compareSuite(name, golden, now, { wordingStep = false } = {}) {
     if (golden.inventory.defaultsHash !== now.inventory.defaultsHash) note({ path: '$.inventory.defaultsHash' }, false);
     const noRun = l => l.map(x => ({ ...x, runHash: 0 })); const d2 = firstDiff(noRun(golden.sessionConfigs), noRun(now.sessionConfigs), '$.sessionConfigs'); if (d2) note(d2);
     golden.sessionConfigs.forEach((c, i) => { if (now.sessionConfigs[i] && c.runHash !== now.sessionConfigs[i].runHash) note({ path: `$.sessionConfigs[${i}].runHash` }, false); });
+    return done();
+  }
+  if (name === 'joystick') {
+    // Whole runs: their checkpoints as the sessions' (the first that differs, with its groups), then the rest of each run
+    // (gate verdict, events, reads, coverage) and of the suite (law, oracle, automation) strictly, wording fields apart.
+    const gr = golden.runs || {}, nr = now.runs || {};
+    for (const id of Object.keys(gr)) {
+      const g = gr[id], n = nr[id]; if (!n) { note({ run: id, missing: true }); continue; }
+      const len = Math.max(g.checkpoints.length, n.checkpoints.length); let sawWording = false, sawAdvisory = false;
+      for (let i = 0; i < len; i++) {
+        const cg = g.checkpoints[i], cn = n.checkpoints[i]; if (!cg || !cn) { note({ run: id, checkpoint: i, missing: true }); break; }
+        const differ = k => cg.groups[k] !== cn.groups[k], keys = Object.keys(cg.groups);
+        const strictGroups = keys.filter(k => !ADVISORY.includes(k) && !WORDING.includes(k) && differ(k)), wordingGroups = keys.filter(k => WORDING.includes(k) && differ(k)), advisory = keys.filter(k => ADVISORY.includes(k) && differ(k));
+        if (strictGroups.length || cg.all !== cn.all) { note({ run: id, firstCheckpoint: i, frame: cg.t, groups: strictGroups, sampleGolden: g.samples[i], sampleNow: n.samples[i] }); break; }
+        if (wordingGroups.length && !sawWording) { sawWording = true; wording({ run: id, firstCheckpoint: i, frame: cg.t, groups: wordingGroups }); }
+        if (advisory.length && !sawAdvisory) { sawAdvisory = true; note({ run: id, checkpoint: i, advisoryGroups: advisory }, false); }
+      }
+      const rest = r => { const { meta, checkpoints, samples, ...x } = r; return x; };
+      both(rest(g), rest(n), `$.runs.${id}`);
+    }
+    for (const id of Object.keys(nr)) if (!gr[id]) note({ run: id, notInGolden: true });
+    const { meta: gm, runs: g2, ...gd } = golden, { meta: nm, runs: n2, ...nd } = now;
+    both(gd, nd, '$');
     return done();
   }
   if (name === 'hookapi') {

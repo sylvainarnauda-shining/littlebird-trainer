@@ -32,6 +32,24 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   identiques ; seul le golden de l'interface change (inventaire des nouveaux réglages et textes de la carte). Détail :
   `docs/REGLAGES.md`.
 
+### Tests et outils
+
+- **Joysticks : le banc de test (phase J3).** Nouveau golden `joystick`, enregistré avec des manettes simulées (jamais
+  un appareil) et déterministe : la porte G-J2 (avec le HOTAS activé, des manches au repos dans leur zone morte volent
+  au bit près comme le clavier et la souris avec le HOTAS désactivé, et avec le HOTAS désactivé aucune manette n'est
+  lue, menu compris), la porte G-J3 (déviations complètes et boutons des manches = touches, au bit près), la base B0
+  supposée (son descripteur, les valeurs par défaut publiques, `axisValue`, `decodeHat` et `joystickMix` sur des
+  grilles), un vol avec un manche vJoy réglé par l'import d'une section de jeu synthétique (levier, déviations
+  partielles, regard sur le chapeau, boutons, débranché puis rebranché, gâchette tenue à la reprise), deux manches
+  T.16000M identiques (proposition, échange par la première gâchette, qui ne tire pas, levier tenu tant que le manche
+  rebranché n'a rien envoyé), un oracle de profils et de sections de jeu hostiles, et, sous automatisation, la vraie
+  fonction `getGamepads` jamais appelée. Les autres goldens ne changent pas d'un octet ; l'enregistreur accepte des
+  manettes simulées (`opts.gamepads`), changement prouvé neutre (`golden.mjs prove`). La porte complète et le test de
+  mutation couvrent le nouveau golden (signe du roulis inversé, une valeur par défaut, le verrou de la reprise, la
+  simulation coupée). Specs du navigateur pour la carte « Manette · HOTAS » avec des manettes simulées ; chaque spec
+  vérifie la simulation de `getGamepads` avant tout départ ; l'auto-test de l'application Windows la vérifie aussi,
+  avec `gamepad=()`, avant de cliquer sur « Démarrer ».
+
 ## [0.9.0] — 2026-10-01
 
 Première version publique. Elle part de l'entraîneur v13 (modèle de vol v6 identifié sur deux enregistrements de

@@ -31,6 +31,7 @@ test('golden folder: every file listed in MANIFEST.json with its sha256, nothing
     'flight',
     'hookapi',
     'hud',
+    'joystick',
     'models',
     'modules',
     'parity',
@@ -125,6 +126,46 @@ test('touchdowns straddle every crash threshold (G2a)', () => {
     assert.ok(r.outcome.touched, k + ' touched');
     assert.equal(r.outcome.crashed, /^touchdown-(fast|hard-4\.8|tilt-35)/.test(k), k + ' crash outcome');
   }
+});
+
+test('joysticks: gates G-J2 and G-J3 hold, nothing read with the HOTAS off, B0 runs exercised, no real read (J3)', () => {
+  const j = J('joystick.json');
+  // G-J2: resting sticks with the HOTAS on = keys and mouse with the HOTAS off; G-J3: full deflections and buttons = keys.
+  for (const id of ['G-J2', 'G-J3']) {
+    const g = j.runs[id].gate;
+    assert.equal(g.holds, true, id);
+    assert.deepEqual(g.differences, [], id);
+    assert.equal(g.reads[g.runs[0]].total, 0, id + ': no joystick read with the HOTAS off, menu included');
+    assert.equal(g.reads[g.runs[1]].beforeStart, 0, id + ': nothing read in the menu with the HOTAS on');
+    assert.ok(g.reads[g.runs[1]].total > 0, id + ': the HOTAS run reads the sticks');
+    assert.ok(j.runs[id].checkpoints.length >= 30, id + ' checkpoints');
+  }
+  assert.equal(j.runs['G-J2'].meta.joysticks.keys, null, 'G-J2: no joystick block with the HOTAS off');
+  // B0 runs: every event each one exists for, and a held or consumed press never fires.
+  for (const id of ['vjoy-b0', 'twins']) {
+    const r = j.runs[id];
+    for (const k of r.meta.required) assert.ok((r.events[k] ?? r.coverage[k]) > 0, `${id}.${k}`);
+    assert.equal(r.coverage.deaths, 0, id + ': the helicopter flies through');
+  }
+  assert.equal(j.runs['vjoy-b0'].events.shotsWhileLatched, 0, 'a trigger held through a resume is latched');
+  assert.equal(j.runs.twins.events.shotsWhileConfirming, 0, 'the press that confirms the sticks never fires');
+  // B0 placeholders, labelled as supposed; public defaults = the game's factory values (HOTAS off, no device).
+  assert.equal(j.law.descriptor.status, 'supposé');
+  const d = j.law.defaults;
+  assert.deepEqual([d.useHotas, d.devices, d.actions], [false, { main: null, left: null, right: null }, {}]);
+  for (const a of Object.values(d.axes))
+    assert.deepEqual([a.device, a.sensitivity, a.deadZone, a.invert], [null, 1, 0.05, false]);
+  // Under automation, the page's emulation answers and the browser's getGamepads is never called.
+  assert.deepEqual(j.automation, {
+    emulated: true,
+    emulatedList: true,
+    padsListedBefore: 0,
+    padsListed: 1,
+    listedIsVjoy: true,
+    running: true,
+    emulatedStickPitches: true,
+    realGamepadReads: 0,
+  });
 });
 
 test('automation boot: the pointer lock is emulated and nothing real is ever called (safety)', () => {

@@ -14,7 +14,19 @@ const { ROOT, SRC, TEMPLATE, FIXTURES, GOLDEN, RECORDER } = require('../helpers/
 
 const meta = JSON.parse(fs.readFileSync(path.join(GOLDEN, 'meta.json'), 'utf8'));
 // Longest first, so the parallel run ends sooner.
-const SUITES = ['sessions', 'hud', 'modules', 'flight', 'settings', 'world', 'ui', 'models', 'audio', 'hookapi'];
+const SUITES = [
+  'sessions',
+  'hud',
+  'modules',
+  'flight',
+  'settings',
+  'joystick',
+  'world',
+  'ui',
+  'models',
+  'audio',
+  'hookapi',
+];
 const JOBS = Math.max(1, Number(process.env.LB_GOLDEN_JOBS) || Math.min(5, Math.floor(os.availableParallelism() / 2)));
 
 function check(suite) {

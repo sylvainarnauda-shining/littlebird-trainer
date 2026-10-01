@@ -6,24 +6,24 @@
    "sha256_lf": "a7aa416291e881d5938379e1dc134fb03769ceed1734a25c5d18220c903e4632"
   },
   "compare.cjs": {
-   "sha256": "ad7d6c5e05f88f56b06b59c994da06a09c9fa5033af9f094bf905930cf387ed2",
-   "sha256_lf": "ad7d6c5e05f88f56b06b59c994da06a09c9fa5033af9f094bf905930cf387ed2"
+   "sha256": "2c92bd67dbb0af40ab12337c6f3bda961c173e28e6ba51a3b768e11ccac82080",
+   "sha256_lf": "2c92bd67dbb0af40ab12337c6f3bda961c173e28e6ba51a3b768e11ccac82080"
   },
   "dom.cjs": {
    "sha256": "5cb8df175749a3ff238b3697645e917e7a56384cdc9fdcf44d1c454e8aa6a78f",
    "sha256_lf": "5cb8df175749a3ff238b3697645e917e7a56384cdc9fdcf44d1c454e8aa6a78f"
   },
   "gate.cjs": {
-   "sha256": "86b34df7decac92e66b7d84ae182cfd43eedc7919aebe67cc483cbb87d5e7c7b",
-   "sha256_lf": "86b34df7decac92e66b7d84ae182cfd43eedc7919aebe67cc483cbb87d5e7c7b"
+   "sha256": "3e3b5ba0ef890b4e98d540908e9154c70de82130433bd47ba39845a83c9a8e3a",
+   "sha256_lf": "3e3b5ba0ef890b4e98d540908e9154c70de82130433bd47ba39845a83c9a8e3a"
   },
   "harness.cjs": {
    "sha256": "7c12276bfc8c1b404add6f8e76b0413e8c87778b7d39e5c01cc96f48b840f0fa",
    "sha256_lf": "7c12276bfc8c1b404add6f8e76b0413e8c87778b7d39e5c01cc96f48b840f0fa"
   },
   "mutation-smoke.cjs": {
-   "sha256": "8eb37b64a062cd3c59333c5010e177ec461cf505535c92cd1b7acf7062afd1bd",
-   "sha256_lf": "8eb37b64a062cd3c59333c5010e177ec461cf505535c92cd1b7acf7062afd1bd"
+   "sha256": "5f7fa65322eebd6dc924f07276bdc4e52ad176be6dad4a29b903b764dc768ced",
+   "sha256_lf": "5f7fa65322eebd6dc924f07276bdc4e52ad176be6dad4a29b903b764dc768ced"
   },
   "probe-aliases.json": {
    "sha256": "f1c131989b55281e1ef5a72abb32d02f87a529909155ab0795a24ef1d6b3dff4",
@@ -42,8 +42,8 @@
    "sha256_lf": "98c25f231fa7a386fdc7a43512c13d5c5f749545c6baaad0f8142666ea22225f"
   },
   "record.cjs": {
-   "sha256": "6f812baa6688fd5baa25fafd06056fdb2d08393f873c3dde5c06e447c7009b1d",
-   "sha256_lf": "6f812baa6688fd5baa25fafd06056fdb2d08393f873c3dde5c06e447c7009b1d"
+   "sha256": "b3a045aaaeba06076fcd491a2313eb0fe2dfc1b4617e9202735ccb7112cf4d39",
+   "sha256_lf": "b3a045aaaeba06076fcd491a2313eb0fe2dfc1b4617e9202735ccb7112cf4d39"
   },
   "runtime-names.cjs": {
    "sha256": "98a525631b698f411e4d40e0eed05eb5a1c738be13d06364579b98d1875cfda8",
@@ -72,6 +72,10 @@
   "suites/hud.cjs": {
    "sha256": "e88135d0612fc0e55fb0a4be04487c6710cf5cf04f1b80c91e9cf5984446dc1b",
    "sha256_lf": "e88135d0612fc0e55fb0a4be04487c6710cf5cf04f1b80c91e9cf5984446dc1b"
+  },
+  "suites/joystick.cjs": {
+   "sha256": "92cf5398f8377416263334dc89343654edcc376772787d1c5e0c8c3ab6e7e8cf",
+   "sha256_lf": "92cf5398f8377416263334dc89343654edcc376772787d1c5e0c8c3ab6e7e8cf"
   },
   "suites/models.cjs": {
    "sha256": "1e3e5a08d108721a40cb76c959a4883c961c562d2281c0d8c9721a8ba9acdbd4",
@@ -110,7 +114,8 @@
   "models",
   "ui",
   "modules",
-  "hookapi"
+  "hookapi",
+  "joystick"
  ],
  "srcManifest": {
   "vendor/three.min.js": {
@@ -126,8 +131,8 @@
    "sha256_lf": "d5277408acbd8965e302df01ecc7b12df26808a46e143ba280bdf9974775be83"
   },
   "physics.js": {
-   "sha256": "48104eec23ab4072cba28bf4f0e02b8e296fb57693bbf22b397cec1bb4786f4c",
-   "sha256_lf": "48104eec23ab4072cba28bf4f0e02b8e296fb57693bbf22b397cec1bb4786f4c"
+   "sha256": "a1b6fbe6f07edafa554739700c023ab34fd993ebbfaab379769c8f344a79ef83",
+   "sha256_lf": "a1b6fbe6f07edafa554739700c023ab34fd993ebbfaab379769c8f344a79ef83"
   },
   "forest.js": {
    "sha256": "8d48696299205cf4226a71bbb19d266c3e179a36336ad433378705b95661281e",

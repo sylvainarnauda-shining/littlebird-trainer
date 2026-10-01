@@ -8,7 +8,8 @@
 //     the one that recorded the goldens: a recorder change is proven with prove-recorder.cjs)
 // Suites: flight (G2a), sessions (G2b + G2g per mode), world (G2c + G2g boot scenes), audio (G2d), hud (G2e),
 // settings (G2f), models (G2g), ui (G6 + G7), modules (per-module goldens), hookapi (the test API contract and the
-// automation pointer-lock boot).
+// automation pointer-lock boot), joystick (the joystick input path with scripted pads: gates G-J2 and G-J3, the B0
+// placeholders, the automation emulation of getGamepads).
 // --wording-step: a step declared as wording (R2, with its reviewed string list): the wording class (texts on the HUD
 // and in the DOM, display names, labels, notices) may differ; everything else stays strict.
 // Private sidecars (never published): the calibration tools' controls and hook members. Written with --private-out,
@@ -26,7 +27,7 @@ const { compareSuite } = require('./compare.cjs');
 
 // 3: three.js's realm computes with the runtime's deterministic pow; the game's realm has no Math.pow.
 const RECORDER_VERSION = 3;
-const ALL = ['flight', 'sessions', 'world', 'audio', 'hud', 'settings', 'models', 'ui', 'modules', 'hookapi'];
+const ALL = ['flight', 'sessions', 'world', 'audio', 'hud', 'settings', 'models', 'ui', 'modules', 'hookapi', 'joystick'];
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const { recorderManifest } = require('./provenance.cjs');
 const sha = b => crypto.createHash('sha256').update(b).digest('hex');

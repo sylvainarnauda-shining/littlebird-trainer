@@ -32,7 +32,19 @@ const P = {
   inputs: path.join(ROOT, 'tests', 'fixtures'),
   golden: path.join(ROOT, 'tests', 'fixtures', 'golden'),
 };
-export const SUITES = ['flight', 'sessions', 'world', 'audio', 'hud', 'settings', 'models', 'ui', 'modules', 'hookapi'];
+export const SUITES = [
+  'flight',
+  'sessions',
+  'world',
+  'audio',
+  'hud',
+  'settings',
+  'models',
+  'ui',
+  'modules',
+  'hookapi',
+  'joystick',
+];
 export const RUNTIME_FILES = [
   'core/pow.js',
   'world.js',
