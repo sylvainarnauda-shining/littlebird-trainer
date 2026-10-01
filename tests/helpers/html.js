@@ -12,7 +12,8 @@ const scriptBodies = (html) => [...html.matchAll(SCRIPT_BLOCK)].map((m) => m[1])
 const styleBodies = (html) => [...html.matchAll(STYLE_BLOCK)].map((m) => m[1]);
 // The files named by the external <script src="…"></script> tags of the page template, in order: the scripts that the
 // build inlines (the template's one inline script, the error handler, has no file).
-const templateScriptFiles = (template) => [...template.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
+const templateScriptFiles = (template) =>
+  [...template.matchAll(/<script src="([^"]+)"><\/script(?=[\t\n\f\r />])[^>]*>/g)].map((m) => m[1]);
 
 // The scripts of the menus, loaded between the game's modules and app.js (the menus 1.0 add them one phase after the
 // other). The recorder reads a template with or without each of them: its tests start from the runtime that predates
