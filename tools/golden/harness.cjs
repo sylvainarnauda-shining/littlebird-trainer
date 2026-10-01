@@ -11,7 +11,8 @@
 //    hashed in meta.json srcManifest are the vendored file's own). These are recording rules only: in the page, three.js
 //    keeps the browser's Math.pow and **.
 //  - Realm G: the page (window, document built from the template, the inline error script, then core/pow.js, world,
-//    physics, forest, scenery, missiles, audio, models, ground, bot and app.js as <script>s in the template's order),
+//    physics, forest, scenery, missiles, audio, models, ground, bot, the menus' scripts when the template has them, and
+//    app.js as <script>s in the template's order; template.cjs says which scripts a template may load),
 //    whose Math.random is the seeded stream G and whose Date is fixed. The game modules see window.THREE = realm T's
 //    THREE with WebGLRenderer replaced by a draw-free renderer. The game computes powers with HeliPow.pow; its realm's
 //    Math.pow throws, so a call that escaped ESLint's rule fails the recording instead of making it platform-dependent.
@@ -32,10 +33,8 @@
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm'), crypto = require('node:crypto');
 const dom = require('./dom.cjs'), { makeEvent, dispatch } = dom;
 const { createAudioClass } = require('./webaudio.cjs');
+const { CORE, MODULES, runtimeScripts } = require('./template.cjs');
 
-const ORDER = ['world.js', 'physics.js', 'forest.js', 'scenery.js', 'missiles.js', 'audio.js', 'models.js', 'ground.js', 'bot.js', 'app.js'];
-// Runtime scripts every realm of the game loads before the modules (the page loads them right after three.js).
-const CORE = ['core/pow.js'];
 const POW_GUARD = () => { throw Error('Math.pow called by the game runtime: use HeliPow.pow (src/core/pow.js)'); };
 // The ** sites of three.min.js r160, each a square, and the product the recorder evaluates instead (x*x is the correctly
 // rounded square). Each must occur exactly once, and no other ** may remain outside the licence comment's "/**".
@@ -55,36 +54,20 @@ const lcg = seed => { let s = (seed >>> 0) || 1; return () => (s = (Math.imul(s,
 const sha = b => crypto.createHash('sha256').update(b).digest('hex');
 const lf = b => Buffer.from(b.toString('latin1').replace(/\r\n?/g, '\n'), 'latin1');
 const flush = () => new Promise(r => setImmediate(r));
-// The template's <script> elements, found as HTML finds them (start and end tags in any letter case, with attributes,
-// an end tag with whitespace or "/"), then each one required in one of the two forms the build reads: an external
-// <script src="file"></script> (the file is inlined there) or an inline <script>code</script>. Any other form stops the
-// recording instead of being skipped, so the page never runs a script the recorder does not.
-const SCRIPT_ELEMENT = /<script(?=[\t\n\f\r />])([^>]*)>([\s\S]*?)<\/script(?=[\t\n\f\r />])[^>]*>/gi;
-function templateScripts(html) {
-  const tags = [], inline = [];
-  for (const [element, attrs, body] of html.matchAll(SCRIPT_ELEMENT)) {
-    const exact = element === '<script' + attrs + '>' + body + '</script>', src = /^ src="([^"]+)"$/.exec(attrs);
-    if (exact && attrs === '') inline.push(body);
-    else if (exact && src && body === '') tags.push(src[1]);
-    else throw Error('the template holds a <script> in a form the recorder does not read: ' + JSON.stringify(element.slice(0, 60)));
-  }
-  return { tags, inline };
-}
 
-// Runtime sources: a directory holding core/pow.js, the ten runtime files and vendor/three.min.js, and the page template
-// (whose script tags must be in the harness's order).
+// Runtime sources: the page template and a directory holding the files its script tags name (template.cjs: three.js,
+// core/pow.js and the game's scripts). A file the template does not name is not read. scripts.game holds the game's
+// scripts by file name, in the template's order.
 function loadRuntime({ src, template }) {
-  const files = {}, manifest = {};
-  for (const f of ['vendor/three.min.js', ...CORE, ...ORDER]) {
+  const tb = fs.readFileSync(template), html = tb.toString('utf8');
+  const { files: names, game, inline } = runtimeScripts(html), files = {}, manifest = {};
+  for (const f of names) {
     const b = fs.readFileSync(path.join(src, f)); files[f] = b.toString('utf8');
     manifest[f] = { sha256: sha(b), sha256_lf: sha(lf(b)) };
   }
-  const tb = fs.readFileSync(template), html = tb.toString('utf8');
   manifest['index.template.html'] = { sha256: sha(tb), sha256_lf: sha(lf(tb)) };
-  const { tags, inline } = templateScripts(html), order = ['vendor/three.min.js', ...CORE, ...ORDER];
-  if (tags.join() !== order.join()) throw Error('the template\'s script tags are not ' + order.join(', ') + ': ' + tags.join(', '));
   const scripts = { three: new vm.Script(threeSource(files['vendor/three.min.js']), { filename: 'three.min.js' }), core: CORE.map(f => new vm.Script(files[f], { filename: f })),
-    game: ORDER.map(f => new vm.Script(files[f], { filename: f })), inline: inline.map((c, i) => new vm.Script(c, { filename: 'inline-' + i + '.js' })) };
+    game: Object.fromEntries(game.map(f => [f, new vm.Script(files[f], { filename: f })])), inline: inline.map((c, i) => new vm.Script(c, { filename: 'inline-' + i + '.js' })) };
   return { files, html, manifest, scripts, src, template };
 }
 
@@ -196,7 +179,7 @@ async function createPage(rt, opts = {}) {
     FixedDate.prototype=D.prototype;FixedDate.now=()=>T0;FixedDate.parse=D.parse;FixedDate.UTC=D.UTC;globalThis.Date=FixedDate;})();`, win);
   for (const s of rt.scripts.inline) s.runInContext(win);
   for (const s of rt.scripts.core) s.runInContext(win);
-  for (const s of rt.scripts.game) s.runInContext(win);
+  for (const s of Object.values(rt.scripts.game)) s.runInContext(win);
   if (!page.app) throw Error('boot failed: __LB_EXPOSE__ not called (' + JSON.stringify(page.consoleLog.slice(-3)) + ')');
   page.diag = () => win.trainerDiagnostics();
   page.world = world;
@@ -229,7 +212,7 @@ async function createPage(rt, opts = {}) {
 // A page-less realm with some of the runtime scripts (module goldens): same realm rules (three.js apart with stream T
 // and the deterministic pow, core/pow.js first, then the scripts with stream G and a throwing Math.pow), window = the
 // realm's global, no DOM. storage/hash choose the map as in a browser.
-function makeModuleRealm(rt, { seedG = 1, seedT = 160, files = ORDER.filter(f => f !== 'app.js'), hash = '', storage = {} } = {}) {
+function makeModuleRealm(rt, { seedG = 1, seedT = 160, files = MODULES, hash = '', storage = {} } = {}) {
   const counters = { gameDraws: 0, threeDraws: 0 };
   const three = makeThree(rt, seedT, counters), g = vm.createContext(vm.constants.DONT_CONTEXTIFY), log = [], store = new Map(Object.entries(storage));
   g.window = g; g.self = g; g.console = quietConsole(log); g.THREE = { ...three.THREE, WebGLRenderer: GoldenRenderer };
@@ -240,7 +223,7 @@ function makeModuleRealm(rt, { seedG = 1, seedT = 160, files = ORDER.filter(f =>
   vm.runInContext(`(function(){const D=Date,T0=${FIXED_EPOCH};function FixedDate(...a){if(!new.target)return new D(T0).toString();return a.length?new D(...a):new D(T0);}
     FixedDate.prototype=D.prototype;FixedDate.now=()=>T0;FixedDate.parse=D.parse;FixedDate.UTC=D.UTC;globalThis.Date=FixedDate;})();`, g);
   for (const s of rt.scripts.core) s.runInContext(g);
-  for (const f of files) rt.scripts.game[ORDER.indexOf(f)].runInContext(g);
+  for (const f of files) { if (!rt.scripts.game[f]) throw Error('the runtime does not load ' + f); rt.scripts.game[f].runInContext(g); }
   return { g, THREE: three.THREE, counters, log, W: g.HeliWorld, P: g.HeliPhysics, M: g.HeliMissiles, A: g.HeliAudio, G: g.HeliGround, B: g.HeliBot, F: g.HeliForest, Models: g.HeliModels, buildScenery: g.buildScenery };
 }
-module.exports = { loadRuntime, createPage, makeModuleRealm, lcg, ORDER, CORE, THREE_SQUARES, threeSource, GoldenRenderer, flush, FIXED_EPOCH };
+module.exports = { loadRuntime, createPage, makeModuleRealm, lcg, THREE_SQUARES, threeSource, GoldenRenderer, flush, FIXED_EPOCH };

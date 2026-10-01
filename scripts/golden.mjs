@@ -20,6 +20,7 @@
 //       extract the runtime files the recorder reads, as committed at a ref
 // Scratch output goes to test-results/golden/ (ignored by git) unless --scratch is given.
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -45,21 +46,9 @@ export const SUITES = [
   'hookapi',
   'joystick',
 ];
-export const RUNTIME_FILES = [
-  'core/pow.js',
-  'world.js',
-  'physics.js',
-  'forest.js',
-  'scenery.js',
-  'missiles.js',
-  'audio.js',
-  'models.js',
-  'ground.js',
-  'bot.js',
-  'app.js',
-  'vendor/three.min.js',
-];
 export const PATHS = P;
+// Which scripts a template loads is the recorder's to say (the files it reads are the ones the template names).
+const { runtimeScripts } = createRequire(import.meta.url)('../tools/golden/template.cjs');
 
 const argv = process.argv.slice(2);
 const opt = (k, d) => {
@@ -101,20 +90,24 @@ export const checkArgs = (suites, extra = []) => [
   ...extra,
 ];
 
-// The runtime files as committed at a ref, in the layout the recorder reads (core/, vendor/ and the template beside
-// them), with line endings normalised to LF as the working tree has them (the G0 comparison is on LF-normalised bytes;
-// the R0 import commit still holds models.js with CRLF, which only changes the raw sha256 of meta.json's srcManifest).
+// The runtime as committed at a ref, in the layout the recorder reads (core/, vendor/ and the template beside them): the
+// template, then the files its script tags name, so that a ref that predates a script (the menus') is read without it.
+// Line endings are normalised to LF as the working tree has them (the G0 comparison is on LF-normalised bytes; the R0
+// import commit still holds models.js with CRLF, which only changes the raw sha256 of meta.json's srcManifest).
 export function extractBaseline(ref, dir) {
   fs.rmSync(dir, { recursive: true, force: true });
-  for (const f of [...RUNTIME_FILES, 'index.template.html']) {
-    fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true });
+  const put = (f) => {
     const r = spawnSync('git', ['show', `${ref}:src/${f}`], { cwd: ROOT, maxBuffer: 1 << 28 });
     if (r.status !== 0) throw Error(`git show ${ref}:src/${f} failed: ${String(r.stderr).trim()}`);
     const bytes = f.startsWith('vendor/')
       ? r.stdout
       : Buffer.from(r.stdout.toString('latin1').replace(/\r\n?/g, '\n'), 'latin1');
+    fs.mkdirSync(path.dirname(path.join(dir, f)), { recursive: true });
     fs.writeFileSync(path.join(dir, f), bytes);
-  }
+    return bytes;
+  };
+  const template = put('index.template.html');
+  for (const f of runtimeScripts(template.toString('utf8')).files) put(f);
   return { src: dir, template: path.join(dir, 'index.template.html') };
 }
 

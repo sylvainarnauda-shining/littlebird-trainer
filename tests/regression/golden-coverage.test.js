@@ -2,13 +2,14 @@
 // The goldens prove something only if their scripts exercise the game (no vacuous goldens): the static
 // exercise checks of the recorder's gate (tools/golden/gate.cjs step 4) on the installed fixtures, plus the integrity of
 // the fixture folders (every file listed with its sha256) and the provenance of the recorder.
-const { test } = require('node:test');
+const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { FIXTURES, GOLDEN, RECORDER, SRC, TEMPLATE } = require('../helpers/paths');
+const { MENUS_SCRIPTS: MENUS, scriptTag, templateScriptFiles, templateWithMenus } = require('../helpers/html');
 
 const J = (f) => JSON.parse(fs.readFileSync(path.join(GOLDEN, f), 'utf8'));
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
@@ -85,6 +86,85 @@ test('recorder: the template scripts are found as HTML finds them; a form the bu
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// The files the recorder reads are the ones the template names, in its order: a runtime without the menus' scripts (the
+// one the goldens name) and one with them are both read, so that adding them breaks no recording. These tests start from
+// the template without the menus' scripts, whichever of them the real one names by now. The folder holds the real
+// runtime files, plus a stub for each of the menus' scripts that only records that it ran.
+const BASE = templateWithMenus(fs.readFileSync(TEMPLATE, 'utf8'));
+const NAMED = templateScriptFiles(BASE);
+const withMenus = (files) => templateWithMenus(fs.readFileSync(TEMPLATE, 'utf8'), files);
+
+let runtimeDir;
+let templates = 0;
+before(() => {
+  runtimeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lb-runtime-'));
+  for (const f of NAMED) {
+    fs.mkdirSync(path.dirname(path.join(runtimeDir, f)), { recursive: true });
+    fs.copyFileSync(path.join(SRC, f), path.join(runtimeDir, f));
+  }
+  for (const f of MENUS)
+    fs.writeFileSync(path.join(runtimeDir, f), `(window.__ran = window.__ran || []).push('${f}');`);
+});
+after(() => fs.rmSync(runtimeDir, { recursive: true, force: true }));
+const templateFile = (html) => {
+  const file = path.join(runtimeDir, `template-${templates++}.html`);
+  fs.writeFileSync(file, html);
+  return file;
+};
+
+test("recorder: it reads the files the template names, the menus' scripts only when it names them", () => {
+  const { loadRuntime, makeModuleRealm } = require(path.join(RECORDER, 'harness.cjs'));
+  const modules = NAMED.slice(2, -1);
+  // The folder holds the menus' scripts and the template does not name them: they are not read.
+  const plain = loadRuntime({ src: runtimeDir, template: templateFile(BASE) });
+  assert.deepEqual(Object.keys(plain.manifest), [...NAMED, 'index.template.html']);
+  assert.deepEqual(Object.keys(plain.scripts.game), [...modules, 'app.js']);
+  assert.throws(() => makeModuleRealm(plain, { files: ['settings.js'] }), /does not load settings\.js/);
+  // Named, they are read, hashed with the others and kept in the template's order.
+  const menus = loadRuntime({ src: runtimeDir, template: templateFile(withMenus(MENUS)) });
+  assert.deepEqual(Object.keys(menus.manifest), [...NAMED.slice(0, -1), ...MENUS, 'app.js', 'index.template.html']);
+  assert.deepEqual(Object.keys(menus.scripts.game), [...modules, ...MENUS, 'app.js']);
+  assert.deepEqual(Array.from(makeModuleRealm(menus, { files: ['settings.js'] }).g.__ran), ['settings.js']);
+  // Each one is optional on its own.
+  const one = loadRuntime({ src: runtimeDir, template: templateFile(withMenus(['settings.js'])) });
+  assert.deepEqual(Object.keys(one.scripts.game), [...modules, 'settings.js', 'app.js']);
+});
+
+test('recorder: the template must hold three.js, the core scripts and the game scripts in order, nothing else', () => {
+  const { loadRuntime } = require(path.join(RECORDER, 'harness.cjs'));
+  const app = scriptTag('app.js');
+  const variants = {
+    "a menus' script before the one it follows": withMenus(['settings-data.js', 'menus.js', 'settings.js']),
+    "a menus' script after app.js": BASE.replace(app, app + scriptTag('menus.js')),
+    "a menus' script twice": withMenus([...MENUS, 'menus.js']),
+    'a script the recorder does not know': withMenus(['extra.js']),
+    'a game script missing': BASE.replace(scriptTag('bot.js'), ''),
+    'two scripts swapped': BASE.replace(
+      scriptTag('world.js') + scriptTag('physics.js'),
+      scriptTag('physics.js') + scriptTag('world.js'),
+    ),
+    'the core script after the modules': BASE.replace(scriptTag('core/pow.js'), '').replace(
+      scriptTag('world.js'),
+      scriptTag('world.js') + scriptTag('core/pow.js'),
+    ),
+    'app.js first': BASE.replace(app, '').replace(
+      scriptTag('vendor/three.min.js'),
+      app + scriptTag('vendor/three.min.js'),
+    ),
+  };
+  for (const [name, text] of Object.entries(variants)) {
+    assert.notEqual(text, BASE, name + ': the variant changes the template');
+    assert.throws(() => loadRuntime({ src: runtimeDir, template: templateFile(text) }), /script tags are not/, name);
+  }
+});
+
+test("recorder: a page boots with the menus' scripts, which run in the template's order", async () => {
+  const { loadRuntime, createPage } = require(path.join(RECORDER, 'harness.cjs'));
+  const rt = loadRuntime({ src: runtimeDir, template: templateFile(withMenus(MENUS)) });
+  const page = await createPage(rt, { audio: false });
+  assert.deepEqual(Array.from(page.window.__ran), MENUS);
 });
 
 test('sessions: every required coverage counter above zero and the exercise ratios met (G2b)', () => {

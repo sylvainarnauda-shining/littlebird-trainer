@@ -14,4 +14,16 @@ const styleBodies = (html) => [...html.matchAll(STYLE_BLOCK)].map((m) => m[1]);
 // build inlines (the template's one inline script, the error handler, has no file).
 const templateScriptFiles = (template) => [...template.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
 
-module.exports = { scriptBodies, styleBodies, templateScriptFiles };
+// The scripts of the menus, loaded between the game's modules and app.js (the menus 1.0 add them one phase after the
+// other). The recorder reads a template with or without each of them: its tests start from the runtime that predates
+// them, whichever of them the template names by now.
+const MENUS_SCRIPTS = ['settings-data.js', 'settings.js', 'menus.js'];
+const scriptTag = (file) => `<script src="${file}"></script>`;
+// The template with exactly the given scripts of the menus (none by default) named before app.js.
+const templateWithMenus = (template, files = []) =>
+  MENUS_SCRIPTS.reduce((text, f) => text.replace(scriptTag(f), ''), template).replace(
+    scriptTag('app.js'),
+    files.map(scriptTag).join('') + scriptTag('app.js'),
+  );
+
+module.exports = { scriptBodies, styleBodies, templateScriptFiles, MENUS_SCRIPTS, scriptTag, templateWithMenus };

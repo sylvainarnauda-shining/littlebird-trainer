@@ -7,26 +7,20 @@
 //   node scripts/ast-identity.mjs [--ref <git ref>] [--mask-strings] [--files a.js,b.js] [--json <file>]
 // Exit 0 when every file is identical (under the chosen mode), 1 otherwise.
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import * as acorn from 'acorn';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const RUNTIME = [
-  'core/pow.js',
-  'world.js',
-  'physics.js',
-  'forest.js',
-  'scenery.js',
-  'missiles.js',
-  'audio.js',
-  'models.js',
-  'ground.js',
-  'bot.js',
-  'app.js',
-];
 export const TEMPLATE = 'index.template.html';
+// The scripts compared by default: the ones the template names (three.js, vendored, apart). A script that the template
+// names and the ref lacks is reported as added.
+const { runtimeScripts } = createRequire(import.meta.url)('../tools/golden/template.cjs');
+export const RUNTIME = runtimeScripts(fs.readFileSync(path.join(ROOT, 'src', TEMPLATE), 'utf8')).files.filter(
+  (f) => !f.startsWith('vendor/'),
+);
 const WORDING_ATTRIBUTES = new Set(['aria-label', 'title', 'placeholder', 'alt']);
 const STRING = '\u0000string';
 const lf = (s) => s.replace(/\r\n?/g, '\n');

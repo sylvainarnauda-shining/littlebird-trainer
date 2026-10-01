@@ -14,8 +14,8 @@
 // and in the DOM, display names, labels, notices) may differ; everything else stays strict.
 // Private sidecars (never published): the calibration tools' controls and hook members. Written with --private-out,
 // compared with --private-check; without them they are dropped.
-// Runtime directory: core/pow.js, the ten runtime files and vendor/three.min.js (the repository's src/, or a baseline
-// copy).
+// Runtime directory: the files the page template names (vendor/three.min.js, core/pow.js and the game's scripts; see
+// template.cjs), in the repository's src/ or a baseline copy.
 process.env.TZ = 'UTC';
 // Guard: nothing may draw from the recorder's own Math.random (the game's streams live in their realms). A leak, such
 // as passing the host's Math.random into a module, would make recordings differ from run to run.
