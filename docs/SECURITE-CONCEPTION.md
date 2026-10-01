@@ -23,7 +23,7 @@ Pour signaler une faille : [`SECURITY.md`](../SECURITY.md).
   aussi : une page sous automatisation dont la vraie fonction rendrait une manette ne l'appelle jamais, et avec le HOTAS
   désactivé la page ne lit aucune manette, menu compris. L'auto-test de l'application Windows vérifie, avant de cliquer
   sur « Démarrer », que `getGamepads` est la simulation (sans l'appeler) et que la politique de la page refuse l'API
-  des manettes.
+  des manettes (`document.featurePolicy` doit répondre non ; s'il ne répond pas, l'auto-test s'arrête aussi).
 
 ## L'application Windows
 

@@ -315,8 +315,9 @@ function run(win, app, { args, session, policy }) {
       if (!env.webdriver || !env.emulated || !env.unlocked)
         return finish('the page does not emulate the pointer lock: Start was not clicked');
       // Joysticks, before anything is clicked too: getGamepads is the page's own emulation (non-writable, with no pad
-      // in it), and the page policy does not allow the Gamepad API (gamepad=(), document.featurePolicy where Chromium
-      // has it). Checked without calling getGamepads: the machine's joysticks are never read.
+      // in it), and the page policy refuses the Gamepad API (gamepad=(): document.featurePolicy, which the pinned
+      // Electron's Chromium has, answers false; no answer stops the self-test too, so the check never passes
+      // vacuously). Checked without calling getGamepads: the machine's joysticks are never read.
       report.steps.gamepads = await js(
         "(() => { const d = Object.getOwnPropertyDescriptor(navigator, 'getGamepads'), list = window.__LB_EMULATED_GAMEPADS__," +
           ' fp = document.featurePolicy;' +
@@ -325,8 +326,10 @@ function run(win, app, { args, session, policy }) {
           " policyAllows: fp && typeof fp.allowsFeature === 'function' ? fp.allowsFeature('gamepad') : null}; })()",
       );
       const pads = report.steps.gamepads;
-      if (!pads.emulated || pads.pads !== 0 || pads.policyAllows === true)
-        return finish('the page could read the joysticks (no emulation, or gamepad allowed): Start was not clicked');
+      if (!pads.emulated || pads.pads !== 0 || pads.policyAllows !== false)
+        return finish(
+          'the page could read the joysticks (no emulation, or gamepad not refused by the page policy): Start was not clicked',
+        );
       // 2. The menu renders WebGL frames.
       await poll('trainerDiagnostics().webgl.calls > 0', 60000, 'WebGL frames in the menu');
       report.steps.menu = await js('({calls: trainerDiagnostics().webgl.calls, map: trainerDiagnostics().map.id})');

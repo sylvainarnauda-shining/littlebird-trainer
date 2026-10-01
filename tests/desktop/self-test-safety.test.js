@@ -50,9 +50,11 @@ test('self-test.cjs: the joystick read is checked emulated and refused by the pa
   assert.match(src, /fp\.allowsFeature\('gamepad'\)/);
   assert.match(
     src,
-    /if \(!pads\.emulated \|\| pads\.pads !== 0 \|\| pads\.policyAllows === true\)\s*return finish\(/,
+    /if \(!pads\.emulated \|\| pads\.pads !== 0 \|\| pads\.policyAllows !== false\)\s*return finish\(/,
     'a page that could read the joysticks stops the self-test before Start',
   );
+  // The policy must answer "refused": a missing document.featurePolicy (null) stops the self-test too.
+  assert.ok(!/policyAllows === true/.test(src), 'no check that passes when the policy gives no answer');
   assert.ok(!/getGamepads\s*\(/.test(src), 'the self-test never calls getGamepads');
   // The self-test's headers refuse the Gamepad API (a normal run allows it for the page only), and no permission of the
   // shell stands for it.
