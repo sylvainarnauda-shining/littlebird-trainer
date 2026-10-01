@@ -40,7 +40,7 @@ sont pas signés : Windows affiche d'abord un avertissement SmartScreen (**Infor
 quand même**). Chaque fichier a son empreinte SHA-256 et une attestation de provenance
 ([`docs/VERIFIER-UN-TELECHARGEMENT.md`](docs/VERIFIER-UN-TELECHARGEMENT.md)).
 
-**Quelle version avez-vous ?** Le numéro complet (par exemple `v0.9.0`) est affiché en haut à droite du menu du jeu,
+**Quelle version avez-vous ?** Le numéro complet (par exemple `v0.10.0`) est affiché en haut à droite du menu du jeu,
 et dans son onglet **À propos**, avec l'adresse de la page **Releases**. Le jeu ne vérifie pas lui-même s'il en existe
 une plus récente (il n'a aucun code réseau et n'envoie rien) : comparez ce numéro avec la dernière version de la page
 **Releases**, ou suivez le dépôt sur GitHub (**Watch › Custom › Releases**) pour être prévenu de chaque nouvelle
@@ -137,7 +137,7 @@ recordings of WARDOGS matches, so that players can train the game's feel without
   single-page `index.html` for Chrome or Edge; every file has a SHA-256 sum and a build-provenance attestation. From
   source: Node.js 24, `npm ci`, `npm run build` (page) or `npm run dist` (Windows app); the tests need the exact
   version in `.nvmrc` (24.19.0), which the bit-exact goldens were recorded with.
-- **Which version**: the full version number (e.g. `v0.9.0`) shows in the top right of the game's menu and in its
+- **Which version**: the full version number (e.g. `v0.10.0`) shows in the top right of the game's menu and in its
   **À propos** (About) tab, with the address of the releases page to compare against; the game checks nothing by
   itself (no network code). Watch the repository's releases to hear of new ones.
 - **Default keys**: the game's helicopter defaults (collective Left Shift / Left Ctrl, cyclic W/S and A/D, yaw Q/E,

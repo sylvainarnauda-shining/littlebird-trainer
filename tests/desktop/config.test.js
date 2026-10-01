@@ -96,8 +96,8 @@ test('fuses: flipped by build/after-pack.cjs from build/fuses.cjs, every fuse of
   assert.match(read('build/after-pack.cjs'), /strictlyRequireAllFuses: true/);
 });
 
-test('exact pins of the desktop toolchain, no runtime dependency, version 0.9.0 in the changelog', () => {
-  assert.equal(pkg.version, '0.9.0');
+test('exact pins of the desktop toolchain, no runtime dependency, the version has its section in the changelog', () => {
+  assert.match(pkg.version, /^\d+\.\d+\.\d+$/);
   assert.equal(pkg.dependencies, undefined, 'the app has no npm runtime dependency');
   for (const [name, v] of Object.entries({
     electron: '44.5.1',
@@ -109,7 +109,12 @@ test('exact pins of the desktop toolchain, no runtime dependency, version 0.9.0 
   for (const v of Object.values(pkg.devDependencies)) assert.match(v, /^\d+\.\d+\.\d+$/, 'exact pin');
   const lock = JSON.parse(read('package-lock.json'));
   assert.equal(lock.packages['node_modules/electron'].version, '44.5.1');
-  assert.match(read('CHANGELOG.md'), /^## \[0\.9\.0\]/m);
+  assert.ok(
+    read('CHANGELOG.md')
+      .split('\n')
+      .some((line) => line.startsWith('## [' + pkg.version + ']')),
+    'the changelog has a section for the package version',
+  );
 });
 
 test('the shell loads only Electron, Node built-ins and its own files', () => {
