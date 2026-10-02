@@ -25,6 +25,17 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   compris (les deux chemins enregistrent la même chose), et `meta.json` ne change que par les empreintes de
   l'enregistreur et d'`app.js`. Le changement de l'enregistreur est prouvé neutre (`golden.mjs prove` sur le runtime
   d'avant les crochets, puis `--adopt`).
+- **Cœur des réglages : `src/settings-data.js` et `src/settings.js` (menus 1.0, phase M1).** Les actions et leurs touches
+  par défaut, les noms des touches et les bornes des réglages numériques (`settings-data.js`, des données seules), les
+  valeurs par défaut, la migration d'un profil enregistré (révisions 2 à 16), la validation des réglages et des touches et
+  la lecture du fichier de réglages du jeu (`settings.js`, sans DOM ni horloge) quittent `app.js`, qui les prend de ces
+  deux scripts, chargés entre `bot.js` et `app.js` (gabarit de la page, `SCRIPTS` de la construction). Rien ne change pour
+  le joueur. `sanitize` ne lit plus les attributs `min`, `max` et `step` des curseurs de la page mais la table `BOUNDS`
+  (71 réglages), qu'un test garde égale à ces attributs tant que le gabarit les porte ; cinq recadrages qui répétaient
+  des bornes de cette table (cibles, lanceurs, robots de duel, canons, ajustement fin de la souris) disparaissent, sans
+  effet par construction. Les goldens sont tous identiques octet pour octet : l'oracle `settings` rejoue ses 10 000
+  profils sans DOM ; `meta.json` n'est pas réenregistré, il nommera les nouveaux fichiers à la première mise à jour des
+  goldens.
 
 ## [0.10.0] — 2026-10-02
 

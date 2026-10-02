@@ -10,6 +10,8 @@ const pageGlobals = {
   __app: 'writable',
   HeliPhysics: 'readonly',
   HeliWorld: 'readonly',
+  HeliSettingsData: 'readonly',
+  HeliSettings: 'readonly',
   THREE: 'readonly',
 };
 

@@ -21,29 +21,16 @@
     const pads=[];emulatedGamepads=()=>pads.slice(0,8);
     try{Object.defineProperty(navigator,'getGamepads',{configurable:true,writable:false,value:emulatedGamepads});Object.defineProperty(window,'__LB_EMULATED_GAMEPADS__',{value:pads});}catch(e){}
   }
-  const $=id=>document.getElementById(id), T=window.THREE, P=window.HeliPhysics, M=window.HeliMissiles, W=window.HeliWorld, A=window.HeliAudio, G=window.HeliGround, H=window.HeliBot;
-  if(!T||!P||!M||!W||!A||!G||!H||!window.HeliModels||!window.HeliForest||!window.buildScenery) { $('saveState').textContent='Fichiers manquants : conserve le dossier complet.'; $('start').disabled=true; return; }
+  const $=id=>document.getElementById(id), T=window.THREE, P=window.HeliPhysics, M=window.HeliMissiles, W=window.HeliWorld, A=window.HeliAudio, G=window.HeliGround, H=window.HeliBot, SET=window.HeliSettings;
+  if(!T||!P||!M||!W||!A||!G||!H||!SET||!window.HeliModels||!window.HeliForest||!window.buildScenery) { $('saveState').textContent='Fichiers manquants : conserve le dossier complet.'; $('start').disabled=true; return; }
   // The map is chosen before the scene is built (world.js): its name on the loading screen.
   try{const t=document.querySelector('#loading .loading-title');if(t)t.textContent='CHARGEMENT · '+String(W.name||'').toUpperCase();}catch(e){}
   function boot(){
     const STORE='littlebird-range-v1';
-    const DEFAULTS={...P.defaults,...M.defaults,...G.defaults,graphics:'high',difficulty:'normal',rangeType:'air',unlimitedAmmo:true,volEngine:1,volWeapons:1,volAlerts:1,showTelemetry:true,showMinimap:true,showKeyHints:true,
-      duelBots:1,duelStart:'front',duelRespawn:true,duelHealth:40,duelEnemy:'ah6m',ciwsCount:1,lighting:'random',mapRandomEach:false};
-    // Retired options (no control any more, always their default): camera vibration and speed widening (effects the
-    // game does not have), the v3 flight aids (auto-level, anti-drift, linear drag) and the mouse DPI note. Stored
-    // profiles may still hold them; the flight model keeps its general form (the fidelity checks compare the v3 drag).
-    const RETIRED=['cameraMotion','speedFov','stability','hoverAssist','drag','dpi'];
-    // Default keys (physical positions): the game's helicopter defaults as the guides give them (read: collective
-    // Left Shift / Left Ctrl, cyclic W / S and A / D, yaw Q / E, fire on the left mouse button, flares V, camera C,
-    // free look Left Alt); the trainer's own actions on B (resupply), R (restart) and X (re-centre the mouse).
-    // docs/REGLAGES.md.
-    const baseBindings={collectiveUp:'ShiftLeft',collectiveDown:'ControlLeft',pitchUp:'KeyS',pitchDown:'KeyW',yawLeft:'KeyQ',yawRight:'KeyE',rollLeft:'KeyA',rollRight:'KeyD',fire:'Mouse0',flares:'KeyV',freeLook:'AltLeft',shop:'KeyB',view:'KeyC',reset:'KeyR',neutral:'KeyX'};
-    const labels={collectiveUp:'Augmenter le collectif',collectiveDown:'Réduire le collectif',pitchUp:'Cabrer',pitchDown:'Piquer (complément)',yawLeft:'Lacet gauche',yawRight:'Lacet droit',rollLeft:'Roulis gauche',rollRight:'Roulis droit',fire:'Tirer aux miniguns',flares:'Leurres (flares)',freeLook:'Regard libre (maintenir)',shop:'Munitions / fournitures (hélipad)',view:'Changer de vue',reset:'Recommencer',neutral:'Recentrer la souris'};
-    const names={KeyW:'Z',KeyA:'Q',KeyQ:'A',KeyZ:'W',KeyS:'S',KeyD:'D',KeyE:'E',KeyR:'R',KeyX:'X',KeyV:'V',KeyB:'B',ShiftLeft:'Maj gauche',ShiftRight:'Maj droite',ControlLeft:'Ctrl gauche',ControlRight:'Ctrl droit',AltLeft:'Alt gauche',AltRight:'Alt droite',Space:'Espace',Mouse0:'Clic gauche',Mouse1:'Clic molette',Mouse2:'Clic droit',ArrowUp:'Flèche haut',ArrowDown:'Flèche bas',ArrowLeft:'Flèche gauche',ArrowRight:'Flèche droite'};
-    const KEY_PATTERN=/^(Key[A-Z]|Digit[0-9]|Space|ShiftLeft|ShiftRight|ControlLeft|ControlRight|AltLeft|AltRight|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Mouse[012])$/;
-    const SCENARIOS=['air','ground','mixed','free','towers','missiles','assault','match','duel'],MODE_OF=s=>['air','ground','mixed'].includes(s)?'range':s;
+    const {defaults:DEFAULTS,baseBindings,labels,KEY_NAMES,KEY_PATTERN,REVISION,FLIGHT_KEYS,V13_KEYS,sanitize,validBindings}=SET;
+    const MODE_OF=s=>['air','ground','mixed'].includes(s)?'range':s;
     let cfg={...DEFAULTS},bindings={...baseBindings},storageOK=true;
-    const REVISION=16,notices=[];
+    const notices=[];
     // Joysticks (J1): the profile block profile.joystick (physics.js joystick: schema 1, validation, defaults), kept
     // apart from cfg and bindings and stored only when it differs from the defaults, and the reading state. Nothing reads
     // the joysticks until a session flies with the HOTAS on or the joystick panel is asked to read (joyWanted).
@@ -53,106 +40,7 @@
     const joy={roles:J.createRoles(),fresh:J.createFreshness(),state:J.createJoyState(),pads:[],res:{main:[],left:[],right:[]},live:new Set(),frame:null,rolesInfo:null,
       active:false,reading:false,error:'',present:new Set(),unconfirmed:false,learn:null,learnBase:new Map(),stickLook:false,tick:0,prompted:'',rows:new Map(),ready:false};
     function joyLoad(block,into){const codes=[],p=J.validateProfile(block,codes);for(const c of new Set(codes))into.push(JOY_NOTICES[c]);return p;}
-    // Flight-model values of the v6 model identified on the videos. Earlier
-    // revisions used another model: their values have no equivalent here.
-    const FLIGHT_KEYS=['pitchRate','rollRate','yawRate','cyclicResponse','response','mouseYawBoost','mousePitchBoost','stability','altitudeHold','collectiveUpRate','collectiveDownRate','holdGain','holdDamping','collectiveAccel','collectiveDownAccel','verticalDamping','drag','quadraticDrag','bodyFlowDrag','lateralDrag','weathervane','hoverAssist'];
-    // v13 values measured on the recordings (physics.js comments, docs/analyse/souris.md).
-    const V13_KEYS=['mouseLaw','mouseRateScale','mouseYawScale','mouseLag','mouseFine','mouseClamp','cyclicYaw','responseYaw','leverHover'];
-    function upgradedSettings(saved){
-      const data={...saved.settings},revision=saved.tuningRevision||0;
-      if(revision<2){
-        if(data.fov===80)data.fov=58;
-        if(data.trajectory==='cross')data.trajectory=DEFAULTS.trajectory;
-      }
-      if(revision<3&&data.rpm===6000)data.rpm=DEFAULTS.rpm;
-      if(revision<7){
-        // Keys, mouse sensitivities, exercise and weapon choices are kept.
-        for(const key of FLIGHT_KEYS)delete data[key];
-        for(const key of ['collectiveSpring','aeroCoupling','maxLift','liftResponse','collectiveRate'])delete data[key];
-        // 36.02 was only the previous default: the observed distribution replaces it.
-        if(data.impactDamage===36.02)data.impactDamage=0;
-      }
-      // Revisions 8 and 9 only add settings: their defaults apply.
-      // Revision 10 (v9): Verba lock range after the guides (about 1 000 m); 1 500 was only the old default.
-      if(revision<10&&data.aaLockRange===1500)delete data.aaLockRange;
-      // Revision 11 (v10) only adds the duel settings: their defaults apply.
-      // Revision 12 (v11): horizontal fields of view as the game gives them, no camera vibration
-      // and no widening with speed (neither is in the game), and the default sensitivities when
-      // the profile still had the earlier defaults (16 / 8). A custom vertical FOV becomes its
-      // 16:9 equivalent.
-      if(revision<12){
-        if(typeof data.fov==='number'&&data.fov!==58){const h=Math.round(2*Math.atan(Math.tan(data.fov*Math.PI/360)*16/9)*180/Math.PI);data.fovCockpit=h;data.fovChase=h;}
-        delete data.fov;if(data.cameraMotion===.35)delete data.cameraMotion;if(data.speedFov===5)delete data.speedFov;
-        if(data.pitchSens===16&&data.yawSens===8){delete data.pitchSens;delete data.yawSens;notices.push('Sensibilités de la souris remises aux valeurs par défaut.');}
-      }
-      // Revision 13 (v12): missiles of the community databases (450 m/s, 200 of the 400 hull points
-      // on a direct hit) replace the earlier defaults (300 m/s, one hit brings the helicopter down).
-      if(revision<13){if(data.aaHitsToKill===1)delete data.aaHitsToKill;if(data.aaMissileSpeed===300)delete data.aaMissileSpeed;}
-      // Revision 14 (v13): the mouse law measured on the recordings (pointer speed -> rotation rate) replaces
-      // the v12 virtual stick; single 0.40 s yaw lag, hover lever -0.14 and the chase view widening with speed
-      // take their measured defaults. Earlier profiles have none of these keys; sensitivities, fields of view,
-      // keys, the v12 stick's own settings and every other personal value are kept.
-      if(revision<14){for(const key of [...V13_KEYS,'chaseSpeedView'])delete data[key];
-        notices.push('v13 : la souris suit la loi mesurée sur les enregistrements de référence (vitesse du geste → vitesse de rotation). L’ancien manche virtuel reste dans Commandes › Souris.');}
-      // Revision 15 (v13 fix): yaw inertia 0.35 s (chosen inside the measured CI90 so that the chase heading after D meets
-      // M6) replaces the 0.40 default of revision 14; a value set by the player is kept.
-      if(revision===14&&data.responseYaw===.4){delete data.responseYaw;notices.push('Inertie du lacet : 0,35 s au lieu de 0,40 (cap en vue poursuite après un lacet plus proche des enregistrements).');}
-      // Revision 16: corrected reading of the reference recordings' sensitivity product (0.08, not 0.1). Measured K 0.0271
-      // deg/px -> mouseRateScale 0.339 (0.271 was K / 0.1); mouseYawScale assumed equal. Only the old default 0.271 moves
-      // (revisions 14 and 15 saved it; earlier profiles have no such key); a value set by the player is kept, and so is the
-      // fine factor, named in the notice since it multiplies the new gain. A profile flown with the v12 stick law (mouseLaw
-      // 'stick') ignores these gains: the value still moves (it applies after a switch to the measured law), but the notice
-      // says the stick does not change.
-      if(revision<16){const moved=['mouseRateScale','mouseYawScale'].filter(k=>data[k]===.271);moved.forEach(k=>delete data[k]);
-        if(moved.length){const axis=moved.length===2?'':moved[0]==='mouseRateScale'?' en tangage':' en lacet',f=typeof data.mouseFine==='number'&&Number.isFinite(data.mouseFine)&&data.mouseFine!==1?P.clamp(data.mouseFine,.7,1.4):null;
-          notices.push(data.mouseLaw==='stick'?`Souris, loi mesurée : gain${axis} 0,339 au lieu de 0,271 (mesure corrigée). Le manche virtuel v12 que tu utilises ne change pas.`
-            :`Souris : gain${axis} 0,339 au lieu de 0,271 (mesure corrigée) : à réglages égaux, un même geste tourne 25 % de plus.${f?` L’ajustement fin ×${String(f).replace('.',',')} reste appliqué en plus.`:''}`);}}
-      return data;
-    }
-    try { const saved=JSON.parse(localStorage.getItem(STORE)); if(saved){cfg=sanitize(upgradedSettings(saved));bindings=validBindings(saved.bindings);joyProfile=joyLoad(saved.joystick,notices);} }catch(e){storageOK=false;}
-    function sanitize(data){
-      const out={...DEFAULTS}; if(!data||typeof data!=='object')return out;
-      for(const k of Object.keys(out)) {
-        const el=$(k), val=data[k];
-        if(typeof out[k]==='number' && typeof val==='number' && Number.isFinite(val)) {
-          out[k]=el?.tagName==='INPUT'&&el.min!==''?P.clamp(val,Number(el.min),Number(el.max)):val;
-          if(el?.type==='range'&&Number(el.step)>=1)out[k]=Math.round(out[k]);
-        }else if(typeof out[k]==='boolean'&&typeof val==='boolean')out[k]=val;
-        else if(typeof out[k]==='string'&&typeof val==='string') {
-          if(k==='scenario'&&SCENARIOS.includes(val))out[k]=val;
-          if(k==='rangeType'&&['air','ground','mixed'].includes(val))out[k]=val;
-          if(k==='trajectory'&&['cross','circle','zigzag','static','evasive'].includes(val))out[k]=val;
-          if(k==='aaObjective'&&['survive','destroy'].includes(val))out[k]=val;
-          if(k==='graphics'&&['high','medium','low'].includes(val))out[k]=val;
-          if(k==='difficulty'&&['easy','normal','real'].includes(val))out[k]=val;
-          if(k==='duelStart'&&['front','behind','random'].includes(val))out[k]=val;
-          // Own keys only: an imported "constructor" or "__proto__" is not a light preset.
-          if(k==='lighting'&&(val==='random'||W.LIGHTS&&Object.hasOwn(W.LIGHTS,val)))out[k]=val;
-          if(k==='duelEnemy'&&['ah6m','ah6r','mix'].includes(val))out[k]=val;
-          if(k==='mouseLaw'&&['rate','stick'].includes(val))out[k]=val;
-        }
-      }
-      out.duelBots=P.clamp(Math.round(out.duelBots),1,3);out.ciwsCount=P.clamp(Math.round(out.ciwsCount),0,3);out.mouseFine=P.clamp(out.mouseFine,.7,1.4);
-      // Numbers without a control of their own (chosen bounds): missile fuse radius 1-20 m, launcher minimum range 0-1000 m.
-      out.aaFuse=P.clamp(out.aaFuse,1,20);out.aaMinRange=P.clamp(out.aaMinRange,0,1000);
-      for(const k of RETIRED)out[k]=DEFAULTS[k];
-      if(![0,60,120,300,600,900].includes(out.duration))out.duration=120;
-      if(![0,18.01,30.01,36.01,54.02,74.12,78.01,85.81,150.02].includes(out.impactDamage)){
-        // Values offered by earlier versions map to the nearest observed value.
-        const legacy={30.02:30.01,36.02:36.01};out.impactDamage=legacy[out.impactDamage]??DEFAULTS.impactDamage;
-      }
-      out.targetCount=P.clamp(Math.round(out.targetCount),1,8);out.aaLaunchers=P.clamp(Math.round(out.aaLaunchers),1,8);
-      if(![0,1,2,3].includes(out.aaHitsToKill))out.aaHitsToKill=0;
-      return out;
-    }
-    function validBindings(data){
-      const out={...baseBindings}; if(!data||typeof data!=='object')return out;
-      const used=new Set(),saved=k=>typeof data[k]==='string'&&(KEY_PATTERN.test(data[k])||data[k]==='Unbound');
-      for(const k of Object.keys(out))if(saved(k)){out[k]=data[k];if(out[k]==='Unbound')continue;if(used.has(out[k]))throw Error('Deux actions utilisent la même touche.');used.add(out[k]);}
-      // Actions added by a newer version take their default key only if it is free.
-      for(const k of Object.keys(out))if(!saved(k)){if(used.has(out[k]))out[k]='Unbound';else used.add(out[k]);}
-      return out;
-    }
+    try { const saved=JSON.parse(localStorage.getItem(STORE)); if(saved){const up=SET.upgrade(saved);notices.push(...up.notices);cfg=sanitize(up.doc.settings);bindings=validBindings(saved.bindings);joyProfile=joyLoad(saved.joystick,notices);} }catch(e){storageOK=false;}
     // The stored and exported profile: the joystick block only when it differs from the defaults (same bytes otherwise).
     function profileDoc(head){const doc={...head,tuningRevision:REVISION,settings:cfg,bindings};if(!J.isDefaultProfile(joyProfile))doc.joystick=joyProfile;return doc;}
     function save(){try{localStorage.setItem(STORE,JSON.stringify(profileDoc({version:1})));$('saveState').textContent='Profil sauvegardé sur ce navigateur';}catch(e){$('saveState').textContent='Sauvegarde indisponible — exporte le profil';}}
@@ -1362,7 +1250,7 @@
       const hd=Math.floor(H+1e-6)%360;ctx.fillText(`${String(hd).padStart(3,'0')} ${CARDINALS[Math.round(H/45)%8]}`,cx,ty0);
       ctx.restore();
     }
-    const keyName=a=>bindings[a]==='Unbound'?'—':(names[bindings[a]]||bindings[a].replace('Key','')).replace(' gauche','').replace('Maj','⇧');
+    const keyName=a=>bindings[a]==='Unbound'?'—':(KEY_NAMES[bindings[a]]||bindings[a].replace('Key','')).replace(' gauche','').replace('Maj','⇧');
     // Weapon widgets placed as in the game (bottom right): flares "V / 002", ammunition "FMJ 300".
     function drawWeapons(w,h){
       const k=h/1080,x=w-325*k,y=h-145*k,key=keyName('flares');
@@ -1631,7 +1519,7 @@
     }
     function selectTab(tab){menuTab=tab;document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.id===tab));$('pageTitle').textContent={modes:'MODES DE JEU',controls:'COMMANDES',settings:'RÉGLAGES',about:'À PROPOS'}[tab];renderBindings();if(tab!=='controls')joyStop();}
     function renderBindings(){
-      $('bindings').replaceChildren();for(const [action,label] of Object.entries(labels)){const div=document.createElement('div');div.className='binding';const span=document.createElement('span');span.textContent=label;const button=document.createElement('button');button.textContent=names[bindings[action]]||bindings[action].replace('Key','').replace('Unbound','Non assigné');button.onclick=()=>{capturing=action;renderBindings();toast('Appuie sur une touche ou un bouton de souris. Échap annule.');};if(capturing===action){button.textContent='En attente…';button.classList.add('listening');}div.append(span,button);$('bindings').append(div);}
+      $('bindings').replaceChildren();for(const [action,label] of Object.entries(labels)){const div=document.createElement('div');div.className='binding';const span=document.createElement('span');span.textContent=label;const button=document.createElement('button');button.textContent=KEY_NAMES[bindings[action]]||bindings[action].replace('Key','').replace('Unbound','Non assigné');button.onclick=()=>{capturing=action;renderBindings();toast('Appuie sur une touche ou un bouton de souris. Échap annule.');};if(capturing===action){button.textContent='En attente…';button.classList.add('listening');}div.append(span,button);$('bindings').append(div);}
     }
     function capture(code){
       if(!capturing)return false;
@@ -1664,26 +1552,16 @@
     $('pauseResume').onclick=resume;$('pauseRestart').onclick=start;$('pauseModes').onclick=()=>openMenu('modes');$('pauseSettings').onclick=()=>openMenu('settings');
     $('defaults').onclick=()=>{cfg={...DEFAULTS};bindings={...baseBindings};joyProfile=J.defaultProfile();joy.roles=J.createRoles();flight.cfg=cfg;markExerciseDirty();syncUI();save();toast('Réglages initiaux restaurés.');};
     $('demanding').onclick=()=>{for(const key of [...FLIGHT_KEYS,...V13_KEYS,'spinUp','cameraMotion','speedFov','chaseSpeedView'])cfg[key]=DEFAULTS[key];flight.cfg=cfg;P.resetInput(mouse);syncUI();save();toast('Modèle de vol mesuré rétabli (v6 + v13 : loi et gain de la souris (0,339), lacet, collectif en stationnaire, vue poursuite). Touches, sensibilités, champs de vision, cibles et dégâts conservés.');};
-    // Wardogs settings file (%LOCALAPPDATA%\Wardogs\Saved\Config\WindowsClient\GameUserSettings.ini):
-    // helicopter mouse settings and vehicle fields of view, read locally, nothing is written back. Only the lines of the
-    // [/Script/WDGame.WDUserSettings] section are read (another section could hold a key of the same name).
-    function importGameSettings(text){
-      const lines=String(text).replace(/^﻿/,'').split(/\r?\n/),head=lines.findIndex(l=>/^\[\/Script\/WDGame\.WDUserSettings\]\s*$/.test(l));
-      const body=head<0?[]:lines.slice(head+1),end=body.findIndex(l=>/^\[/.test(l)),section=(end<0?body:body.slice(0,end)).join('\n');
-      const get=k=>{const m=new RegExp('^'+k+'=(.*)$','m').exec(section);return m?m[1].trim():null;},num=k=>{const v=parseFloat(get(k));return Number.isFinite(v)?v:null;};
-      const found=[],set=(key,val,label)=>{if(val===null)return;cfg[key]=val;found.push(label);};
-      const pitch=num('RotaryMousePitchSensitivity'),yaw=num('RotaryMouseYawSensitivity'),mult=num('AirVehicleSensitivityMultiplier'),inv=get('bInvertYAxisHelicopters'),iso=num('RotaryMouseAxisIsolation'),f1=num('FirstPersonVehicleFieldOfView'),f3=num('ThirdPersonVehicleFieldOfView');
-      set('pitchSens',pitch,`tangage ${pitch} %`);set('yawSens',yaw,`lacet ${yaw} %`);set('vehicleMultiplier',mult,`multiplicateur ×${mult}`);
-      set('invertY',inv===null?null:inv==='True',`axe ${inv==='True'?'inversé':'normal'}`);set('isolation',iso,`isolation ${iso}`);set('fovCockpit',f1,`champ pilote ${f1}°`);set('fovChase',f3,`champ poursuite ${f3}°`);
-      const x=get('RotaryMouseXFunction'),y=get('RotaryMouseYFunction');
-      return {found,warn:x&&x!=='Yaw'||y&&y!=='Pitch'?` Attention : dans le jeu, souris X = ${x} et Y = ${y} ; l'entraîneur fait lacet et tangage.`:''};
-    }
+    // Wardogs settings file (%LOCALAPPDATA%\Wardogs\Saved\Config\WindowsClient\GameUserSettings.ini): helicopter mouse settings and
+    // vehicle fields of view, read locally (HeliSettings.parseGameIni), nothing is written back. Only the lines of the
+    // user-settings section are read (another section could hold a key of the same name).
+    const GAME_SECTION='/Script/WDGame.WDUserSettings';
     $('importGame').onchange=async e=>{const file=e.target.files[0];if(!file)return;
-      try{if(file.size>400000)throw Error('fichier trop volumineux');const r=importGameSettings(await file.text());if(!r.found.length)throw Error('aucun réglage d’hélicoptère trouvé');
-        cfg=sanitize(cfg);flight.cfg=cfg;syncUI();save();toast(`Réglages du jeu importés : ${r.found.join(', ')}.${r.warn}`);}
+      try{if(file.size>400000)throw Error('fichier trop volumineux');const r=SET.parseGameIni(await file.text(),GAME_SECTION);if(!r.found.length)throw Error('aucun réglage d’hélicoptère trouvé');
+        Object.assign(cfg,r.settings);cfg=sanitize(cfg);flight.cfg=cfg;syncUI();save();toast(`Réglages du jeu importés : ${r.found.join(', ')}.${r.warn}`);}
       catch(err){toast('Import refusé : '+err.message);}e.target.value='';};
     $('export').onclick=()=>{const blob=new Blob([JSON.stringify(profileDoc({format:'littlebird-trainer-profile',version:1}),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='little-bird-profil.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-    $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>100000)throw Error('Fichier trop volumineux');const parsed=JSON.parse(await file.text());if(parsed.version!==1||!parsed.settings||!parsed.bindings)throw Error('Format non reconnu');const next=sanitize(upgradedSettings(parsed)),nextBindings=validBindings(parsed.bindings),nextJoy=joyLoad(parsed.joystick,notices);cfg=next;bindings=nextBindings;joyProfile=nextJoy;joy.roles=J.createRoles();flight.cfg=cfg;markExerciseDirty();syncUI();save();toast('Profil importé.'+(notices.length?' '+notices.splice(0).join(' '):''));}catch(err){toast('Import refusé : '+err.message);}e.target.value='';};
+    $('import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>100000)throw Error('Fichier trop volumineux');const parsed=JSON.parse(await file.text());if(parsed.version!==1||!parsed.settings||!parsed.bindings)throw Error('Format non reconnu');const up=SET.upgrade(parsed);notices.push(...up.notices);const next=sanitize(up.doc.settings),nextBindings=validBindings(parsed.bindings),nextJoy=joyLoad(parsed.joystick,notices);cfg=next;bindings=nextBindings;joyProfile=nextJoy;joy.roles=J.createRoles();flight.cfg=cfg;markExerciseDirty();syncUI();save();toast('Profil importé.'+(notices.length?' '+notices.splice(0).join(' '):''));}catch(err){toast('Import refusé : '+err.message);}e.target.value='';};
     // ---- Joysticks (J1). One read per rendered frame, only while a session flies with the HOTAS on or while the panel
     // reads after a click on « Lire les manettes » (stopped when the tab, the window or the page is left, and at the start
     // of a session). physics.js (joystick) gives the roles, the freshness, the devices and the frame's commands; here: the
