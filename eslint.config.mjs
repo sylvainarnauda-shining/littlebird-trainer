@@ -12,6 +12,7 @@ const pageGlobals = {
   HeliWorld: 'readonly',
   HeliSettingsData: 'readonly',
   HeliSettings: 'readonly',
+  HeliMenus: 'readonly',
   THREE: 'readonly',
 };
 

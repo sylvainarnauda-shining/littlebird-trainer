@@ -36,6 +36,18 @@ déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne cha
   effet par construction. Les goldens sont tous identiques octet pour octet : l'oracle `settings` rejoue ses 10 000
   profils sans DOM ; `meta.json` n'est pas réenregistré, il nommera les nouveaux fichiers à la première mise à jour des
   goldens.
+- **Module des menus : `src/menus.js` (menus 1.0, phase M2).** Le choix du mode (`selectMode` et la table des sept modes,
+  `MODES`, jusque-là `MODE_INFO`) et les gestionnaires que les contrôles de la page ont en commun (un réglage qui change,
+  une carte de mode, un bouton du type de stand de tir) quittent `app.js` pour `HeliMenus`, le troisième script des menus,
+  chargé entre `settings.js` et `app.js` (gabarit de la page, `SCRIPTS` de la construction). `app.js` le crée avec
+  `HeliMenus.create` en lui donnant les réglages en cours et ce que la session fait pour les menus (marquer l'exercice
+  modifié, rafraîchir l'interface, sauvegarder, remettre la souris à zéro) ; il garde les écrans, la session et la colle.
+  L'ordre des gestionnaires est celui d'avant : celui d'un réglage s'exécute avant celui de l'ambiance lumineuse, qui lit
+  le réglage qu'il vient d'enregistrer. Rien ne change pour le joueur ; un état que personne ne lisait (`selectedMode`)
+  disparaît. Les goldens sont tous identiques octet pour octet, `ui` et `hookapi` compris ; `meta.json` n'est pas
+  réenregistré. Tests : le contrat du DOM de l'enregistreur pour les trois scripts des menus (`menus-contract`), et la page
+  de l'enregistreur (`tests/helpers/page.js`) pour essayer les gestionnaires dans leur ordre réel (`app-menus-modes`, dont
+  l'ordre des deux gestionnaires de l'ambiance lumineuse).
 
 ## [0.10.0] — 2026-10-02
 

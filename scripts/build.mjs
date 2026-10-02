@@ -46,6 +46,7 @@ export const SCRIPTS = [
   'bot.js',
   'settings-data.js',
   'settings.js',
+  'menus.js',
   'app.js',
 ];
 export const SHIM_MARKERS = [

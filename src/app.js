@@ -21,13 +21,14 @@
     const pads=[];emulatedGamepads=()=>pads.slice(0,8);
     try{Object.defineProperty(navigator,'getGamepads',{configurable:true,writable:false,value:emulatedGamepads});Object.defineProperty(window,'__LB_EMULATED_GAMEPADS__',{value:pads});}catch(e){}
   }
-  const $=id=>document.getElementById(id), T=window.THREE, P=window.HeliPhysics, M=window.HeliMissiles, W=window.HeliWorld, A=window.HeliAudio, G=window.HeliGround, H=window.HeliBot, SET=window.HeliSettings;
-  if(!T||!P||!M||!W||!A||!G||!H||!SET||!window.HeliModels||!window.HeliForest||!window.buildScenery) { $('saveState').textContent='Fichiers manquants : conserve le dossier complet.'; $('start').disabled=true; return; }
+  const $=id=>document.getElementById(id), T=window.THREE, P=window.HeliPhysics, M=window.HeliMissiles, W=window.HeliWorld, A=window.HeliAudio, G=window.HeliGround, H=window.HeliBot, SET=window.HeliSettings, MENUS=window.HeliMenus;
+  if(!T||!P||!M||!W||!A||!G||!H||!SET||!MENUS||!window.HeliModels||!window.HeliForest||!window.buildScenery) { $('saveState').textContent='Fichiers manquants : conserve le dossier complet.'; $('start').disabled=true; return; }
   // The map is chosen before the scene is built (world.js): its name on the loading screen.
   try{const t=document.querySelector('#loading .loading-title');if(t)t.textContent='CHARGEMENT · '+String(W.name||'').toUpperCase();}catch(e){}
   function boot(){
     const STORE='littlebird-range-v1';
     const {defaults:DEFAULTS,baseBindings,labels,KEY_NAMES,KEY_PATTERN,REVISION,FLIGHT_KEYS,V13_KEYS,sanitize,validBindings}=SET;
+    const {MODES}=MENUS;
     const MODE_OF=s=>['air','ground','mixed'].includes(s)?'range':s;
     let cfg={...DEFAULTS},bindings={...baseBindings},storageOK=true;
     const notices=[];
@@ -151,7 +152,7 @@
     let stats={shots:0,hits:0,kills:0,tracked:0,duration:0,deaths:0,crashes:0},keySet=new Set(),summaryReason='';
     let lookLatch=false,lookUpAt=-1e9,lookSkipUp=false;
     let heliAlive=true,wreck=0,wreckCause='',hitsTaken=0,padTimer=0,flareRequest=false,freeLookHeld=false,lookYaw=0,lookPitch=0,shake=0,aaActive=false,aaBanner=null,damageFlash=0;
-    let run={...cfg},ammo=300,health=100,score=0,killsBy={},hot=null,shopOpen=false,menuTab='modes',selectedMode=MODE_OF(cfg.scenario);
+    let run={...cfg},ammo=300,health=100,score=0,killsBy={},hot=null,shopOpen=false,menuTab='modes';
     // Fuel (v9), read on the recordings' gauge (docs/analyse/foret-dca.md): about 0.02 %/s plus
     // 0.0011 %/s per km/h (0.3 %/s at 270 km/h: ~5 min of full-speed flight), refuelled on the
     // helipad at about 5 %/s (recording 1, 384-392 s). Used when resources are limited.
@@ -788,11 +789,11 @@
       for(const r of rockets)scene.remove(r.g);rockets=[];rocketStats={fired:0,hits:0,damage:0};
       heliAlive=true;wreck=0;hitsTaken=0;padTimer=0;lookYaw=0;lookPitch=0;shake=0;damageFlash=0;ammo=300;health=100;score=0;killsBy={};fuel=1;fuelOut=false;
       effects.forEach(e=>{e.life=0;e.mesh.visible=false;});createTargets();setupBattle();setupAirDefense();running=true;hasSession=true;summaryReason='';
-      showScreen(null);$('resume').hidden=false;document.body.classList.add('flying');document.body.classList.toggle('telemetry',cfg.showTelemetry);$('feed').textContent='';$('modeLabel').textContent=MODE_INFO[mode].title;
+      showScreen(null);$('resume').hidden=false;document.body.classList.add('flying');document.body.classList.toggle('telemetry',cfg.showTelemetry);$('feed').textContent='';$('modeLabel').textContent=MODES[mode].title;
       // A light preset of the game for this session (or the one chosen in the menu).
       pickLight();
       initAudio();save();updateCamera();lock();
-      feed(MODE_INFO[mode].start,false,true);feed(`${W.name} · ${W.LIGHTS[lightName].label}`,false,true);
+      feed(MODES[mode].start,false,true);feed(`${W.name} · ${W.LIGHTS[lightName].label}`,false,true);
       joyStart();
     }
     // Screens: 'menu' (modes/controls/settings tabs), 'pause', 'results', 'shop' or null (flying).
@@ -1502,21 +1503,9 @@
       sfx.play('ui');renderShop();});
     $('shopClose').onclick=closeShop;
     // ---- Menus ----
-    const MODE_INFO={
-      range:{title:'STAND DE TIR',crumb:'Entraînement au tir',text:'Cibles aériennes, terrestres ou mixtes devant l’hélipad. Mesure ta précision et ton suivi de cible avec la cadence et les dégâts mesurés sur les enregistrements de référence.',start:'STAND DE TIR · feu à volonté'},
-      assault:{title:'ASSAUT AIR-SOL',crumb:'Nouveau mode',text:'Des camps ennemis tirés au hasard dans la vallée : miradors, cabanes, bunkers, tentes, dépôts de carburant et de munitions, antennes. Les fantassins patrouillent, se mettent à l’abri dans les bâtiments quand tu approches et ressortent ensuite ; des camions roulent sur la route. Détruis toutes les structures.',start:'ASSAUT · camps signalés en orange sur la mini-carte'},
-      missiles:{title:'DÉFENSE SOL-AIR',crumb:'Esquive de missiles',text:'Des tireurs Verba (tube à l’épaule, sur les toits, les buttes, les clairières) et des emplacements SAM t’accrochent : bips, puis son continu au verrouillage. Le missile part du tube que tu vois. Abats le tireur avant le tir, casse l’accrochage en volant bas ou derrière le relief, lâche les leurres (V) 1 à 2 s avant l’impact. Le canon CIWS de 20 mm, pointé par un servant assis, tire à vue jusqu’à environ 1 km : reste hors de sa portée ou derrière le relief, ou abats le servant (sa coque encaisse environ 500 impacts de minigun).',start:'DÉFENSE SOL-AIR · écoute les bips'},
-      match:{title:'PARTIE RÉELLE',crumb:'Nouveau mode · au plus près d’une partie',text:'Tout à la fois : camps et fantassins qui ripostent, convois, deux hélicoptères ennemis pilotés par des bots (même modèle de vol que toi), tireurs Verba dans les camps, emplacements SAM et canon CIWS de 20 mm. La zone chaude (cercle jaune) double les points et se déplace toutes les 3 minutes. Tu pars avec 300 coups (2 boîtes de 150) et 2 leurres, comme sur les enregistrements de référence : pose-toi sur l’hélipad et appuie sur B pour te réapprovisionner et réparer.',start:'PARTIE RÉELLE · zone chaude en jaune · B sur l’hélipad pour réarmer'},
-      duel:{title:'DUEL D’HÉLICOPTÈRES',crumb:'Nouveau mode · combat aérien',text:'Un à trois hélicoptères ennemis pilotés par des bots, avec le même modèle de vol mesuré et les mêmes miniguns que toi (25 coups/s, 800 m/s). Ils anticipent ta trajectoire, tirent par rafales, cassent quand tu les alignes, gardent un peu de hauteur pour plonger sur toi et perdent ta trace derrière le relief. Le niveau règle leur temps de réaction, leur précision et leurs esquives ; en Réaliste, aucun repère : écoute leur rotor et leurs rafales.',start:'DUEL · les ennemis arrivent'},
-      towers:{title:'TOURS',crumb:'Assaut et capture',text:'Trois tours numérotées, en blocs d’acier, d’environ 33 m jusqu’au toit (mesurées sur l’enregistrement 1). Élimine les défenses du toit puis reste 10 s au-dessus, entre 5 et 25 m, sous 40 km/h.',start:'TOURS · nettoie les toits'},
-      free:{title:'VOL LIBRE',crumb:'Vol',text:'Départ posé dans la cour de l’hélipad, rotor au ralenti. Monte le collectif pour décoller, puis explore la carte : usine, villages, champs, viaduc et crêtes.',start:'VOL LIBRE · monte le collectif pour décoller'}};
-    function selectMode(mode){
-      selectedMode=mode;if(mode==='range')cfg.scenario=cfg.rangeType||'air';else cfg.scenario=mode;
-      document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
-      const info=MODE_INFO[mode];$('modeTitle').textContent=info.title;$('modeCrumb').textContent=info.crumb;$('modeText').textContent=info.text;
-      document.querySelectorAll('.opt[data-for]').forEach(el=>el.hidden=!el.dataset.for.split(' ').includes(mode));
-      document.querySelectorAll('[data-scenario]').forEach(b=>b.classList.toggle('active',b.dataset.scenario===cfg.scenario));
-    }
+    // The mode choice and the handlers that the page's controls share live in menus.js; the screens are still here.
+    const menus=MENUS.create({doc:document,S:SET,state:{get cfg(){return cfg;}},commit:next=>{cfg=next;flight.cfg=cfg;},
+      act:{markExerciseDirty,syncUI,save,resetMouse:()=>P.resetInput(mouse)},toast,sfx});
     function selectTab(tab){menuTab=tab;document.querySelectorAll('[data-tab]').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.id===tab));$('pageTitle').textContent={modes:'MODES DE JEU',controls:'COMMANDES',settings:'RÉGLAGES',about:'À PROPOS'}[tab];renderBindings();if(tab!=='controls')joyStop();}
     function renderBindings(){
       $('bindings').replaceChildren();for(const [action,label] of Object.entries(labels)){const div=document.createElement('div');div.className='binding';const span=document.createElement('span');span.textContent=label;const button=document.createElement('button');button.textContent=KEY_NAMES[bindings[action]]||bindings[action].replace('Key','').replace('Unbound','Non assigné');button.onclick=()=>{capturing=action;renderBindings();toast('Appuie sur une touche ou un bouton de souris. Échap annule.');};if(capturing===action){button.textContent='En attente…';button.classList.add('listening');}div.append(span,button);$('bindings').append(div);}
@@ -1530,14 +1519,9 @@
     }
     function syncUI(){
       for(const [key,val] of Object.entries(cfg)){const el=$(key);if(!el)continue;if(el.type==='checkbox')el.checked=val;else el.value=val;const output=el.parentElement.querySelector('output');if(output)output.textContent=Number(val).toLocaleString('fr-FR',{maximumFractionDigits:Math.abs(val)>0&&Math.abs(val)<.01?5:3})+' '+(el.dataset.unit||'');}
-      $('modeLabel').textContent=(MODE_INFO[MODE_OF(cfg.scenario)]||MODE_INFO.range).title;selectMode(MODE_OF(cfg.scenario));renderBindings();joySync();
+      $('modeLabel').textContent=(MODES[MODE_OF(cfg.scenario)]||MODES.range).title;menus.selectMode(MODE_OF(cfg.scenario));renderBindings();joySync();
     }
     function markExerciseDirty(){exerciseDirty=true;$('resume').hidden=true;}
-    const EXERCISE_KEYS=['trajectory','duration','airHealth','groundHealth','baseHealth','indestructible','aaLaunchers','aaObjective','aaEverywhere','flareCharges','flareUnlimited','camps','infantryPerCamp','convoy','enemyFire','difficulty','unlimitedAmmo','duelBots','duelStart','duelRespawn','duelHealth','rpgPerCamp','aaRockets','ciwsCount','duelEnemy'];
-    document.querySelectorAll('input[id],select[id]').forEach(el=>{if(!(el.id in cfg))return;el.addEventListener('input',()=>{cfg[el.id]=el.type==='checkbox'?el.checked:typeof DEFAULTS[el.id]==='number'?Number(el.value):el.value;if(el.id.startsWith('target')||EXERCISE_KEYS.includes(el.id))markExerciseDirty();if(el.id==='graphics')toast('Qualité graphique appliquée au prochain chargement de la page.');cfg=sanitize(cfg);flight.cfg=cfg;
-      // Mouse law chosen in Commandes > Souris: the input state starts afresh.
-      if(el.id==='mouseLaw'){P.resetInput(mouse);toast(cfg.mouseLaw==='rate'?'Souris : loi mesurée sur les enregistrements de référence (vitesse du geste → vitesse de rotation).':'Souris : manche virtuel de la v12 (déviation gardée en mémoire, retour lent au neutre).');}
-      syncUI();save();});});
     document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{capturing=null;selectTab(b.dataset.tab);sfx.play('ui');});
     // À propos: the releases page, shown as text and as a link that opens in a new tab without opener or referrer. The
     // page never contacts it. In the Windows app the shell hands this exact address, and no other, to the default
@@ -1546,8 +1530,6 @@
     // into the markup by the build (package.json).
     const RELEASES_URL='https://github.com/sylvainarnauda-shining/littlebird-trainer/releases';
     if($('releasesLink')){$('releasesLink').href=RELEASES_URL;$('releasesLink').textContent=RELEASES_URL;}
-    document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{if(b.disabled)return;selectMode(b.dataset.mode);markExerciseDirty();save();sfx.play('ui');});
-    document.querySelectorAll('[data-scenario]').forEach(b=>b.onclick=()=>{cfg.scenario=b.dataset.scenario;cfg.rangeType=b.dataset.scenario;selectMode('range');markExerciseDirty();save();});
     $('start').onclick=start;$('retry').onclick=start;$('resume').onclick=resume;$('menuButton').onclick=pause;$('resultSettings').onclick=()=>openMenu('modes');
     $('pauseResume').onclick=resume;$('pauseRestart').onclick=start;$('pauseModes').onclick=()=>openMenu('modes');$('pauseSettings').onclick=()=>openMenu('settings');
     $('defaults').onclick=()=>{cfg={...DEFAULTS};bindings={...baseBindings};joyProfile=J.defaultProfile();joy.roles=J.createRoles();flight.cfg=cfg;markExerciseDirty();syncUI();save();toast('Réglages initiaux restaurés.');};

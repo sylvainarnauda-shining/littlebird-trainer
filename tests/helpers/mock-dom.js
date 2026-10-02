@@ -153,6 +153,7 @@ function bootApp({
     HeliGround: R.G,
     HeliBot: R.B,
     HeliSettings: R.S,
+    HeliMenus: R.Menus,
     HeliModels: { create: R.Models.create },
     HeliForest: R.F,
     buildScenery: R.buildScenery,
