@@ -4,7 +4,9 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Cha
 déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne changent que là où il le dit (trailer
 `Golden-Update:` du commit, voir `CONTRIBUTING.md`).
 
-## [Non publié]
+## [0.10.0] — 2026-10-02
+
+Préversion : les joysticks (T.16000M, manche virtuel vJoy) peuvent piloter l’entraîneur, la cabine de l’hélicoptère est plus pleine devant les portes, et l’outillage de test se prépare aux menus fidèles au jeu (version 1.0). Les menus restent ceux de l’entraîneur.
 
 ### Comportement (changements déclarés)
 

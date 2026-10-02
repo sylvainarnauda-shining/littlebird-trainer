@@ -1,7 +1,7 @@
 {
   "name": "littlebird-trainer",
   "productName": "LittleBird Trainer",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": true,
   "description": "Entraîneur hors ligne de pilotage et de tir pour hélicoptère léger (WebGL).",
   "license": "MIT",

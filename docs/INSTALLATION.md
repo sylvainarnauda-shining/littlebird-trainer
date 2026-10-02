@@ -93,7 +93,7 @@ La qualité graphique (haute, moyenne, basse : Réglages › Affichage) s'appliq
 
 ## Mise à jour
 
-**Quelle version est installée ?** Le numéro complet (par exemple `v0.9.0`) est affiché en haut à droite du menu du
+**Quelle version est installée ?** Le numéro complet (par exemple `v0.10.0`) est affiché en haut à droite du menu du
 jeu, et dans l'onglet **À propos**, qui donne aussi l'adresse de la page **Releases** du dépôt (un clic l'ouvre dans
 votre navigateur). Le raccourci garde toujours le même nom, **LittleBird Trainer**, sans numéro.
 
