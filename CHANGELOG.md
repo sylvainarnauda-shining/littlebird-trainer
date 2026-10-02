@@ -4,6 +4,51 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Cha
 déclaré ici, dans un commit à lui seul, avec la preuve que les goldens ne changent que là où il le dit (trailer
 `Golden-Update:` du commit, voir `CONTRIBUTING.md`).
 
+## [Non publié]
+
+### Tests et outils
+
+- **Crochets de test du joystick ; la suite `joystick` de l'enregistreur n'en dépend plus par les `id` du panneau
+  (menus 1.0, phase M0c).** La suite `joystick` et les specs du joystick pilotaient le panneau Manette · HOTAS par les
+  `id` de ses contrôles (le bouton « Lire les manettes », la liste des appareils, l'interrupteur HOTAS, l'appareil du
+  tangage, l'import du fichier du jeu, son aperçu et « Appliquer »), que la page HOTAS fidèle au jeu retirera. Le crochet de
+  test de la page (`window.__LB_EXPOSE__`, réservé aux tests, jamais défini par la page) expose en fin de liste huit
+  membres, qui exécutent le code que les contrôles exécutent : `joyReading(on)`, `joyDevices()`, `joyHotas(on)`,
+  `joyAxisDevice(axe, appareil)`, `joyImport(fichier)`, `joyPreviewShown()`, `joyApply()` et `joyCancel()` (`joyCancel`
+  ferme l'aperçu : l'oracle de la suite s'en sert quand l'application est refusée). Les contrôles du panneau appellent
+  les mêmes fonctions : rien ne change pour le joueur. La suite `joystick` prend les crochets quand le runtime les a tous,
+  sinon les `id` (le baseline que `golden.mjs prove` enregistre est un runtime sans crochets) : les deux chemins
+  enregistrent les mêmes octets, ce que `tests/regression/joystick-panel-paths.test.js` vérifie en les faisant tourner
+  sur la page actuelle (appareils listés, aperçu, profil enregistré, avis). Le test d'automatisation du joystick et une
+  spec du navigateur passent par les crochets. Ce qui change dans les goldens : `hookapi` seul, qui liste les membres du
+  crochet de test (huit de plus, jamais retirés) ; tous les autres sont identiques octet pour octet, celui du joystick
+  compris (les deux chemins enregistrent la même chose), et `meta.json` ne change que par les empreintes de
+  l'enregistreur et d'`app.js`. Le changement de l'enregistreur est prouvé neutre (`golden.mjs prove` sur le runtime
+  d'avant les crochets, puis `--adopt`).
+- **Cœur des réglages : `src/settings-data.js` et `src/settings.js` (menus 1.0, phase M1).** Les actions et leurs touches
+  par défaut, les noms des touches et les bornes des réglages numériques (`settings-data.js`, des données seules), les
+  valeurs par défaut, la migration d'un profil enregistré (révisions 2 à 16), la validation des réglages et des touches et
+  la lecture du fichier de réglages du jeu (`settings.js`, sans DOM ni horloge) quittent `app.js`, qui les prend de ces
+  deux scripts, chargés entre `bot.js` et `app.js` (gabarit de la page, `SCRIPTS` de la construction). Rien ne change pour
+  le joueur. `sanitize` ne lit plus les attributs `min`, `max` et `step` des curseurs de la page mais la table `BOUNDS`
+  (71 réglages), qu'un test garde égale à ces attributs tant que le gabarit les porte ; cinq recadrages qui répétaient
+  des bornes de cette table (cibles, lanceurs, robots de duel, canons, ajustement fin de la souris) disparaissent, sans
+  effet par construction. Les goldens sont tous identiques octet pour octet : l'oracle `settings` rejoue ses 10 000
+  profils sans DOM ; `meta.json` n'est pas réenregistré, il nommera les nouveaux fichiers à la première mise à jour des
+  goldens.
+- **Module des menus : `src/menus.js` (menus 1.0, phase M2).** Le choix du mode (`selectMode` et la table des sept modes,
+  `MODES`, jusque-là `MODE_INFO`) et les gestionnaires que les contrôles de la page ont en commun (un réglage qui change,
+  une carte de mode, un bouton du type de stand de tir) quittent `app.js` pour `HeliMenus`, le troisième script des menus,
+  chargé entre `settings.js` et `app.js` (gabarit de la page, `SCRIPTS` de la construction). `app.js` le crée avec
+  `HeliMenus.create` en lui donnant les réglages en cours et ce que la session fait pour les menus (marquer l'exercice
+  modifié, rafraîchir l'interface, sauvegarder, remettre la souris à zéro) ; il garde les écrans, la session et la colle.
+  L'ordre des gestionnaires est celui d'avant : celui d'un réglage s'exécute avant celui de l'ambiance lumineuse, qui lit
+  le réglage qu'il vient d'enregistrer. Rien ne change pour le joueur ; un état que personne ne lisait (`selectedMode`)
+  disparaît. Les goldens sont tous identiques octet pour octet, `ui` et `hookapi` compris ; `meta.json` n'est pas
+  réenregistré. Tests : le contrat du DOM de l'enregistreur pour les trois scripts des menus (`menus-contract`), et la page
+  de l'enregistreur (`tests/helpers/page.js`) pour essayer les gestionnaires dans leur ordre réel (`app-menus-modes`, dont
+  l'ordre des deux gestionnaires de l'ambiance lumineuse).
+
 ## [0.10.0] — 2026-10-02
 
 Préversion : les joysticks (T.16000M, manche virtuel vJoy) peuvent piloter l’entraîneur, la cabine de l’hélicoptère est plus pleine devant les portes, et l’outillage de test se prépare aux menus fidèles au jeu (version 1.0). Les menus restent ceux de l’entraîneur.

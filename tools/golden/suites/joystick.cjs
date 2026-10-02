@@ -61,6 +61,24 @@ class Stick {
   }
 }
 
+// The joystick panel as the suite drives it, by one of two paths that record the same bytes. A runtime that exposes the panel's
+// hooks (menus 1.0, M0c) is driven through them; an older one, the page's own panel only, through the ids of its controls (the
+// baseline that golden.mjs prove records is one: the goldens recorded on either runtime check the other). devices() is one string
+// per device listed; on the ids path read() is the button's click, a toggle (the suite starts the reading, then stops it).
+const PANEL_HOOKS = ['joyReading', 'joyDevices', 'joyHotas', 'joyAxisDevice', 'joyImport', 'joyPreviewShown', 'joyApply', 'joyCancel'];
+const textFile = text => ({ size: Buffer.byteLength(text), text: async () => text });
+const panelByHooks = ({ app: a }) => ({
+  read: on => a.joyReading(on), devices: () => a.joyDevices(), hotas: on => a.joyHotas(on), axisDevice: (axis, ref) => a.joyAxisDevice(axis, ref),
+  importFile: text => a.joyImport(textFile(text)), preview: () => a.joyPreviewShown(), apply: () => a.joyApply(), cancel: () => a.joyCancel() });
+function panelByIds(page) {
+  const box = () => page.el('joyPreview'), button = i => { const rows = box().children; return rows[rows.length - 1].children[i]; };   // the last row: Appliquer, Annuler
+  return { read: () => page.click('joyRead'), devices: () => Array.from(page.el('joyDevices').children, row => row.textContent), hotas: on => page.setInput('joyUseHotas', on),
+    axisDevice: (axis, ref) => page.setInput(`joy${axis}Device`, ref),
+    async importFile(text) { page.ev(page.el('importJoystick'), 'change', { target: { files: [textFile(text)], value: '' } }); await page.flush(); await page.flush(); },
+    preview: () => box().hidden ? null : { rows: box().children.length, text: box().textContent }, apply: () => page.click(button(0)), cancel: () => page.click(button(1)) };
+}
+const panel = (page, viaIds = !PANEL_HOOKS.every(k => typeof page.app[k] === 'function')) => (viaIds ? panelByIds : panelByHooks)(page);
+
 // Profile blocks (schema 1, validated by the page when it loads them).
 const axis = (device, index, extra = {}) => ({ device, axis: index, invert: false, sensitivity: 1, deadZone: .05, positive: null, negative: null, ...extra });
 const block = (axes, actions, extra = {}) => ({ schema: 1, useHotas: true, deviceMatch: 'role', confirmRoles: true, devices: { main: null, left: null, right: null }, axes, actions, ...extra });
@@ -231,12 +249,12 @@ const RUNS = {
 const VJOY_B0 = {
   sticks: () => [new Stick(0, VJOY_ID, { hat: HAT_CENTRED })],
   async menuScript(pl, ctx) {
-    const page = ctx.page, s = ctx.sticks[0]; s.set(2, -1);
-    page.ev(page.el('importJoystick'), 'change', { target: { files: [{ size: Buffer.byteLength(VJOY_SECTION), text: async () => VJOY_SECTION }], value: '' } }); await page.flush(); await page.flush();
-    const box = page.el('joyPreview'); if (box.hidden) throw Error('vjoy-b0: no preview of the game section (' + page.toast() + ')');
-    ctx.ev.previewLines = box.children.length; ctx.texts.push(box.textContent);
-    await page.click(box.children[box.children.length - 1].children[0]);   // Appliquer
-    const j = ctx.stored(); ctx.ev.imported = j && j.useHotas && box.hidden ? 1 : 0; ctx.ev.importedProfile = short(j); ctx.texts.push(page.toast());
+    const page = ctx.page, s = ctx.sticks[0], joy = panel(page); s.set(2, -1);
+    await joy.importFile(VJOY_SECTION);
+    const shown = joy.preview(); if (!shown) throw Error('vjoy-b0: no preview of the game section (' + page.toast() + ')');
+    ctx.ev.previewLines = shown.rows; ctx.texts.push(shown.text);
+    await joy.apply();
+    const j = ctx.stored(); ctx.ev.imported = j && j.useHotas && !joy.preview() ? 1 : 0; ctx.ev.importedProfile = short(j); ctx.texts.push(page.toast());
     await ctx.menu(20);
   },
   async script(pl, ctx) {
@@ -362,7 +380,7 @@ function sectionText(r) {
   return lines.join(r() < .5 ? '\r\n' : '\n');
 }
 async function oracle(rt) {
-  const page = await createPage(rt, { audio: false }), r = lcg(ORACLE.seed);
+  const page = await createPage(rt, { audio: false }), r = lcg(ORACLE.seed), joy = panel(page);
   const stored = () => { const d = JSON.parse(page.storage.get(STORE) || 'null'); return d && Object.hasOwn(d, 'joystick') ? d.joystick : '#none'; };
   const profiles = [], profileToasts = [], sections = [], sectionTexts = [], stats = { stored: 0, defaults: 0, previews: 0, applied: 0, refused: 0 };
   for (let i = 0; i < ORACLE.profiles; i++) {
@@ -373,10 +391,9 @@ async function oracle(rt) {
   }
   for (let i = 0; i < ORACLE.sections; i++) {
     await page.click('defaults');
-    const text = sectionText(r), box = page.el('joyPreview');
-    page.ev(page.el('importJoystick'), 'change', { target: { files: [{ size: Buffer.byteLength(text), text: async () => text }], value: '' } }); await page.flush(); await page.flush();
-    let preview = '-', lines = 0;
-    if (!box.hidden) { stats.previews++; preview = textHash(box.textContent); lines = box.children.length; await page.click(box.children[box.children.length - 1].children[0]); if (box.hidden) stats.applied++; else { stats.refused++; await page.click(box.children[box.children.length - 1].children[1]); } }
+    const text = sectionText(r); await joy.importFile(text);
+    let preview = '-', lines = 0; const shown = joy.preview();
+    if (shown) { stats.previews++; preview = textHash(shown.text); lines = shown.rows; await joy.apply(); if (!joy.preview()) stats.applied++; else { stats.refused++; await joy.cancel(); } }
     sections.push(short([lines, stored()])); sectionTexts.push(textHash(preview + '|' + page.toast()));
   }
   return { stats, profilesHex: profiles.join(''), sectionsHex: sections.join(''), toastHex: textHash(profileToasts.join('') + sectionTexts.join('')) };
@@ -386,15 +403,15 @@ async function oracle(rt) {
 async function automation(rt, recording) {
   const machine = new Stick(0, T16_ID, { hat: HAT_CENTRED }); machine.report();
   const page = await createPage(rt, { audio: false, automation: true, gamepads: [machine.pad] }), w = page.window, d = Object.getOwnPropertyDescriptor(w.navigator, 'getGamepads');
-  const r = { emulated: !!d && d.writable === false && typeof d.value === 'function', emulatedList: Array.isArray(w.__LB_EMULATED_GAMEPADS__) };
-  await page.click('joyRead'); await page.advance(60);
-  r.padsListedBefore = page.el('joyDevices').children.length;
+  const r = { emulated: !!d && d.writable === false && typeof d.value === 'function', emulatedList: Array.isArray(w.__LB_EMULATED_GAMEPADS__) }, joy = panel(page);
+  await joy.read(true); await page.advance(60);
+  r.padsListedBefore = joy.devices().length;
   // Without the emulation (a broken shim) there is no list to put the pad into: the run goes on, and its reads show it.
   const vj = new Stick(0, VJOY_ID, { hat: HAT_CENTRED }); if (r.emulatedList) w.__LB_EMULATED_GAMEPADS__.push(vj.pad);
   for (let i = 0; i < 60; i++) { vj.report(); await page.frame(); }
-  r.padsListed = page.el('joyDevices').children.length; r.listedIsVjoy = /vJoy Device/.test(page.el('joyDevices').textContent);
-  await page.click('joyRead');
-  await page.setInput('joyUseHotas', true); await page.setInput('joyPitchDevice', 'main');
+  r.padsListed = joy.devices().length; r.listedIsVjoy = /vJoy Device/.test(joy.devices().join(' '));
+  await joy.read(false);
+  await joy.hotas(true); await joy.axisDevice('Pitch', 'main');
   await page.click('start'); r.running = page.app.running;
   const f = page.app.flight; f.position.set(0, 400, -300); f.velocity.set(0, 0, 0); f.onGround = false;
   vj.set(1, 1); for (let i = 0; i < 40; i++) { vj.report(); await page.frame(); }
@@ -415,4 +432,4 @@ async function record(rt, { golden = null, log = () => {} } = {}) {
   out.runs = await runs(rt, { golden, defaults, log });
   return out;
 }
-module.exports = { record, Stick, PROFILES, gameSection, VJOY_ID, T16_ID };
+module.exports = { record, Stick, PROFILES, gameSection, VJOY_ID, T16_ID, panel };

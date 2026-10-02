@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { ROOT } = require('../helpers/paths');
+const { load } = require('../helpers/runtime');
 
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 function files(dir, out = []) {
@@ -61,11 +62,7 @@ test('the changelog declares every behaviour step of the publication prep', () =
 });
 
 test("docs/REGLAGES.md gives the application's default keys", () => {
-  const app = read('src/app.js');
-  const base = /const baseBindings=(\{[^}]*\})/.exec(app);
-  assert.ok(base, 'baseBindings found');
-  const keys = Object.fromEntries([...base[1].matchAll(/(\w+):'([^']+)'/g)].map((m) => [m[1], m[2]]));
-  assert.deepEqual(keys, {
+  assert.deepEqual(load('settings.js').baseBindings, {
     collectiveUp: 'ShiftLeft',
     collectiveDown: 'ControlLeft',
     pitchUp: 'KeyS',

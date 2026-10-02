@@ -40,6 +40,14 @@
   "heliAlive": "getter",
   "heliHits": "function",
   "hot": "getter",
+  "joyApply": "function",
+  "joyAxisDevice": "function",
+  "joyCancel": "function",
+  "joyDevices": "function",
+  "joyHotas": "function",
+  "joyImport": "function",
+  "joyPreviewShown": "function",
+  "joyReading": "function",
   "lightName": "getter",
   "lookDown": "function",
   "lookUp": "function",
@@ -74,7 +82,7 @@
   "view": "getter",
   "wires": "object"
  },
- "count": 69,
+ "count": 77,
  "trainerDiagnostics": [
   "air",
   "ammo",

@@ -25,6 +25,8 @@ function modules() {
     A: load('audio.js'),
     G: load('ground.js'),
     B: load('bot.js'),
+    S: load('settings.js'),
+    Menus: load('menus.js'),
     F: load('forest.js'),
     Models: load('models.js'),
     buildScenery: load('scenery.js'),
